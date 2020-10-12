@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+
+        <template id="expense_inherit_report" inherit_id="hr_expense.report_expense_sheet">
+            <xpath expr="//div[@class='row mt32 mb32']" position="after">
+                <div class="row mt32 mb32">
+                    <div class="col-2">
+                        <strong>WorkSheet Id:</strong>
+                        <p t-field="o.expense_line_ids.expense_id_worksheet_line"/>
+                    </div>
+                    <div class="col-2">
+                        <strong>Task Id:</strong>
+                        <p t-field="o.expense_line_ids.task_id_rec"/>
+                    </div>
+                </div>
+            </xpath>
+        </template>
+    </data>
+</odoo>

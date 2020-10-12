@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Sequences for sale.order -->
+        <record id="worksheet_template" model="ir.sequence">
+            <field name="name">Work Sheet</field>
+            <field name="code">worksheet.template.line</field>
+            <field name="prefix">WS-CATEGORY-%(year)s-%(month)s-</field>
+            <field name="padding">5</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+    </data>
+</odoo>
