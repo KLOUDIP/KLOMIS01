@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+
+        <record id="worksheet_template_line_form" model="ir.ui.view">
+            <field name="name">worksheet.template.line.form</field>
+            <field name="model">worksheet.template.line</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                        <h2>
+                            <field name="name" placeholder="Name"/>
+                        </h2>
+                        <group string="Details">
+                            <group>
+                                <field name="select_user"/>
+                                <field name="template_id"/>
+                                <field name="done_mark"/>
+                                <field name="expense_id"/>
+                                 <button type="object" class="btn btn-primary" string='Show Worksheet' name="action_form_worksheet_template"
+                                    attrs="{'invisible': [('template_id', '=', False)]}"/>
+                            </group>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="cites_tree_view" model="ir.ui.view">
+            <field name="name">cites.tree.view</field>
+            <field name="model">worksheet.template.line</field>
+            <field name="arch" type="xml">
+                <tree string="Status">
+                    <field name="name" placeholder="Name"/>
+                    <field name="select_user"/>
+                    <field name="template_id"/>
+                    <field name="expense_id"/>
+                    <field name="done_mark"/>
+                </tree>
+            </field>
+        </record>
+
+        <record model="ir.actions.act_window" id="line_create">
+            <field name="name">Template</field>
+            <field name="res_model">worksheet.template.line</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+        <menuitem id="worksheet"
+                  name="Worksheet Search"
+                  action="line_create"
+                  sequence="13"
+                  parent="industry_fsm.fsm_menu_all_tasks_root"
+        />
+
+    </data>
+</odoo>

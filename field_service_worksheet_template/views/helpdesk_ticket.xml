@@ -1,0 +1,12 @@
+<odoo>
+     <record id="helpdesk" model="ir.ui.view">
+            <field name='name'>task.view</field>
+            <field name="model">helpdesk.ticket</field>
+            <field name="inherit_id" ref="helpdesk.helpdesk_ticket_view_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='user_id']" position="after">
+                    <field name="help_desk_ticket_id" invisible="0"/>
+                </xpath>
+            </field>
+     </record>
+</odoo>
