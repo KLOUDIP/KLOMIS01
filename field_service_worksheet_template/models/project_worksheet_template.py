@@ -35,6 +35,47 @@ class ProjectWorksheetTemplateCustom(models.Model):
                     'ttype': 'char',
 
                 }),
+                (0, 0, {  # needed for proper model creation from demo data
+                    'name': 'x_technician_name',
+                    'field_description': 'Technician Name',
+                    'ttype': 'many2one',
+                    'relation': 'res.users',
+                    'required': True,
+                    'on_delete': 'cascade',
+
+                }),
+                (0, 0, {  # needed for proper model creation from demo data
+                    'name': 'x_company_id',
+                    'field_description': 'Company',
+                    'ttype': 'many2one',
+                    'relation': 'res.company',
+                    'required': True,
+                    'on_delete': 'cascade',
+
+                }),
+                (0, 0, {  # needed for proper model creation from demo data
+                    'name': 'x_contact_person',
+                    'field_description': 'Contact Person',
+                    'ttype': 'many2one',
+                    'relation': 'res.partner',
+                    'required': True,
+                    'on_delete': 'cascade',
+
+                }),
+                (0, 0, {  # needed for proper model creation from demo data
+                    'name': 'x_contact_no',
+                    'field_description': 'Contact Number',
+                    'ttype': 'char',
+                }),
+                (0, 0, {  # needed for proper model creation from demo data
+                    'name': 'x_job_type',
+                    'field_description': 'Job Type',
+                    'ttype': 'many2one',
+                    'relation': 'project.project',
+                    'required': True,
+                    'on_delete': 'cascade',
+
+                }),
                 (0, 0, {
                     'name': 'x_task_id',
                     'field_description': 'Task',
@@ -99,6 +140,21 @@ class ProjectWorksheetTemplateCustom(models.Model):
         x_name_field_seq = self.env['ir.model.fields'].search([('model_id', '=', model.id), ('name', '=', 'x_worksheet_no')])
         x_name_field_seq.sudo().write({'related': 'x_studio_line_id.name'})
 
+        x_field_tech_name = self.env['ir.model.fields'].search([('model_id', '=', model.id), ('name', '=', 'x_technician_name')])
+        x_field_tech_name.sudo().write({'related': 'x_studio_line_id.select_user'})
+
+        x_field_company_name = self.env['ir.model.fields'].search([('model_id', '=', model.id), ('name', '=', 'x_company_id')])
+        x_field_company_name.sudo().write({'related': 'x_task_id.company_id'})
+
+        x_field_contact_name = self.env['ir.model.fields'].search([('model_id', '=', model.id), ('name', '=', 'x_contact_person')])
+        x_field_contact_name.sudo().write({'related': 'x_task_id.company_id.partner_id'})
+
+        x_field_contact_no = self.env['ir.model.fields'].search([('model_id', '=', model.id), ('name', '=', 'x_contact_no')])
+        x_field_contact_no.sudo().write({'related': 'x_task_id.company_id.phone'})
+
+        x_field_job_type = self.env['ir.model.fields'].search([('model_id', '=', model.id), ('name', '=', 'x_job_type')])
+        x_field_job_type.sudo().write({'related': 'x_task_id.project_id'})
+
         # create the view to extend by 'studio' and add the user custom fields
         form_view = self.env['ir.ui.view'].sudo().create({
             'type': 'form',
@@ -116,8 +172,11 @@ class ProjectWorksheetTemplateCustom(models.Model):
                     </h1>
                     <group class="o_fsm_worksheet_form">
                         <group>
-                            <field name="x_comments"/>
                             <field name="x_worksheet_no" readonly="1"/>
+                            <field name="x_technician_name" />
+                            <field name="x_company_id" readonly="1"/>
+                            <field name="x_contact_person" readonly="1"/>
+                            <field name="x_job_type" readonly="1"/>
                         </group>
                         <group>
                         </group>
