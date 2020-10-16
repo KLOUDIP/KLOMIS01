@@ -176,6 +176,7 @@ class ProjectWorksheetTemplateCustom(models.Model):
                             <field name="x_technician_name" />
                             <field name="x_company_id" readonly="1"/>
                             <field name="x_contact_person" readonly="1"/>
+                            <field name="x_contact_no" readonly="1"/>
                             <field name="x_job_type" readonly="1"/>
                         </group>
                         <group>
