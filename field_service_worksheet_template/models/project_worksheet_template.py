@@ -48,7 +48,7 @@ class ProjectWorksheetTemplateCustom(models.Model):
                     'name': 'x_company_id',
                     'field_description': 'Company',
                     'ttype': 'many2one',
-                    'relation': 'res.company',
+                    'relation': 'res.partner',
                     'required': True,
                     'on_delete': 'cascade',
 
