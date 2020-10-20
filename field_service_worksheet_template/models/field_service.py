@@ -16,6 +16,7 @@ class WorksheetTemplateLine(models.Model):
     extra = fields.Boolean('Mark as Done')
     beverage = fields.Boolean('Mark as Done')
     transport = fields.Boolean('Mark as Done')
+    other = fields.Boolean('Mark as Done')
     line_add = fields.Boolean('Line Add')
     worksheet_id = fields.Integer('WorkSheet Id')
     expense_id = fields.One2many('hr.expense', 'expense_id_worksheet_line', string='Hr Expense')
@@ -167,7 +168,7 @@ class WorksheetTemplateLine(models.Model):
     def action_to_create_expense_extra_minutes(self):
 
         pro_id = False
-        get_pro_id = self.env['product.product'].search([('name', '=', 'Extra minutes')])
+        get_pro_id = self.env['product.product'].search([('name', '=', 'Excess Work Minutes')])
         if get_pro_id:
             pro_id = get_pro_id.id
 
@@ -217,6 +218,38 @@ class WorksheetTemplateLine(models.Model):
             'domain': '[]',
             'context': {
                 'product_val': 'transport',
+                'default_employee_id': self.select_user.employee_id.id,
+                'default_employee': self.select_user.employee_id.id,
+                'default_product_id': pro_id,
+                'default_expense_id_worksheet_line': self.id,
+                'default_task_id_rec': self.project_task_id.id,
+
+            },
+            'flags': {'form': {'action_buttons': False}}
+
+        }
+
+    def action_to_create_expense_other(self):
+
+        pro_id = False
+        # get_pro_id = self.env['product.product'].search([('name', '=', 'Other')])
+        # if get_pro_id:
+        #     pro_id = get_pro_id.id
+
+        return {
+            'name': _('EXPENSE view'),
+            'view_mode': 'form',
+            'view_id': False,
+            'edit': False,
+            'view_type': 'form',
+            'res_model': 'hr.expense',
+            'res_id': False,
+            'type': 'ir.actions.act_window',
+            'nodestroy': True,
+            'target': 'current',
+            'domain': '[]',
+            'context': {
+                'product_val': 'other',
                 'default_employee_id': self.select_user.employee_id.id,
                 'default_employee': self.select_user.employee_id.id,
                 'default_product_id': pro_id,

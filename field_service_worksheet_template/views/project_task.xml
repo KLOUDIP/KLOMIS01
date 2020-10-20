@@ -19,6 +19,7 @@
                             <field name="extra" invisible="1"/>
                             <field name="transport" invisible="1"/>
                             <field name="beverage" invisible="1"/>
+                            <field name="other" invisible="1"/>
                             <button type="object" class="btn btn-primary" string='UPDATE' name="action_fsm_worksheet_template"
                                     attrs="{'invisible': ['|', ('template_id', '=', False), ('done_mark', '=', True)]}"/>
 
@@ -39,6 +40,9 @@
 
                             <button type="object" class="btn btn-primary" string='Extra Minutes' name="action_to_create_expense_extra_minutes"
                                     attrs="{'invisible': ['|', ('template_id', '=', False), ('extra', '!=', False)]}"/>
+
+                            <button type="object" class="btn btn-primary" string='Other' name="action_to_create_expense_other"
+                                    attrs="{'invisible': ['|', ('template_id', '=', False), ('other', '!=', False)]}"/>
                         </tree>
                     </field>
 

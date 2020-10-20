@@ -26,6 +26,16 @@ class Expenses(models.Model):
                 'transport': True,
             })
 
+        if get_context == 'extra':
+            task_line_id.write({
+                'extra': True,
+            })
+
+        if get_context == 'other':
+            task_line_id.write({
+                'other': True,
+            })
+
         if line_id:
             emp = self._context['employee']
             res.write({
