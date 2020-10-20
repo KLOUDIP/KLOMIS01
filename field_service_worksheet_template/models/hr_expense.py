@@ -12,7 +12,12 @@ class Expenses(models.Model):
         res = super(Expenses, self).create(vals)
         line_id = self.env.context.get('active_id')
         task_line_id = self.env['worksheet.template.line'].search([('id', '=', line_id)])
-        get_context = self._context['product_val']
+
+        if 'product_val' in self._context:
+            get_context = self._context['product_val']
+        else:
+            get_context = False
+
         if get_context == 'food':
             task_line_id.write({
                 'food': True,
@@ -29,6 +34,12 @@ class Expenses(models.Model):
         if get_context == 'extra':
             task_line_id.write({
                 'extra': True,
+            })
+
+
+        if get_context == 'other':
+            task_line_id.write({
+                'other': True,
             })
 
         if line_id:
