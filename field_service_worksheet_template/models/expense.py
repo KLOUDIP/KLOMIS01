@@ -35,7 +35,6 @@ class Expenses(models.Model):
             task_line_id.write({
                 'other': True,
             })
-
         if line_id:
             emp = self._context['employee']
             res.write({

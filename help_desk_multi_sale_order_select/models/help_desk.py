@@ -5,6 +5,7 @@ import re
 class HelpDeskSale(models.Model):
     _inherit = 'helpdesk.ticket'
 
+
     sale_order_ids = fields.Many2many('sale.order', string='Sales Order')
     helpdesk_ticket_ids_cou = fields.Integer(compute='_compute_ticket_ids')
     count = fields.Boolean(Default=False)
