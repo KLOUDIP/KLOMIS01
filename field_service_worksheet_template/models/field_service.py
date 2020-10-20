@@ -105,7 +105,7 @@ class WorksheetTemplateLine(models.Model):
 
     def action_to_create_expense_food(self):
         pro_id = False
-        get_pro_id = self.env['product.product'].search([('name', '=', 'Food')])
+        get_pro_id = self.env['product.product'].search([('name', '=', 'Meal Package')])
         if get_pro_id:
             pro_id = get_pro_id.id
         return {
@@ -136,7 +136,7 @@ class WorksheetTemplateLine(models.Model):
     def action_to_create_expense_beverage(self):
 
         pro_id = False
-        get_pro_id = self.env['product.product'].search([('name', '=', 'Lodging')])
+        get_pro_id = self.env['product.product'].search([('name', '=', 'Night Out Package')])
         if get_pro_id:
             pro_id = get_pro_id.id
 
@@ -200,7 +200,7 @@ class WorksheetTemplateLine(models.Model):
     def action_to_create_expense_transport(self):
 
         pro_id = False
-        get_pro_id = self.env['product.product'].search([('name', '=', 'Transport')])
+        get_pro_id = self.env['product.product'].search([('name', '=', 'Transport - Private Motorbike')])
         if get_pro_id:
             pro_id = get_pro_id.id
 
