@@ -14,8 +14,8 @@
                         <group string="Details">
                             <group>
                                 <field name="select_user"/>
-                                <field name="fleet_id"/>
                                 <field name="template_id"/>
+                                <field name="fleet_id"/>
                                 <field name="done_mark"/>
                                 <field name="expense_id"/>
                                  <button type="object" class="btn btn-primary" string='Show Worksheet' name="action_form_worksheet_template"
@@ -34,8 +34,8 @@
                 <tree string="Status">
                     <field name="name" placeholder="Name"/>
                     <field name="select_user"/>
-                    <field name="fleet_id"/>
                     <field name="template_id"/>
+                    <field name="fleet_id"/>
                     <field name="expense_id"/>
                     <field name="done_mark"/>
                 </tree>
