@@ -12,7 +12,7 @@ class ProjectTaskLine(models.Model):
     count = fields.Boolean()
 
     def _compute_ticket_ids(self):
-        ids = self.env['helpdesk.ticket'].search([('help_desk_ticket_id', '=', self.id)])
+        ids = self.env['helpdesk.ticket'].sudo().search([('help_desk_ticket_id', '=', self.id)])
         if ids:
             self.helpdesk_ticket_ids_cou = len(ids)
             self.count = True

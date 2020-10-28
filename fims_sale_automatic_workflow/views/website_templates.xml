@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="payment_confirmation_status" inherit_id="website_sale.payment_confirmation_status">
+    	<xpath expr="//div/div[@class='card-header']" position="replace">
+    		<div class="card-header">
+                <div t-att-class="'card-body %s' % (
+                    (payment_tx_id.state == 'pending' and 'bg-info-light') or
+                    (payment_tx_id.state == 'done' and 'bg-success-light') or
+                    (payment_tx_id.state == 'authorized' and 'bg-success-light') or
+                    'bg-danger-light')">
+                    <t t-if="order.get_parameter_value() == 'conf_quo'">
+                    	<P>Confirmed, Your online payment has been successfully processed. But your order is not validated yet.</P>
+                    </t>
+                    
+                    <t t-if="order.get_parameter_value() == 'conf_quo_and_inv'">
+                    	<P>Invoiced, Your online payment has been successfully Invoiced. But your order is not validated yet.</P>
+                    </t>
+                    
+                    <t t-if="order.get_parameter_value() == 'conf_quo_and_validate_inv'">
+                    	<P>Validated, Your online payment has been successfully processed. also your order is validated.</P>
+                    </t>
+                    
+                    <t t-if="order.get_parameter_value() == 'conf_quo_inv_payment'">
+                    	<P>Payment Done, Your  online payment has been successfully done.</P>
+                    </t>
+                </div>
+            </div>
+    	</xpath>
+    </template>
+</odoo>

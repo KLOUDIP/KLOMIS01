@@ -4,8 +4,8 @@ from odoo import models, fields, api, _
 class Expenses(models.Model):
     _inherit = 'hr.expense'
 
-    expense_id_worksheet_line = fields.Many2one('worksheet.template.line', 'Worksheet Id')
-    task_id_rec = fields.Many2one('project.task', 'Task Id')
+    expense_id_worksheet_line = fields.Many2one('worksheet.template.line', string='Worksheet Id')
+    task_id_rec = fields.Many2one('project.task', string='Task Id')
 
     @api.model
     def create(self, vals):

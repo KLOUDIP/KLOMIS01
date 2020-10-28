@@ -10,6 +10,7 @@ class WorksheetTemplateLine(models.Model):
     name = fields.Char('Name')
     template_id = fields.Many2one('project.worksheet.template', string='Template')
     select_user = fields.Many2one('res.users', string='Assigned to', required=True)
+    fleet_id = fields.Many2one('fleet.vehicle', string='Fleet Code', required=True)
     done_mark = fields.Boolean('Mark as Done')
     select_vals = fields.Boolean('Select')
     food = fields.Boolean('Mark as Done')
@@ -23,11 +24,11 @@ class WorksheetTemplateLine(models.Model):
     allow_worksheets = fields.Boolean(default=False)
     fsm_is_sent = fields.Boolean('Is Worksheet sent', readonly=True)
     customer_signature = fields.Binary('Signature', help='Signature received through the portal.', copy=False,
-                                        attachment=True)
+                                       attachment=True)
     customer_signed_by = fields.Char('Signed By', help='Name of the person that signed the task.', copy=False)
 
     technician_signature = fields.Binary('Signature', help='Signature received through the portal.', copy=False,
-                                       attachment=True)
+                                         attachment=True)
     technician_signed_by = fields.Char('Signed By', help='Name of the person that signed the task.', copy=False)
 
     @api.onchange('template_id')
@@ -298,15 +299,11 @@ class WorksheetTemplateLine(models.Model):
             lang = template._render_template(template.lang, 'worksheet.template.line', self.ids[0])
         ctx = {
             'default_model': 'worksheet.template.line',
-            'default_res_id': self.ids[0],
+            'default_res_id': self.id,
             'default_use_template': bool(template_id),
             'default_template_id': template_id,
-            'default_composition_mode': 'comment',
-            'mark_so_as_sent': True,
-            'custom_layout': "mail.mail_notification_paynow",
-            'proforma': self.env.context.get('proforma', False),
             'force_email': True,
-            # 'model_description': self.project_task_id.with_context(lang=lang).type_name,
+            'fsm_mark_as_sent': True,
         }
         return {
             'type': 'ir.actions.act_window',

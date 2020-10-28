@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="payment_acquirer_payhere" model="payment.acquirer">
+            <field name="name">PayHere</field>
+            <field name="provider">payhere_nisus</field>
+            <field name="company_id" ref="base.main_company"/>
+            <field name="view_template_id" ref="payhere_acquirer_button"/>
+            <field name="image_128" type="base64" file="payment_payhere_nisus/static/src/img/payhere_icon.png"/>
+            <field name="pre_msg"><![CDATA[<p>You will be redirected to the Payhere website after clicking on the payment button.</p>]]></field>
+            <field name="payhere_merchant_number">dummy</field>
+        </record>
+    </data>
+</odoo>
