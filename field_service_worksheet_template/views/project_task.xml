@@ -5,7 +5,6 @@
             <field name="model">project.task</field>
             <field name="inherit_id" ref="industry_fsm_report.project_task_view_form_inherit"/>
             <field name="arch" type="xml">
-
                 <field name='description' position="before">
                     <field name="worksheet_template_lines">
                         <tree editable="bottom">
@@ -35,7 +34,7 @@
                             <button type="object" class="btn btn-primary" string='FOOD' name="action_to_create_expense_food"
                                     attrs="{'invisible': ['|', ('template_id', '=', False), ('food', '!=', False)]}"/>
 
-                            <button type="object" class="btn btn-primary" string='Lod' name="action_to_create_expense_beverage"
+                            <button type="object" class="btn btn-primary" string='Lodg' name="action_to_create_expense_beverage"
                                     attrs="{'invisible': ['|', ('template_id', '=', False), ('beverage', '!=', False)]}"/>
 
                             <button type="object" class="btn btn-primary" string='Trans' name="action_to_create_expense_transport"
@@ -46,10 +45,8 @@
 
                             <button type="object" class="btn btn-primary" string='Oth' name="action_to_create_expense_other"
                                     attrs="{'invisible': ['|', ('template_id', '=', False), ('other', '!=', False)]}"/>
-
                         </tree>
                     </field>
-
                 </field>
 
                 <xpath expr="//button[@name='action_fsm_create_invoice'][2]" position="after">
@@ -58,6 +55,10 @@
 
                     <button class="btn btn-primary" name="action_create_new_task" type="object" string="Create New Task"
                             attrs="{'invisible': [('fsm_done', '=', True)]}"/>
+                </xpath>
+
+                <xpath expr="//button[@name='action_fsm_create_quotation']" position="replace">
+                    <button class="btn-secondary" name="action_fsm_create_quotation" type="object" string="New Quotation" attrs="{'invisible': [('allow_quotations', '=', False)]}" groups="sales_team.group_sale_salesman"/>
                 </xpath>
 
                 <xpath expr="//button[@name='action_fsm_worksheet']" position="replace">
@@ -107,6 +108,9 @@
             <field name="model">project.task</field>
             <field name="inherit_id" ref="industry_fsm.project_task_view_form"/>
             <field name="arch" type="xml">
+                <xpath expr="(//field[@name='company_id'])[2]" position="after">
+                    <field name="tech_team_member_id"/>
+                </xpath>
                 <xpath expr="//button[@name='action_view_ticket']" position="replace">
                     <button
                             string="Intervention ticket"
