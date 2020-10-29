@@ -9,6 +9,7 @@ class ProjectTaskLine(models.Model):
     mark_as_done_rec = fields.Boolean()
     helpdesk_ticket_ids_cou = fields.Integer(compute='_compute_ticket_ids')
     related_task = fields.Many2one('project.task')
+    tech_team_member_id = fields.Many2one("res.users", "TECH Team Member")
     count = fields.Boolean()
 
     def _compute_ticket_ids(self):

@@ -38,12 +38,12 @@
                                 </div>
                             </li>
 
-                            <li t-if="sheet.project_task_id.user_id" class="list-group-item flex-grow-1">
+                            <li t-if="sheet.project_task_id.tech_team_member_id" class="list-group-item flex-grow-1">
                                 <div class="small mb-1"><strong class="text-muted">Contact person</strong></div>
                                 <div class="row flex-nowrap">
                                     <div class="col pl-0" style="min-width: 150px">
-                                        <img t-att-src="'/web/image?model=res.users&amp;id='+str(sheet.project_task_id.user_id.id)+'&amp;field=image_128'" alt="contact avatar" class="rounded-circle mr-2 float-left o_portal_contact_img" />
-                                        <span t-field="sheet.project_task_id.user_id" t-options='{"widget": "contact", "fields": ["name", "phone"], "no_marker": True}'/>
+                                        <img t-att-src="'/web/image?model=res.users&amp;id='+str(sheet.project_task_id.tech_team_member_id.id)+'&amp;field=image_128'" alt="contact avatar" class="rounded-circle mr-2 float-left o_portal_contact_img" />
+                                        <span t-field="sheet.project_task_id.tech_team_member_id" t-options='{"widget": "contact", "fields": ["name", "phone"], "no_marker": True}'/>
                                     </div>
                                 </div>
                             </li>
@@ -96,7 +96,7 @@
                                     </p>
                                     <t t-call="portal.signature_form">
                                         <t t-set="call_url" t-value="sheet.get_portal_url(suffix='/worksheet/technician_sign/%s' % source)"/>
-                                        <t t-set="default_name" t-value="sheet.select_user.name"/>
+                                        <t t-set="default_name" t-value="sheet.project_task_id.tech_team_member_id.name"/>
                                         <t t-set="send_label" t-value="'Sign'"/>
                                     </t>
                                 </main>
