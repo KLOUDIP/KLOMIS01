@@ -26,7 +26,7 @@
                                     <i class="fa fa-check mr-2"/>Customer Sign
                                 </a>
                                 <a t-if="sheet.technician_has_to_be_signed()" role="button" class="btn btn-primary m-3" data-toggle="modal" data-target="#tmodalaccept" href="#">
-                                    <i class="fa fa-check mr-2"/>Technician Sign
+                                    <i class="fa fa-check mr-2"/>TECH Team Signed
                                 </a>
                                 <div class="o_download_pdf btn-toolbar flex-sm-nowrap">
                                     <div class="btn-group flex-grow-1 mr-1 mb-1">
