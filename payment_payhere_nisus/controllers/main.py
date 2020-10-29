@@ -24,11 +24,19 @@ class PayHereController(http.Controller):
         """ Extract the return URL from the data coming from payhere. """
         return_url = post.pop('return_url', '')
         if not return_url:
-            # website_sale_mod = request.env['ir.module.module'].sudo().search([('name', '=', 'website_sale')])
-            # if website_sale_mod.state == 'installed':
-            #     return_url = '/shop/payment/validate/'
-            # else:
-            return_url = '/payment/process'
+            # Finding the payment is from invoice or website
+            invoice_name = post['order_id'].split('-')[0]
+            account_move = request.env['account.move'].sudo().search([('name', '=', invoice_name)], limit=1)
+            # When website payments, 'post' will pass data to sale order
+            # sale_order = request.env['sale.order'].sudo().search([('name', '=', invoice_name)], limit=1)
+            if account_move:
+                return_url = '/payment/process'
+            else:
+                website_sale_mod = request.env['ir.module.module'].sudo().search([('name', '=', 'website_sale')])
+                if website_sale_mod.state == 'installed':
+                    return_url = '/shop/payment/validate/'
+                else:
+                    return_url = '/payment/process'
         return return_url
 
     def payhere_validate_data(self, **post):
