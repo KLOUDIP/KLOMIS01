@@ -125,6 +125,26 @@
                             groups="helpdesk.group_helpdesk_user"
                             help="Ticket from this task"/>
                 </xpath>
+                <xpath expr="(//button[@name='action_fsm_validate'])[1]" position="replace">
+                    <button
+                            class="btn:primary"
+                            name="action_fsm_validate"
+                            type="object"
+                            string="Mark as done"
+                            attrs="{'invisible': ['&amp;', '|',  ('allow_material', '=', True), '|', ('allow_timesheets', '=', True), ('allow_quotations', '=', False), '|', '|', '|', '|', '|', ('timesheet_timer_start', '!=', False), ('fsm_done', '=', True), '&amp;', ('allow_timesheets', '=', True), ('total_hours_spent', '=', 0), '&amp;', ('allow_material', '=', True), ('material_line_product_count', '=', 0), '&amp;', ('allow_timesheets', '=', False), ('allow_material', '=', False)]}"
+                            groups="field_service_worksheet_template_security.group_fsm_coordinator,industry_fsm.group_fsm_manager"
+                    />
+                </xpath>
+                <xpath expr="(//button[@name='action_fsm_validate'])[1]" position="replace">
+                    <button
+                            class="btn:secondary"
+                            name="action_fsm_validate"
+                            type="object"
+                            string="Mark as done"
+                            attrs="{'invisible': ['|', '|', '|','|', '|', '|', ('timesheet_timer_start', '!=', False), ('fsm_done', '=', True), '&amp;', ('allow_timesheets', '=', False), ('total_hours_spent', '=', 0), '&amp;', ('allow_material', '=', False), ('material_line_product_count', '=', 0), '&amp;', ('total_hours_spent', '!=', 0), ('material_line_product_count', '!=', 0),'&amp;', ('total_hours_spent', '=', 0), ('material_line_product_count', '=', 0)]}"
+                            groups="field_service_worksheet_template_security.group_fsm_coordinator,industry_fsm.group_fsm_manager"
+                    />
+                </xpath>
             </field>
         </record>
 
