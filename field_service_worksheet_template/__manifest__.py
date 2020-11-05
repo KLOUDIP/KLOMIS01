@@ -21,6 +21,7 @@
         'wizard/select_helpdesk.xml',
         'wizard/project_task.xml',
         'security/ir.model.access.csv',
+        'security/field_service_worksheet_template_security.xml',
     ],
     'depends': ['project', 'industry_fsm_report','web_studio', 'industry_fsm', 'hr_expense', 'helpdesk'],
     'installable': True,
