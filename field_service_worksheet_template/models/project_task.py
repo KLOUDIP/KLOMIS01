@@ -11,6 +11,14 @@ class ProjectTaskLine(models.Model):
     related_task = fields.Many2one('project.task')
     tech_team_member_id = fields.Many2one("res.users", "TECH Team Member")
     count = fields.Boolean()
+    accessible = fields.Boolean(compute='_compute_cordinator_group')
+
+    def _compute_cordinator_group(self):
+        for i in self:
+            if self.env.user.has_group('field_service_worksheet_template_security.group_fsm_coordinator,industry_fsm.group_fsm_manager'):
+                i.accessible = True
+            else:
+                i.accessible = False
 
     def _compute_ticket_ids(self):
         ids = self.env['helpdesk.ticket'].sudo().search([('help_desk_ticket_id', '=', self.id)])
