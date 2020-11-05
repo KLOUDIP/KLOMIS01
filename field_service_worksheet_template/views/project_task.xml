@@ -111,6 +111,9 @@
                 <xpath expr="(//field[@name='company_id'])[2]" position="after">
                     <field name="tech_team_member_id"/>
                 </xpath>
+                <xpath expr="//field[@name='project_id']" position="replace">
+                    <field name="project_id" domain="[('is_fsm', '=', True)]" required="True" options="{'no_create': True, 'no_edit': True, 'no_open': 'True'}" />
+                </xpath>
                 <xpath expr="//button[@name='action_view_ticket']" position="replace">
                     <button
                             string="Intervention ticket"
