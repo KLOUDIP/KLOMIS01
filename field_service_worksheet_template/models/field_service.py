@@ -70,7 +70,7 @@ class WorksheetTemplateLine(models.Model):
             'context': {
                 **context,
                 'edit': True,
-                'default_x_task_id': self.id,
+                # 'default_x_task_id': self.id,
                 'default_x_studio_line_id': get_line_id,
                 'form_view_initial_mode': 'edit',
             },

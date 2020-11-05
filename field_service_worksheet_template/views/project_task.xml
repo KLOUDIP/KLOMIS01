@@ -51,10 +51,10 @@
 
                 <xpath expr="//button[@name='action_fsm_create_invoice'][2]" position="after">
                     <button class="btn btn-primary" name="action_task_temp" type="object" string="HelpDesk Ticket"
-                            attrs="{'invisible': [('fsm_done', '=', True)]}"/>
+                            attrs="{'invisible': [('fsm_done', '=', True)]}" groups="field_service_worksheet_template_security.group_fsm_coordinator,industry_fsm.group_fsm_manager"/>
 
                     <button class="btn btn-primary" name="action_create_new_task" type="object" string="Create New Task"
-                            attrs="{'invisible': [('fsm_done', '=', True)]}"/>
+                            attrs="{'invisible': [('fsm_done', '=', True)]}" groups="field_service_worksheet_template_security.group_fsm_coordinator,industry_fsm.group_fsm_manager"/>
                 </xpath>
 
                 <xpath expr="//button[@name='action_fsm_create_quotation']" position="replace">
