@@ -32,29 +32,29 @@
                                     attrs="{'invisible': [('template_id', '=', False)]}"/>
 
                             <button type="object" class="btn btn-primary" string='FOOD' name="action_to_create_expense_food"
-                                    attrs="{'invisible': ['|', ('template_id', '=', False), ('food', '!=', False)]}" groups="field_service_worksheet_template.group_fsm_coordinator,industry_fsm.group_fsm_manager"/>
+                                    attrs="{'invisible': ['|', ('template_id', '=', False), ('food', '!=', False)]}" groups="field_service_worksheet_template.group_coordinator_fsm,industry_fsm.group_fsm_manager"/>
 
                             <button type="object" class="btn btn-primary" string='Lodg' name="action_to_create_expense_beverage"
-                                    attrs="{'invisible': ['|', ('template_id', '=', False), ('beverage', '!=', False)]}" groups="field_service_worksheet_template.group_fsm_coordinator,industry_fsm.group_fsm_manager"/>
+                                    attrs="{'invisible': ['|', ('template_id', '=', False), ('beverage', '!=', False)]}" groups="field_service_worksheet_template.group_coordinator_fsm,industry_fsm.group_fsm_manager"/>
 
                             <button type="object" class="btn btn-primary" string='Trans' name="action_to_create_expense_transport"
-                                    attrs="{'invisible': ['|', ('template_id', '=', False), ('transport', '!=', False)]}" groups="field_service_worksheet_template.group_fsm_coordinator,industry_fsm.group_fsm_manager"/>
+                                    attrs="{'invisible': ['|', ('template_id', '=', False), ('transport', '!=', False)]}" groups="field_service_worksheet_template.group_coordinator_fsm,industry_fsm.group_fsm_manager"/>
 
                             <button type="object" class="btn btn-primary" string='Ext Min' name="action_to_create_expense_extra_minutes"
-                                    attrs="{'invisible': ['|', ('template_id', '=', False), ('extra', '!=', False)]}" groups="field_service_worksheet_template.group_fsm_coordinator,industry_fsm.group_fsm_manager"/>
+                                    attrs="{'invisible': ['|', ('template_id', '=', False), ('extra', '!=', False)]}" groups="field_service_worksheet_template.group_coordinator_fsm,industry_fsm.group_fsm_manager"/>
 
                             <button type="object" class="btn btn-primary" string='Oth' name="action_to_create_expense_other"
-                                    attrs="{'invisible': ['|', ('template_id', '=', False), ('other', '!=', False)]}" groups="field_service_worksheet_template.group_fsm_coordinator,industry_fsm.group_fsm_manager"/>
+                                    attrs="{'invisible': ['|', ('template_id', '=', False), ('other', '!=', False)]}" groups="field_service_worksheet_template.group_coordinator_fsm,industry_fsm.group_fsm_manager"/>
                         </tree>
                     </field>
                 </field>
 
                 <xpath expr="//button[@name='action_fsm_create_invoice'][2]" position="after">
                     <button class="btn btn-primary" name="action_task_temp" type="object" string="HelpDesk Ticket"
-                            attrs="{'invisible': [('fsm_done', '=', True)]}" groups="field_service_worksheet_template.group_fsm_coordinator,industry_fsm.group_fsm_manager"/>
+                            attrs="{'invisible': [('fsm_done', '=', True)]}" groups="field_service_worksheet_template.group_coordinator_fsm,industry_fsm.group_fsm_manager"/>
 
                     <button class="btn btn-primary" name="action_create_new_task" type="object" string="Create New Task"
-                            attrs="{'invisible': [('fsm_done', '=', True)]}" groups="field_service_worksheet_template.group_fsm_coordinator,industry_fsm.group_fsm_manager"/>
+                            attrs="{'invisible': [('fsm_done', '=', True)]}" groups="field_service_worksheet_template.group_coordinator_fsm,industry_fsm.group_fsm_manager"/>
                 </xpath>
 
                 <xpath expr="//button[@name='action_fsm_create_quotation']" position="replace">
