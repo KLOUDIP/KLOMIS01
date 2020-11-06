@@ -159,12 +159,6 @@
                 <xpath expr="(//field[@name='worksheet_template_id'])[2]" position="attributes">
                     <attribute name="invisible">1</attribute>
                 </xpath>
-                <xpath expr="(//attribute[@name='attrs'])[1]" position="replace">
-                    <attribute name="attrs">{'invisible': [('mark_as_done_rec', '=', False),]}</attribute>
-                </xpath>
-                <xpath expr="(//attribute[@name='attrs'])[2]" position="replace">
-                    <attribute name="attrs">{'invisible': [('mark_as_done_rec', '=', True),]}</attribute>
-                </xpath>
             </field>
         </record>
 
