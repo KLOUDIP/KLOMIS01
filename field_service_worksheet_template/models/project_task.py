@@ -15,7 +15,7 @@ class ProjectTaskLine(models.Model):
 
     def _compute_cordinator_group(self):
         for i in self:
-            if i.env.user.has_group('field_service_worksheet_template_security.group_coordinator_fsm') or i.env.user.has_group('industry_fsm.group_fsm_manager'):
+            if i.env.user.has_group('field_service_worksheet_template.group_coordinator_fsm') or i.env.user.has_group('industry_fsm.group_fsm_manager'):
                 i.accessible = True
             else:
                 i.accessible = False
