@@ -54,15 +54,15 @@ class WorksheetTemplateLine(models.Model):
 
         action = template_id.action_id.read()[0]
         if line_add:
-            worksheet = self.env[template_id.model_id.model].search([('x_studio_line_id', '=', get_line_id)])
+            worksheet = self.env[template_id.model_id.model].sudo().search([('x_studio_line_id', '=', get_line_id)])
         else:
             if len(match) == 1:
-                worksheet = self.env[template_id.model_id.model].search([('x_studio_line_id', '=', get_line_id)])
+                worksheet = self.env[template_id.model_id.model].sudo().search([('x_studio_line_id', '=', get_line_id)])
             else:
                 if len(match) != len(set(match)):
-                    worksheet = self.env[template_id.model_id.model].search([('x_studio_line_id', '=', get_line_id)])
+                    worksheet = self.env[template_id.model_id.model].sudo().search([('x_studio_line_id', '=', get_line_id)])
                 else:
-                    worksheet = self.env[template_id.model_id.model].search([('x_task_id', '=', 'not')])
+                    worksheet = self.env[template_id.model_id.model].sudo().search([('x_task_id', '=', 'not')])
         context = literal_eval(action.get('context', '{}'))
         action.update({
             'res_id': worksheet.id if worksheet else False,
@@ -89,13 +89,13 @@ class WorksheetTemplateLine(models.Model):
         worksheet_id = self.worksheet_id
         action = template_id.action_id.read()[0]
         if get_line_id:
-            worksheet = self.env[template_id.model_id.model].search([('x_studio_line_id', '=', get_line_id)])
+            worksheet = self.env[template_id.model_id.model].sudo().search([('x_studio_line_id', '=', get_line_id)])
 
             if worksheet:
                 action = template_id.action_id.read()[0]
                 context = literal_eval(action.get('context', '{}'))
                 action.update({
-                    'res_id': worksheet.id,
+                    'res_id': worksheet.sudo().id,
                     'views': [(False, 'form')],
                 })
 
