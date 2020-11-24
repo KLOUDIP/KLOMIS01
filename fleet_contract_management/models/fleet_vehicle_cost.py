@@ -12,6 +12,7 @@ class FleetVehicleLogContract(models.Model):
         partners = []
         if self.purchaser_id:
             partners = self.purchaser_id.parent_id.child_ids.ids if self.purchaser_id.parent_id else self.purchaser_id.child_ids.ids
+            
         return {'domain': {'partner_id': [('id', 'in', partners)]}}
 
 
