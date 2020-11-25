@@ -5,8 +5,8 @@ class ResPartner(models.Model):
     _inherit = 'res.partner'
 
     contract_ids = fields.One2many('fleet.vehicle.log.contract', 'partner_id', string="Contract")
-    contract_count = fields.Integer(string="Contracts", compute='_compute_contract_count')
-    active_contract_counts = fields.Integer(string="Active Fleet", compute='_compute_active_contract_count')
+    contract_count = fields.Integer(string="Contracts", compute='_compute_contract_count', store=False)
+    active_contract_counts = fields.Integer(string="Active Fleet", compute='_compute_active_contract_count', store=False)
 
     @api.depends('contract_ids')
     def _compute_contract_count(self):

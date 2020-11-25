@@ -6,7 +6,8 @@
         <field name="inherit_id" ref="fleet.fleet_vehicle_log_contract_view_form"/>
         <field name="arch" type="xml">
             <xpath expr="(//field[@name='date'])[1]" position="before">
-                <field name="partner_id" />
+                <field name="driver_company_id" invisible="1"/>
+                <field name="partner_id" domain="[('parent_id', '=', driver_company_id)]"/>
                 <field name="is_activated" />
             </xpath>
         </field>
