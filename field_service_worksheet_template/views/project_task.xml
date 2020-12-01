@@ -112,7 +112,7 @@
                     <field name="tech_team_member_id"/>
                     <field name="extra_minutes" invisible="1"/>
                     <button type="object" class="btn btn-primary" string='EXT MIN' name="get_extra_minutes_expenses"
-                                    attrs="{'invisible': [('extra_minutes', '!=', False)]}" groups="field_service_worksheet_template.group_coordinator_fsm,industry_fsm.group_fsm_manager"/>
+                                    attrs="{'invisible': ['|', ('tech_team_member_id', '=', False), ('extra_minutes', '!=', False)]}" groups="field_service_worksheet_template.group_coordinator_fsm,industry_fsm.group_fsm_manager"/>
                 </xpath>
                 <xpath expr="//field[@name='project_id']" position="replace">
                     <field name="project_id" domain="[('is_fsm', '=', True)]" required="True" options="{'no_create': True, 'no_edit': True, 'no_open': 'True'}" />

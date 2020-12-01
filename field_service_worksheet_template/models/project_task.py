@@ -133,9 +133,8 @@ class ProjectTaskLine(models.Model):
                 'default_employee_id': self.tech_team_member_id.employee_id.id,
                 'default_employee': self.tech_team_member_id.employee_id.id,
                 'default_product_id': pro_id,
-                # 'default_expense_id_worksheet_line': self.id,
+                'default_expense_id_worksheet_line': False,
                 'default_task_id_rec': self.id,
             },
             'flags': {'form': {'action_buttons': False}}
-
         }
