@@ -110,6 +110,7 @@
             <field name="arch" type="xml">
                 <xpath expr="(//field[@name='company_id'])[2]" position="after">
                     <field name="tech_team_member_id"/>
+                    <field name="extra_minutes" invisible="1"/>
                     <button type="object" class="btn btn-primary" string='EXT MIN' name="get_extra_minutes_expenses"
                                     attrs="{'invisible': [('extra_minutes', '!=', False)]}" groups="field_service_worksheet_template.group_coordinator_fsm,industry_fsm.group_fsm_manager"/>
                 </xpath>
