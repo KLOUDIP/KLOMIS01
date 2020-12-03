@@ -11,7 +11,7 @@
                             <field name="select_vals"/>
                             <field name="name" readonly="1" force_save="1"/>
                             <field name="template_id" string="Worksheet Template"/>
-                            <field name="fleet_id"/>
+                            <field name="fleet_id" context="{'get_license':True}"/>
                             <field name="select_user"/>
                             <field name="expense_id" invisible="1"/>
                             <field name="done_mark"/>

@@ -10,7 +10,7 @@ class WorksheetTemplateLine(models.Model):
     name = fields.Char('Name')
     template_id = fields.Many2one('project.worksheet.template', string='Template')
     select_user = fields.Many2one('res.users', string='Assigned to', required=True)
-    fleet_id = fields.Many2one('fleet.vehicle', string='Fleet Vehicle Number', required=True)
+    fleet_id = fields.Many2one('fleet.vehicle', string='Fleet Code', required=True)
     done_mark = fields.Boolean('Mark as Done')
     select_vals = fields.Boolean('Select')
     food = fields.Boolean('Mark as Done')
