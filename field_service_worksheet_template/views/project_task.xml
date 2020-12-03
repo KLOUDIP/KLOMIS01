@@ -25,25 +25,25 @@
                             <button type="object" class="btn btn-primary" string='UPDATE' name="action_fsm_worksheet_template"
                                     attrs="{'invisible': ['|', ('template_id', '=', False), ('done_mark', '=', True)]}"/>
 
-                            <button type="object" class="btn btn-primary" string='SIGN' name="action_preview_worksheet"
+                            <button type="object" class="btn btn-primary" string='SIG' name="action_preview_worksheet"
                                     attrs="{'invisible': [('template_id', '=', False)]}"/>
 
-                            <button type="object" class="btn btn-primary" string='SEND' name="action_worksheet_send"
+                            <button type="object" class="btn btn-primary" string='SND' name="action_worksheet_send"
                                     attrs="{'invisible': [('template_id', '=', False)]}"/>
 
-                            <button type="object" class="btn btn-primary" string='FOOD' name="action_to_create_expense_food"
+                            <button type="object" class="btn btn-primary" string='FD' name="action_to_create_expense_food"
                                     attrs="{'invisible': ['|', ('template_id', '=', False), ('food', '!=', False)]}" groups="field_service_worksheet_template.group_coordinator_fsm,industry_fsm.group_fsm_manager"/>
 
-                            <button type="object" class="btn btn-primary" string='Lodg' name="action_to_create_expense_beverage"
+                            <button type="object" class="btn btn-primary" string='LD' name="action_to_create_expense_beverage"
                                     attrs="{'invisible': ['|', ('template_id', '=', False), ('beverage', '!=', False)]}" groups="field_service_worksheet_template.group_coordinator_fsm,industry_fsm.group_fsm_manager"/>
 
-                            <button type="object" class="btn btn-primary" string='Trans' name="action_to_create_expense_transport"
+                            <button type="object" class="btn btn-primary" string='KM' name="action_to_create_expense_transport"
                                     attrs="{'invisible': ['|', ('template_id', '=', False), ('transport', '!=', False)]}" groups="field_service_worksheet_template.group_coordinator_fsm,industry_fsm.group_fsm_manager"/>
 
-                            <button type="object" class="btn btn-primary" string='Ext Min' name="action_to_create_expense_extra_minutes"
+                            <button type="object" class="btn btn-primary" string='EM' name="action_to_create_expense_extra_minutes"
                                     attrs="{'invisible': ['|', ('template_id', '=', False), ('extra', '!=', False)]}" groups="field_service_worksheet_template.group_coordinator_fsm,industry_fsm.group_fsm_manager"/>
 
-                            <button type="object" class="btn btn-primary" string='Oth' name="action_to_create_expense_other"
+                            <button type="object" class="btn btn-primary" string='OP' name="action_to_create_expense_other"
                                     attrs="{'invisible': ['|', ('template_id', '=', False), ('other', '!=', False)]}" groups="field_service_worksheet_template.group_coordinator_fsm,industry_fsm.group_fsm_manager"/>
                         </tree>
                     </field>
@@ -111,7 +111,7 @@
                 <xpath expr="(//field[@name='company_id'])[2]" position="after">
                     <field name="tech_team_member_id"/>
                     <field name="extra_minutes" invisible="1"/>
-                    <button type="object" class="btn btn-primary" string='EXT MIN' name="get_extra_minutes_expenses"
+                    <button type="object" class="btn btn-primary" string='EM' name="get_extra_minutes_expenses"
                                     attrs="{'invisible': ['|', ('tech_team_member_id', '=', False), ('extra_minutes', '!=', False)]}" groups="field_service_worksheet_template.group_coordinator_fsm,industry_fsm.group_fsm_manager"/>
                 </xpath>
                 <xpath expr="//field[@name='project_id']" position="replace">
