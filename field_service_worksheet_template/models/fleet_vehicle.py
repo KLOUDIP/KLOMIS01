@@ -8,9 +8,13 @@ class FleetVehicle(models.Model):
     def name_get(self):
         res = []
         for record in self:
-            if self.env.context.get('get_license'):
-                name = record.license_plate
-                res.append((record.id, name))
+            if self.env.context.get('params') is not None:
+                if self.env.context.get('params').get('model') == 'project.task':
+                    name = record.license_plate
+                    res.append((record.id, name))
+                else:
+                    name = record.name
+                    res.append((record.id, name))
             else:
                 name = record.name
                 res.append((record.id, name))
