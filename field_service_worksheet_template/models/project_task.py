@@ -12,6 +12,7 @@ class ProjectTaskLine(models.Model):
     tech_team_member_id = fields.Many2one("res.users", "TECH Team Member")
     count = fields.Boolean()
     accessible = fields.Boolean(compute='_compute_cordinator_group')
+    extra_minutes = fields.Boolean("Extra Minutes")
 
     def _compute_cordinator_group(self):
         for i in self:
@@ -108,3 +109,32 @@ class ProjectTaskLine(models.Model):
 
                     },
                 }
+
+    def get_extra_minutes_expenses(self):
+        pro_id = False
+        get_pro_id = self.env['product.product'].search([('name', '=', 'Excess Work Minutes')])
+        if get_pro_id:
+            pro_id = get_pro_id.id
+
+        return {
+            'name': _('EXPENSE view'),
+            'view_mode': 'form',
+            'view_id': False,
+            'edit': False,
+            'view_type': 'form',
+            'res_model': 'hr.expense',
+            'res_id': False,
+            'type': 'ir.actions.act_window',
+            'nodestroy': True,
+            'target': 'current',
+            'domain': '[]',
+            'context': {
+                'product_val': 'extra',
+                'default_employee_id': self.tech_team_member_id.employee_id.id,
+                'default_employee': self.tech_team_member_id.employee_id.id,
+                'default_product_id': pro_id,
+                'default_expense_id_worksheet_line': False,
+                'default_task_id_rec': self.id,
+            },
+            'flags': {'form': {'action_buttons': False}}
+        }
