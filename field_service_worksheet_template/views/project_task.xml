@@ -19,7 +19,7 @@
                             <button type="object" class="btn btn-primary" string="EM" name="get_extra_minutes_expenses" attrs="{'invisible': ['|', ('tech_team_member_id', '=', False), ('extra_minutes', '!=', False)]}" groups="field_service_worksheet_template.group_coordinator_fsm,industry_fsm.group_fsm_manager"/>
                         </group>
                     </group>
-                    <field name="worksheet_template_lines">
+                    <field name="worksheet_template_lines" context="{'get_license':True}">
                         <tree editable="bottom">
                             <field name="select_vals"/>
                             <field name="name" readonly="1" force_save="1"/>
