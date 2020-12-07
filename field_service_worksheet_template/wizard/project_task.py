@@ -30,7 +30,7 @@ class FreightWizard(models.TransientModel):
                     'worksheet_template_lines': [(0, 0, {
                         'template_id': rec.template_id.id,
                         'select_user': rec.select_user.id,
-
+                        'fleet_id': rec.fleet_id.id,
                     })],
                 })
                 rec.unlink()
