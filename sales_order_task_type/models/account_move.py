@@ -10,4 +10,4 @@ from odoo.tools import float_is_zero
 class AccountMove(models.Model):
     _inherit = 'account.move'
 
-    project_id = fields.Many2one("project.project", string="Task Type")
+    task_type_id = fields.Many2one("project.project", string="Task Type")

@@ -6,7 +6,7 @@
         <field name="inherit_id" ref="sale.view_order_form"/>
         <field name="arch" type="xml">
             <field name='date_order' position="after">
-                <field name="project_id" domain="[('is_fsm', '=', True)]"/>
+                <field name="task_type_id" domain="[('is_fsm', '=', True)]"/>
             </field>
         </field>
     </record>
