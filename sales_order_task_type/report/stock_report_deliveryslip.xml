@@ -1,12 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <template id="report_delivery_document_inherit_sale_stock" inherit_id="stock.report_delivery_document">
-        <xpath expr="//h2" position="before">
-            <div class="row justify-content-end" t-if="o.sudo().sale_id.client_order_ref">
-                <div class="col-4">
-                    <strong>Customer Reference:</strong>
-                    <p t-field="o.sudo().sale_id.client_order_ref"/>
-                </div>
+        <xpath expr="//div[@name='div_sched_date']" position="after">
+            <div t-if="o.project_id" class="col-auto" name="div_task_type">
+                <strong>Task Type:</strong>
+                <p t-field="o.project_id"/>
             </div>
         </xpath>
     </template>
