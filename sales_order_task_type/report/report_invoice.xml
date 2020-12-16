@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <template id="report_invoice_document_inherit_sale_stock" inherit_id="account.report_invoice_document">
-        <xpath expr="//div[@name='invoice_date']" position="after">
+        <xpath expr="//div[@name='origin']" position="after">
             <div t-if="o.task_type_id" class="col-auto" name="div_task_type">
                 <strong>Task Type:</strong>
                 <p t-field="o.task_type_id"/>
