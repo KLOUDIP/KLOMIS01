@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="comments_selection_view_tree" model="ir.ui.view">
+        <field name="name">Comments Selection</field>
+        <field name="model">comments.selection</field>
+        <field name="arch" type="xml">
+            <tree string="Comments Selection" editable="bottom">
+                <field name="name"/>
+                <field name="section"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="comments_selection_action" model="ir.actions.act_window">
+        <field name="name">Comments Selection</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">comments.selection</field>
+        <field name="view_mode">tree,form</field>
+        <field name="view_id" ref="comments_selection_view_tree"/>
+    </record>
+
+    <menuitem name="Comments Selection"
+              id="menu_comments_selection"
+              action="comments_selection_action"
+              parent="industry_fsm.fsm_menu_settings"
+              groups="industry_fsm.group_fsm_manager"/>
+</odoo>
