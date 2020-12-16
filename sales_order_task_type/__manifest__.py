@@ -12,6 +12,7 @@
         'views/stock_picking_views.xml',
         'views/account_invoice_view.xml',
         'report/stock_report_deliveryslip.xml',
+        'report/report_invoice.xml',
     ],
     'depends': ['sale', 'stock'],
 }
