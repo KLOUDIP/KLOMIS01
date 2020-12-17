@@ -10,4 +10,3 @@ class SaleOrder(models.Model):
         inv = super(SaleOrder, self)._prepare_invoice()
         inv.update({"task_type_id": self.task_type_id})
         return inv
-
