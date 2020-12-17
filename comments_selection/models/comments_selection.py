@@ -6,6 +6,6 @@ class CommentsSelection(models.Model):
 
     name = fields.Char(string="Comments")
     section = fields.Selection([
-        ('section_one', 'Section One'),
-        ('section_two', 'Section Two'),
-        ('section_three', 'Section Three')], string="Section")
+        ('main', 'WS Main Notes'),
+        ('fleet', 'WS Fleet Notes'),
+        ('product', 'WS Product Notes')], string="Standard Note")
