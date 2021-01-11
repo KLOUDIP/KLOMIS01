@@ -27,7 +27,7 @@ class FreightWizard(models.TransientModel):
         )
         if line_ids:
             for rec in line_ids:
-                worksheet = self.env['x_project_worksheet_template_3'].search([('x_studio_line_id', '=', rec.id)]).copy()
+                worksheet = self.env[rec.template_id.model_id.model].search([('x_studio_line_id', '=', rec.id)]).copy()
 
                 new_task.write({
                     'worksheet_template_lines': [(0, 0, {
