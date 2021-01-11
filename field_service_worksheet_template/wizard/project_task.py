@@ -15,6 +15,7 @@ class FreightWizard(models.TransientModel):
 
     def action_task_view(self):
         line_ids = self.current_task_tmpl_id.mapped('worksheet_template_lines').filtered(lambda x: x.select_vals == True)
+
         new_task = self.env['project.task'].create(
             {
                 'name': self.name,
@@ -26,13 +27,18 @@ class FreightWizard(models.TransientModel):
         )
         if line_ids:
             for rec in line_ids:
+                worksheet = self.env['x_project_worksheet_template_3'].search([('x_studio_line_id', '=', rec.id)]).copy()
+
                 new_task.write({
                     'worksheet_template_lines': [(0, 0, {
                         'template_id': rec.template_id.id,
                         'select_user': rec.select_user.id,
                         'fleet_id': rec.fleet_id.id,
+                        'name': worksheet.x_worksheet_no
                     })],
                 })
+                ln = new_task.worksheet_template_lines.filtered(lambda x: x.name == worksheet.x_worksheet_no)
+                worksheet.write({'x_studio_line_id': ln.id})
                 rec.unlink()
             return {
                 'type': 'ir.actions.act_window',

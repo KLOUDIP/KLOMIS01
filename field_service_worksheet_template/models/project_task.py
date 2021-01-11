@@ -1,11 +1,10 @@
 from odoo import models, fields, api, _
 from odoo.exceptions import UserError
 
-
 class ProjectTaskLine(models.Model):
     _inherit = 'project.task'
 
-    worksheet_template_lines = fields.One2many('worksheet.template.line', 'project_task_id', string='WorkSheet Lines')
+    worksheet_template_lines = fields.One2many('worksheet.template.line', 'project_task_id', string='WorkSheet Lines', copy=True)
     mark_as_done_rec = fields.Boolean()
     helpdesk_ticket_ids_cou = fields.Integer(compute='_compute_ticket_ids')
     related_task = fields.Many2one('project.task')
