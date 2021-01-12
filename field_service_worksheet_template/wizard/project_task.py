@@ -28,9 +28,10 @@ class FreightWizard(models.TransientModel):
         if line_ids:
             for rec in line_ids:
                 if self.env[rec.template_id.model_id.model].search([('x_studio_line_id', '=', rec.id)]).ids:
-                    worksheet = self.env[rec.template_id.model_id.model].search([('x_studio_line_id', '=', rec.id)])
+                    # worksheet = self.env[rec.template_id.model_id.model].search([('x_studio_line_id', '=', rec.id)])
                     # raise ValidationError(worksheet)
                     worksheet = self.env[rec.template_id.model_id.model].search([('x_studio_line_id', '=', rec.id)]).copy()
+                    raise ValidationError(worksheet)
                 else:
                     raise ValidationError(_('No related worksheet found'))
                 new_task.write({
