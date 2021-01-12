@@ -1,5 +1,5 @@
 from odoo import api, fields, models, _
-
+from odoo.exceptions import ValidationError
 
 class FreightWizard(models.TransientModel):
     _name = 'task.wizard'
@@ -27,8 +27,10 @@ class FreightWizard(models.TransientModel):
         )
         if line_ids:
             for rec in line_ids:
-                worksheet = self.env[rec.template_id.model_id.model].search([('x_studio_line_id', '=', rec.id)]).copy()
-
+                if self.env[rec.template_id.model_id.model].search([('x_studio_line_id', '=', rec.id)]).ids:
+                    worksheet = self.env[rec.template_id.model_id.model].search([('x_studio_line_id', '=', rec.id)])[0].copy()
+                else:
+                    raise ValidationError(_('No related worksheet found'))
                 new_task.write({
                     'worksheet_template_lines': [(0, 0, {
                         'template_id': rec.template_id.id,
