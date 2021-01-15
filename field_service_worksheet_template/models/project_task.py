@@ -1,11 +1,10 @@
 from odoo import models, fields, api, _
 from odoo.exceptions import UserError
 
-
 class ProjectTaskLine(models.Model):
     _inherit = 'project.task'
 
-    worksheet_template_lines = fields.One2many('worksheet.template.line', 'project_task_id', string='WorkSheet Lines')
+    worksheet_template_lines = fields.One2many('worksheet.template.line', 'project_task_id', string='WorkSheet Lines', copy=True)
     mark_as_done_rec = fields.Boolean()
     helpdesk_ticket_ids_cou = fields.Integer(compute='_compute_ticket_ids')
     related_task = fields.Many2one('project.task')
@@ -95,6 +94,9 @@ class ProjectTaskLine(models.Model):
                 raise UserError(_(
                     "You can not add mark as done worksheet(s) to create a new task."))
             else:
+                count = self.search_count([('name', 'like', self.name)])
+                if count == 0:
+                    count = ""
                 return {
                     'type': 'ir.actions.act_window',
                     'name': _('Create a Field Task'),
@@ -103,7 +105,7 @@ class ProjectTaskLine(models.Model):
                     'target': 'new',
                     'context': {
                         'product_val': 'transport',
-                        'default_name': self.name + '-' + '02',
+                        'default_name': self.name + '-' + str(count),
                         'default_partner_id': self.partner_id.id,
                         'fsm_task_ids': self.id,
 

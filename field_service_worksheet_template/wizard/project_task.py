@@ -1,5 +1,5 @@
 from odoo import api, fields, models, _
-
+from odoo.exceptions import ValidationError
 
 class FreightWizard(models.TransientModel):
     _name = 'task.wizard'
@@ -15,6 +15,7 @@ class FreightWizard(models.TransientModel):
 
     def action_task_view(self):
         line_ids = self.current_task_tmpl_id.mapped('worksheet_template_lines').filtered(lambda x: x.select_vals == True)
+
         new_task = self.env['project.task'].create(
             {
                 'name': self.name,
@@ -26,13 +27,23 @@ class FreightWizard(models.TransientModel):
         )
         if line_ids:
             for rec in line_ids:
+                if self.env[rec.template_id.model_id.model].search([('x_studio_line_id', '=', rec.id)]).ids:
+                    # worksheet = self.env[rec.template_id.model_id.model].search([('x_studio_line_id', '=', rec.id)])
+                    # raise ValidationError(worksheet)
+                    worksheet = self.env[rec.template_id.model_id.model].search([('x_studio_line_id', '=', rec.id)])
+                    # raise ValidationError(worksheet)
+                else:
+                    raise ValidationError(_('No related worksheet found'))
                 new_task.write({
                     'worksheet_template_lines': [(0, 0, {
                         'template_id': rec.template_id.id,
                         'select_user': rec.select_user.id,
                         'fleet_id': rec.fleet_id.id,
+                        'name': worksheet.x_worksheet_no
                     })],
                 })
+                ln = new_task.worksheet_template_lines.filtered(lambda x: x.name == worksheet.x_worksheet_no)
+                worksheet.write({'x_studio_line_id': ln.id, 'x_task_id': new_task.id})
                 rec.unlink()
             return {
                 'type': 'ir.actions.act_window',

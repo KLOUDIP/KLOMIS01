@@ -350,8 +350,9 @@ class WorksheetTemplateLine(models.Model):
 
     @api.model
     def create(self, vals):
-        if vals:
-            vals['name'] = self.env['ir.sequence'].next_by_code('worksheet.template.line', sequence_date=None) or _('New')
+        if 'name' in vals:
+            if vals['name'] == False:
+                vals['name'] = self.env['ir.sequence'].next_by_code('worksheet.template.line', sequence_date=None) or _('New')
         result = super(WorksheetTemplateLine, self).create(vals)
         return result
 
