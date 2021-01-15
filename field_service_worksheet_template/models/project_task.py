@@ -94,6 +94,9 @@ class ProjectTaskLine(models.Model):
                 raise UserError(_(
                     "You can not add mark as done worksheet(s) to create a new task."))
             else:
+                count = self.search_count([('name', 'like', self.name)])
+                if count == 0:
+                    count = ""
                 return {
                     'type': 'ir.actions.act_window',
                     'name': _('Create a Field Task'),
@@ -102,7 +105,7 @@ class ProjectTaskLine(models.Model):
                     'target': 'new',
                     'context': {
                         'product_val': 'transport',
-                        'default_name': self.name + '-' + '02',
+                        'default_name': self.name + '-' + str(count),
                         'default_partner_id': self.partner_id.id,
                         'fsm_task_ids': self.id,
 
