@@ -1,5 +1,10 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 product_configurator_config_line,Config Line,model_product_config_line,group_product_configurator,1,0,0,0
+
+
+product_configurator,Product Configurator,model_product_configurator,base.group_user,1,1,1,1
+
+
 product_configurator_config_image,Config Image,model_product_config_image,group_product_configurator,1,0,0,0
 product_configurator_config_step,Config Step,model_product_config_step,group_product_configurator,1,0,0,0
 product_configurator_config_step_line,Config Step Line,model_product_config_step_line,group_product_configurator,1,0,0,0

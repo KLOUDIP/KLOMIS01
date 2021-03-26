@@ -29,6 +29,22 @@ class ProductConfigStepLine(models.Model):
         return view_id
 
 
+class ProductTemplate(models.Model):
+    _inherit = "product.template"
+
+    website_tmpl_id = fields.Many2one(
+        string="Website Template",
+        comodel_name="ir.ui.view",
+        domain=lambda s: [
+            (
+                "inherit_id",
+                "=",
+                s.env.ref("website_product_configurator.config_form_base").id,
+            )
+        ],
+    )
+
+
 class ProductConfigSession(models.Model):
     _inherit = "product.config.session"
 

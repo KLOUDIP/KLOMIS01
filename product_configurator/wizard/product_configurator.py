@@ -574,7 +574,7 @@ class ProductConfigurator(models.TransientModel):
 
     @api.model
     def setup_modifiers(
-        self, node, field=None, context=None, in_tree_view=False
+            self, node, field=None, context=None, in_tree_view=False
     ):
         """ Processes node attributes and field descriptors to generate
         the ``modifiers`` node attribute and set it on the provided node.
@@ -598,13 +598,13 @@ class ProductConfigurator(models.TransientModel):
         modifiers = {}
         if field is not None:
             transfer_field_to_modifiers(field=field, modifiers=modifiers)
-        transfer_node_to_modifiers(
-            node=node,
-            modifiers=modifiers,
-            context=context,
-            in_tree_view=in_tree_view,
-        )
-        transfer_modifiers_to_node(modifiers=modifiers, node=node)
+            transfer_node_to_modifiers(
+                node=node,
+                modifiers=modifiers,
+                context=context,
+                in_tree_view=in_tree_view,
+            )
+            transfer_modifiers_to_node(modifiers=modifiers, node=node)
 
     @api.model
     def add_dynamic_fields(self, res, dynamic_fields, wiz):
