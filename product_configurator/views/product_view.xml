@@ -72,9 +72,7 @@
                 <attribute name="attrs">{'required': [('custom','!=',True)]}</attribute>
             </xpath>
 
-            <xpath expr="//field[@name='attribute_line_ids']/tree/field[@name='attribute_id']" position="attributes">
-                <attribute name="context">{'flag_config_ok': not parent and context.get('default_config_ok', False) or parent.config_ok}</attribute>
-            </xpath>
+            
 
             <xpath expr="//field[@name='attribute_line_ids']/tree/field[@name='attribute_id']" position="before">
                 <field name="sequence" widget="handle"/>
