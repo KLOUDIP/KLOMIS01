@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 from lxml import etree
 
 from odoo import models, fields, tools, api, _
@@ -51,11 +50,14 @@ def action_config_done(self):
                    }
         # check if the action come from reconfigure button (sale.order.line)
         if 'mandatory' in active_product_types and 'reconfigure' not in self.env.context:
-            context.update({'mandatory_products': product_id.compulsory_product_ids.ids})
+            context.update({'mandatory_products': product_id.compulsory_product_ids.ids,
+                            'default_mandatory_products_available': True})
         else:
-            context.update({'mandatory_products': [], 'state_list': ['alternative']})
+            context.update({'mandatory_products': [],
+                            'state_list': ['alternative']})
         if 'alternative' in active_product_types and 'reconfigure' not in self.env.context:
-            context.update({'alternative_products': product_id.non_compulsory_product_ids.ids})
+            context.update({'alternative_products': product_id.non_compulsory_product_ids.ids,
+                            'default_alternative_products_available': True})
         else:
             sub_products = self.order_id.order_line.mapped('product_id').filtered(lambda x: not x.config_ok).ids
             alternative_products = [x for x in product_id.non_compulsory_product_ids.ids if x not in sub_products]
