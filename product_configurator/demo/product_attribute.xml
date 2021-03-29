@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-<data>
+
 
     <!-- == FUEL == -->
 
@@ -340,5 +340,4 @@
         <field name="multi" eval="True"/>
     </record>
 
-</data>
 </odoo>

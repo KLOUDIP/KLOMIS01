@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-<data>
-
     <!-- Configuration Restriction Lines -->
 
     <record id="product_config_line_gasoline_engines" model="product.config.line">
@@ -47,6 +45,4 @@
         <field name="domain_id" ref="product_config_domain_luxury_lines"/>
     </record>
 
-
-</data>
 </odoo>

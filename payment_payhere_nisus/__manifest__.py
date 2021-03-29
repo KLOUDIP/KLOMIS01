@@ -5,9 +5,9 @@
     'name': 'Payhere Payment Acquirer',
     'category': 'Payment Gateway',
     'summary': 'Payment Acquirer: Payhere Implementation',
-    'version': '1.0',
+    'version': '1.0.0',
     'website': 'http://www.nisus.lk',
-    'author': 'Nisus Solutions (pvt) Ltd',
+    'author': 'Nisus Solutions (Pvt) Ltd',
     'description': """Payhere (ePay) Acquirer""",
     'depends': ['payment'],
     'data': [

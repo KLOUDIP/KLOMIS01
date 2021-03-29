@@ -464,6 +464,10 @@ class ProductProduct(models.Model):
                 )
         return self.display_name
 
+    def toggle_config(self):
+        for record in self:
+            record.config_ok = not record.config_ok
+
     @api.depends("product_template_attribute_value_ids.weight_extra")
     def _compute_product_weight_extra(self):
         for product in self:

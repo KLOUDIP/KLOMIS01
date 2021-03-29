@@ -8,6 +8,7 @@
     'author': 'Nisus Solutions(pvt) Ltd.',
     'website': 'https://www.nisus.lk',
     'data': [
+        'security/field_service_worksheet_template_security.xml',
         'views/project_task.xml',
         'data/ir_sequence_data.xml',
         'views/project_portal_templates.xml',
@@ -21,8 +22,8 @@
         'wizard/select_helpdesk.xml',
         'wizard/project_task.xml',
         'security/ir.model.access.csv',
-        'security/field_service_worksheet_template_security.xml',
+
     ],
-    'depends': ['project', 'industry_fsm_report','web_studio', 'industry_fsm', 'hr_expense', 'helpdesk'],
+    'depends': ['project', 'industry_fsm_report','web_studio', 'industry_fsm','industry_fsm_sale', 'hr_expense', 'helpdesk', 'helpdesk_fsm'],
     'installable': True,
 }

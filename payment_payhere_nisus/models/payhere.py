@@ -15,8 +15,7 @@ from odoo import http
 from odoo.http import request
 from odoo.addons.payment.models.payment_acquirer import ValidationError
 from odoo.addons.payment_payhere_nisus.controllers.main import PayHereController
-from odoo import fields, models
-from openerp.tools.translate import _
+from odoo import fields, models, _
 
 _logger = logging.getLogger(__name__)
 
@@ -40,7 +39,7 @@ class AcquirerPayHere(models.Model):
             }
 
     provider = fields.Selection(selection_add=[('payhere_nisus',
-                                                'PayHere')])
+                                                'PayHere')], ondelete={'payhere_nisus': 'set default'})
     payhere_merchant_number = fields.Char('Payhere Merchant Number',
                                           required_if_provider='payhere_nisus')
 

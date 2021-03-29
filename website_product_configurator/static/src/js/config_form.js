@@ -98,7 +98,7 @@ odoo.define('website_product_configurator.config_form', function (require) {
                 $.blockUI(self.blockui_opts);
                     ajax.jsonRpc("/website_product_configurator/onchange", 'call', {
                         form_values: form_data,
-                        field_name: attribute[0].name,
+                        field_name: attribute[0].id,
                     }).then(function(data) {
                         if (data.error) {
                             self.openWarningDialog(data.error);
@@ -283,22 +283,26 @@ odoo.define('website_product_configurator.config_form', function (require) {
         _checkRequiredFields: function (config_attr) {
             var self = this;
             var flag_all = true;
+
+
             for (var i = 0; i < config_attr.length; i++) {
                 var flag = true;
+                var selected = self._checkRequiredFieldsRadio($(config_attr[i]));
+
                 if (!$(config_attr[i]).hasClass('required_config_attrib')) {
                     flag = true;
                 } else if ($(config_attr[i]).hasClass('.cfg-radio')) {
                     flag = self._checkRequiredFieldsRadio($(config_attr[i]));
-                } else if (!config_attr[i].value.trim()  || config_attr[i].value == '0') {
+                } else if (!selected) {
                     flag = false;
-                };
+                }
                 if (!flag) {
                     $(config_attr[i]).addClass('textbox-border-color');
                 } else if (flag && $(config_attr[i]).hasClass('textbox-border-color')) {
                     $(config_attr[i]).removeClass('textbox-border-color');
-                };
+                }
                 flag_all &= flag;
-            };
+            }
             return flag_all;
         },
 

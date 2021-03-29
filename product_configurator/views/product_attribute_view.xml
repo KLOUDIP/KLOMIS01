@@ -1,15 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-<data>
-    <!-- Product Attributes -->
 
+    <!-- Product Attribute Line -->
+
+
+    <record id="product_template_attribute_line_form_config" model="ir.ui.view">
+        <field name="name">product.template.attribute.line.form</field>
+        <field name="model">product.template.attribute.line</field>
+        <field name="inherit_id" ref="product.product_template_attribute_line_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='attribute_id']" position="attributes">
+                <attribute name="context">{'flag_config_ok': context.get('default_config_ok', False) or parent.config_ok}</attribute>
+            </xpath>
+        </field>
+    </record>
+    <!-- Product Attributes -->
     <record id="product_attribute_tree_view" model="ir.ui.view">
         <field name="name">product.config.product.attribute.tree</field>
         <field name="model">product.attribute</field>
         <field name="inherit_id" ref="product.attribute_tree_view"/>
         <field name="arch" type="xml">
             <xpath expr="//field[@name='name']" position="after">
-                <field name="search_ok" />
+                <field name="search_ok"/>
             </xpath>
         </field>
     </record>
@@ -45,7 +57,8 @@
                         <field name="description" colspan="4"/>
                     </group>
                 </page>
-                <page string="Custom Values" invisible="not context.get('flag_config_ok')" attrs="{'invisible': [('val_custom', '!=', True)]}" groups="product_configurator.group_product_configurator_manager">
+                <page string="Custom Values" invisible="not context.get('flag_config_ok')" attrs="{'invisible': [('val_custom', '!=', True)]}"
+                      groups="product_configurator.group_product_configurator_manager">
                     <group>
                         <group>
                             <field name="custom_type"/>
@@ -70,11 +83,11 @@
     </record>
 
     <menuitem
-        id="menu_attribute_action_configuration"
-        action="action_attributes_view"
-        parent="menu_product_configurable_settings"
-        sequence="10"
-        groups="product.group_product_variant"/>
+            id="menu_attribute_action_configuration"
+            action="action_attributes_view"
+            parent="menu_product_configurable_settings"
+            sequence="10"
+            groups="product.group_product_variant"/>
 
     <!-- Product Attribute Value -->
 
@@ -151,23 +164,12 @@
     </record>
 
     <menuitem
-        id="menu_variants_action_configuration"
-        action="variants_action"
-        parent="menu_product_configurable_settings"
-        sequence="20"
-        groups="product.group_product_variant"/>
+            id="menu_variants_action_configuration"
+            action="variants_action"
+            parent="menu_product_configurable_settings"
+            sequence="20"
+            groups="product.group_product_variant"/>
 
-    <!-- Product Attribute Line -->
-    <record id="product_template_attribute_line_form_config" model="ir.ui.view">
-        <field name="name">product.template.attribute.line.form</field>
-        <field name="model">product.template.attribute.line</field>
-        <field name="inherit_id" ref="product.product_template_attribute_line_form"/>
-        <field name="arch" type="xml">
-            <xpath expr="//field[@name='attribute_id']" position="attributes">
-                <attribute name="context">{'flag_config_ok': not parent and context.get('default_config_ok', False) or parent.config_ok}</attribute>
-            </xpath>
-        </field>
-    </record>
 
-</data>
+
 </odoo>

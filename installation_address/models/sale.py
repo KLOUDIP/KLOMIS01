@@ -4,7 +4,7 @@ from odoo import api, fields, models, SUPERUSER_ID, _
 class SaleOrder(models.Model):
     _inherit = "sale.order"
 
-    partner_installation_id = fields.Many2one('res.partner', string='Installation Address', readonly=True, required=True,
+    partner_installation_id = fields.Many2one('res.partner', string='Installation Address', readonly=True,
         states={'draft': [('readonly', False)], 'sent': [('readonly', False)], 'sale': [('readonly', False)]},
         domain="['|', ('company_id', '=', False), ('company_id', '=', company_id)]",)
 

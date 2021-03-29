@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-<data>
+
 
     <!-- Product Category -->
 
@@ -176,5 +176,5 @@
         <field name="image_1920" type="base64" file="product_configurator/static/img/product-paint-silver.jpg"/>
     </record>
 
-</data>
+
 </odoo>
