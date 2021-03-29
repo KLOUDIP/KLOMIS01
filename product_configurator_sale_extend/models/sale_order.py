@@ -25,7 +25,8 @@ class SaleOrder(models.Model):
                                 'mandatory_products': [],
                                 'state_list': ['alternative'],
                                 'sale_order_id': self.id,
-                                'session_id': config_line.config_session_id.id}
+                                'session_id': config_line.config_session_id.id,
+                                'default_alternative_products_available': True}
                 }
             else:
                 raise ValidationError(_('No Optional Products Found for existing Configuration Product!'))
@@ -38,22 +39,22 @@ class SaleOrder(models.Model):
 class SaleOrderLine(models.Model):
     _inherit = 'sale.order.line'
 
-    def reconfigure_product(self):
-        """Extending Core Method - Reconfigure context added for reconfigure button"""
-        wizard_model = "product.configurator.sale"
-
-        extra_vals = {
-            "order_id": self.order_id.id,
-            "order_line_id": self.id,
-            "product_id": self.product_id.id,
-        }
-        self = self.with_context(
-            {
-                "default_order_id": self.order_id.id,
-                "default_order_line_id": self.id,
-                "reconfigure": True
-            }
-        )
-        return self.product_id.product_tmpl_id.create_config_wizard(
-            model_name=wizard_model, extra_vals=extra_vals
-        )
+    # def reconfigure_product(self):
+    #     """Extending Core Method - Reconfigure context added for reconfigure button"""
+    #     wizard_model = "product.configurator.sale"
+    #
+    #     extra_vals = {
+    #         "order_id": self.order_id.id,
+    #         "order_line_id": self.id,
+    #         "product_id": self.product_id.id,
+    #     }
+    #     self = self.with_context(
+    #         {
+    #             "default_order_id": self.order_id.id,
+    #             "default_order_line_id": self.id,
+    #             "reconfigure": True
+    #         }
+    #     )
+    #     return self.product_id.product_tmpl_id.create_config_wizard(
+    #         model_name=wizard_model, extra_vals=extra_vals
+    #     )
