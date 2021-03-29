@@ -15,8 +15,10 @@ class MandatoryAlternativeProductsWizard(models.TransientModel):
                                            context={'default_type': 'alternative'}, domain=[('type', '=', 'alternative')])
     mandatory_product_ids = fields.Many2many('product.product', 'mandatory_products', compute='_compute_mandatory_products', string='Mandatory Products')
     alternative_product_ids = fields.Many2many('product.product', 'alternative_products', compute='_compute_alternative_products', string='Alternative Products')
-    mandatory_products_available = fields.Boolean('Mandatory Products Available', compute='_check_products_availability')
-    alternative_products_available = fields.Boolean('Alternative Products Available', compute='_check_products_availability')
+    mandatory_products_available = fields.Boolean('Mandatory Products Available')
+    # mandatory_products_available = fields.Boolean('Mandatory Products Available', compute='_check_products_availability')
+    alternative_products_available = fields.Boolean('Alternative Products Available')
+    # alternative_products_available = fields.Boolean('Alternative Products Available', compute='_check_products_availability')
 
     @api.depends('mandatory_products.product_id')
     def _compute_mandatory_products(self):
@@ -36,12 +38,13 @@ class MandatoryAlternativeProductsWizard(models.TransientModel):
         for rec in self:
             rec['alternative_product_ids'] = products
 
-    def _check_products_availability(self):
-        if 'state_list' in self.env.context:
-            self.update({
-                'mandatory_products_available': True if 'mandatory' in self.env.context['state_list'] else False,
-                'alternative_products_available': True if 'alternative' in self.env.context['state_list'] else False
-            })
+    # Removed because of server error please remove function and fields if unnecessary
+    # def _check_products_availability(self):
+    #     if 'state_list' in self.env.context:
+    #         self.update({
+    #             'mandatory_products_available': True if 'mandatory' in self.env.context['state_list'] else False,
+    #             'alternative_products_available': True if 'alternative' in self.env.context['state_list'] else False
+    #         })
 
     def action_confirm(self):
         """Extend action confirm with previously passed context values"""

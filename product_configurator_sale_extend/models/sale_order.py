@@ -25,7 +25,8 @@ class SaleOrder(models.Model):
                                 'mandatory_products': [],
                                 'state_list': ['alternative'],
                                 'sale_order_id': self.id,
-                                'session_id': config_line.config_session_id.id}
+                                'session_id': config_line.config_session_id.id,
+                                'default_alternative_products_available': True}
                 }
             else:
                 raise ValidationError(_('No Optional Products Found for existing Configuration Product!'))
