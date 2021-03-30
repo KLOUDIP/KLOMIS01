@@ -10,11 +10,11 @@
                     <field name="mandatory_products_available" invisible="1"/>
                     <field name="alternative_products_available" invisible="1"/>
                     <div attrs="{'invisible': [('mandatory_products_available', '=', False)]}">
-                        <group string="Mandatory Products">
+                        <group string="Compulsory Products">
                             <field name="mandatory_products" nolabel="1" context="{'default_type': 'mandatory'}">
                                 <tree editable="bottom">
-                                    <field name="product_id" domain="[('id', 'in', parent.mandatory_product_ids)]"/>
-                                    <field name="quantity"/>
+                                    <field name="product_id" domain="[('id', 'in', parent.mandatory_product_ids)]" required="1"/>
+                                    <field name="quantity" required="1"/>
                                     <field name="type" invisible="1"/>
                                 </tree>
                             </field>
@@ -25,11 +25,11 @@
                     </div>
 
                     <div attrs="{'invisible': [('alternative_products_available', '=', False)]}">
-                        <group string="Alternative Products">
+                        <group string="Non-Compulsory Products">
                             <field name="alternative_products" nolabel="1" context="{'default_type': 'alternative'}">
                                 <tree editable="bottom">
-                                    <field name="product_id" domain="[('id', 'in', parent.alternative_product_ids)]"/>
-                                    <field name="quantity"/>
+                                    <field name="product_id" domain="[('id', 'in', parent.alternative_product_ids)]" required="1"/>
+                                    <field name="quantity" required="1"/>
                                     <field name="type" invisible="1"/>
                                 </tree>
                             </field>
