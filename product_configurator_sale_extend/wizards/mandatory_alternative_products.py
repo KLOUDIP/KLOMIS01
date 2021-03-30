@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from lxml import etree
 
 from odoo import models, fields, tools, api, _
 from odoo.exceptions import UserError
@@ -70,7 +69,7 @@ class MandatoryAlternativeProductsSelect(models.TransientModel):
     _name = "mandatory.alternative.products.select"
     _description = 'Mandatory Alternative Products Select'
 
-    product_id = fields.Many2one('product.product', string='Product', required=True)
-    quantity = fields.Integer(string='Quantity', required=True, default=1)
+    product_id = fields.Many2one('product.product', string='Product')
+    quantity = fields.Integer(string='Quantity', default=1)
     mandatory_alternative_products_id = fields.Many2one('mandatory.alternative.products', string='Mandatory Alternative Products')
     type = fields.Selection([('mandatory', 'Mandatory'), ('alternative', 'Alternative')], string='Type')
