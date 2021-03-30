@@ -11,8 +11,8 @@ class SaleOrder(models.Model):
         config_line = self.order_line.filtered(lambda x: x.config_ok)
         if len(config_line) == 1:
             config_product = config_line.product_id
-            existing_sub_alt_products = self.order_line.filtered(lambda x: not x.config_ok and (x.product_id.id in config_product.non_compulsory_product_ids.ids)).mapped('product_id').product_tmpl_id.ids
-            alternative_products = [x.id for x in config_product.non_compulsory_product_ids if x.product_tmpl_id.id not in existing_sub_alt_products]
+            existing_sub_alt_products = self.order_line.filtered(lambda x: not x.config_ok and (x.product_id.id in config_product.non_compulsory_product_ids.ids)).mapped('product_id').ids
+            alternative_products = [x for x in config_product.non_compulsory_product_ids.ids if x not in existing_sub_alt_products]
             if alternative_products:
                 return {
                     'name': _('Select Additional Products'),
@@ -25,8 +25,7 @@ class SaleOrder(models.Model):
                                 'mandatory_products': [],
                                 'state_list': ['alternative'],
                                 'sale_order_id': self.id,
-                                'session_id': config_line.config_session_id.id,
-                                'default_alternative_products_available': True}
+                                'session_id': config_line.config_session_id.id}
                 }
             else:
                 raise ValidationError(_('No Optional Products Found for existing Configuration Product!'))
@@ -34,16 +33,6 @@ class SaleOrder(models.Model):
             raise ValidationError(_('Multiple Order Line Found with Configuration Products!'))
         else:
             raise ValidationError(_('No Order Line Found with Congfiguration Product! \nYou need to add Configuration Product before adding opional products.'))
-
-    def action_config_start(self):
-        """Extend base method to check if the configure product already assigned to sale order line"""
-        config_products = self.order_line.filtered(lambda x: x.config_ok)
-        if config_products:
-            raise ValidationError(_('Configure Product already assigned with current Sale Order. \n '
-                                    'If you need assign missing optional products, please use '
-                                    '\'Add Optional Product\' button'))
-        else:
-            return super(SaleOrder, self).action_config_start()
 
 
 class SaleOrderLine(models.Model):
@@ -58,7 +47,7 @@ class SaleOrderLine(models.Model):
             "order_line_id": self.id,
             "product_id": self.product_id.id,
         }
-        self.with_context(
+        self = self.with_context(
             {
                 "default_order_id": self.order_id.id,
                 "default_order_line_id": self.id,

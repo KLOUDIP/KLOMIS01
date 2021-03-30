@@ -4,7 +4,7 @@
     'name': 'Product Configurator Sale Extension',
     'category': 'Product Configurator',
     'summary': 'Product Configurator Sale Extend Plugin',
-    'version': '1.0.8',
+    'version': '1.0.4',
     'website': 'http://www.nisus.lk',
     'author': 'Nisus Solutions(PVT) Ltd.',
     'description': """This module will extend the Product Configurator Sale module with more options.""",
