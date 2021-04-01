@@ -1,14 +1,12 @@
 from odoo.http import request
 from odoo.addons.website_sale.controllers.main import WebsiteSale
-from odoo.addons.website.controllers.main import QueryURL
-from werkzeug.exceptions import Forbidden, NotFound
-from odoo import fields, http, SUPERUSER_ID, tools, _
+from werkzeug.exceptions import NotFound
+from odoo import fields, http
 
 class TableCompute(object):
 
     def __init__(self):
         self.table = {}
-
     def _check_place(self, posx, posy, sizex, sizey, ppr):
         res = True
         for y in range(sizey):
@@ -72,60 +70,6 @@ class TableCompute(object):
         return rows
 
 class ProductConfigWebsiteSale(WebsiteSale):
-    @http.route(['/shop/other'], type='http', auth="public", website=True)
-    def other_products(self, page=0, ppg=False, **post):
-
-        order = request.website.sale_get_order()
-        optional_products = order.order_line.filtered(lambda x: x.config_ok == True).mapped('product_id').mapped('non_compulsory_product_ids').product_tmpl_id
-        products = optional_products.filtered(lambda x: x.id not in order.order_line.product_template_id.ids)
-
-        add_qty = int(post.get('add_qty', 1))
-
-        if ppg:
-            try:
-                ppg = int(ppg)
-                post['ppg'] = ppg
-            except ValueError:
-                ppg = False
-        if not ppg:
-            ppg = request.env['website'].get_current_website().shop_ppg or 20
-
-        ppr = request.env['website'].get_current_website().shop_ppr or 4
-
-        url = "/shop"
-
-        pricelist_context, pricelist = self._get_pricelist_context()
-        request.context = dict(request.context, pricelist=pricelist.id, partner=request.env.user.partner_id)
-        product_count = len(products)
-        pager = request.website.pager(url=url, total=product_count, page=page, step=ppg, scope=7, url_args=post)
-        offset = pager['offset']
-        products = products[offset: offset + ppg]
-
-        ProductAttribute = request.env['product.attribute']
-        if products:
-            # get all products without limit
-            attributes = ProductAttribute.search([('product_tmpl_ids', 'in', products.ids)])
-        else:
-            attributes = []
-
-        category = request.env['product.public.category']
-
-        keep = QueryURL('/shop', category=category and int(category), search="", attrib=[],
-                        order=post.get('order'))
-
-        values = {
-            'pricelist': pricelist,
-            'add_qty': add_qty,
-            'products': products,
-            'pager':pager,
-            'search_count': product_count,  # common for all searchbox
-            'bins': TableCompute().process(products, ppg, ppr),
-            'ppg': ppg,
-            'ppr': ppr,
-            'keep': keep,
-            'attributes': attributes,
-        }
-        return request.render("website_product_configurator_extend.other_products", values)
 
     @http.route(['/shop/checkout'], type='http', auth="public", website=True, sitemap=False)
     def checkout(self, **post):
@@ -166,14 +110,14 @@ class ProductConfigWebsiteSale(WebsiteSale):
             'date': fields.Date.today(),
             'suggested_products': [],
             'mandatory_products': [],
-            'non_compulsory_product_ids': [],
+            'non_compulsory_products': [],
         })
         if order:
             order.order_line.filtered(lambda l: not l.product_id.active).unlink()
             _order = order
             if not request.env.context.get('pricelist'):
                 _order = order.with_context(pricelist=order.pricelist_id.id)
-            values['non_compulsory_product_ids'] = self.get_non_compulsory_products(_order)
+            values['non_compulsory_products'] = self.get_non_compulsory_products(_order)
             values['mandatory_products'] = self.get_mandatory_products(_order)
             values['suggested_products'] = _order._cart_accessories()
 
@@ -190,23 +134,11 @@ class ProductConfigWebsiteSale(WebsiteSale):
 
     def get_non_compulsory_products(self, order):
         products = order.order_line.filtered(lambda x: x.config_ok == True).product_id.mapped('non_compulsory_product_ids').mapped('product_tmpl_id').filtered(lambda x: x.id not in order.order_line.product_template_id.ids)
-        # product_tmpl_ids = products.mapped('product_tmpl_id')
         return products
 
     @http.route(['/shop/cart/update_json'], type='json', auth="public", methods=['POST'], website=True, csrf=False)
     def cart_update_json(self, product_id, line_id=None, add_qty=None, set_qty=None, display=True):
         rec = super(ProductConfigWebsiteSale, self).cart_update_json(product_id, line_id, add_qty, set_qty, display)
-        # order = request.website.sale_get_order(force_create=1)
-        # if order.state != 'draft':
-        #     request.website.sale_reset()
-        #     return {}
-        #
-        # value = order._cart_update(product_id=product_id, line_id=line_id, add_qty=add_qty, set_qty=set_qty)
-
-        # if not order.cart_quantity:
-        #     request.website.sale_reset()
-        #     return value
-
         order = request.website.sale_get_order()
         rec['cart_quantity'] = order.cart_quantity
 
@@ -217,7 +149,8 @@ class ProductConfigWebsiteSale(WebsiteSale):
             'website_sale_order': order,
             'date': fields.Date.today(),
             'suggested_products': order._cart_accessories(),
-            'mandatory_products': self.get_mandatory_products(order)
+            'mandatory_products': self.get_mandatory_products(order),
+            'non_compulsory_products' : self.get_non_compulsory_products(order)
         })
         rec['website_sale.short_cart_summary'] = request.env['ir.ui.view']._render_template(
             "website_sale.short_cart_summary", {

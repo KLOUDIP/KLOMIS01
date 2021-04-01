@@ -1,104 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-
-    <template id="cart_alternative_view" inherit_id="website_sale.cart">
-        <xpath expr="(//a[@href='/shop'])[1]" position="after">
-            <t t-if="len(non_compulsory_product_ids)>0">
-                <a role="button" href="/shop/other" class="btn btn-warning mb32 d-none d-xl-inline-block" title="Based on the core product that you have selected, Please, select the other optional products too." data-toggle="tooltip">
-                    <span class="fa fa-chevron-left" />
-                    <span class="">
-                        You got options to add
-                    </span>
-                </a>
-            </t>
-        </xpath>
-        <xpath expr="//div[@id='oe_structure_website_sale_cart_1']" position="after">
-            <t t-if="request.params.get('mandatory_items_available')">
-                <p id="mandatory_items_error_msg" class="bg-warning"><strong>Please, select all the suggested accessories</strong></p>
-            </t>
-        </xpath>
-    </template>
-
-    <template id="other_products" name="Non Compulsory Products">
-        <t t-call="website.layout">
-            <t t-set="additional_title">Shop</t>
-            <div id="wrap" class="js_sale">
-                <div class="oe_structure oe_empty" id="oe_structure_website_sale_products_1"/>
-                <div class="container oe_website_sale">
-                    <!--                    <div class="products_pager form-inline flex-md-nowrap justify-content-between justify-content-md-center">-->
-                    <!--                        <t t-call="website_sale.search">-->
-                    <!--                            <t t-set="_classes" t-valuef="w-100 w-md-auto mt-2"/>-->
-                    <!--                        </t>-->
-                    <!--                        <t t-call="website_sale.pricelist_list">-->
-                    <!--                            <t t-set="_classes" t-valuef="mt-2 ml-md-2"/>-->
-                    <!--                        </t>-->
-                    <!--                        <t t-call="website.pager">-->
-                    <!--                            <t t-set="_classes" t-valuef="mt-2 ml-md-2"/>-->
-                    <!--                        </t>-->
-                    <!--                    </div>-->
-                    <div class="row o_wsale_products_main_row">
-                        <div t-if="enable_left_column" id="products_grid_before" class="col-lg-3"/>
-                        <div id="products_grid" t-attf-class="col #{'o_wsale_layout_list' if layout_mode == 'list' else ''}">
-                            <!--                            <t t-if="category">-->
-                            <!--                                <t t-set='editor_msg'>Drag building blocks here to customize the header for "<t t-esc='category.name'/>" category.</t>-->
-                            <!--                                <div class="mb16" id="category_header" t-att-data-editor-message="editor_msg" t-field="category.website_description"/>-->
-                            <!--                            </t>-->
-                            <div t-if="bins" class="o_wsale_products_grid_table_wrapper">
-                                <table class="table table-borderless m-0" t-att-data-ppg="ppg" t-att-data-ppr="ppr">
-                                    <colgroup t-ignore="true">
-                                        <!-- Force the number of columns (useful when only one row of (x < ppr) products) -->
-                                        <col t-foreach="ppr" t-as="p"/>
-                                    </colgroup>
-                                    <tbody>
-                                        <tr t-foreach="bins" t-as="tr_product">
-                                            <t t-foreach="tr_product" t-as="td_product">
-                                                <t t-if="td_product">
-                                                    <t t-set="product" t-value="td_product['product']" />
-                                                    <!-- We use t-attf-class here to allow easier customization -->
-                                                    <td t-att-colspan="td_product['x'] != 1 and td_product['x']"
-                                                        t-att-rowspan="td_product['y'] != 1 and td_product['y']"
-                                                        t-attf-class="oe_product"
-                                                        t-att-data-ribbon-id="td_product['ribbon'].id">
-                                                        <div t-attf-class="o_wsale_product_grid_wrapper o_wsale_product_grid_wrapper_#{td_product['x']}_#{td_product['y']}">
-                                                            <t t-call="website_sale.products_item">
-                                                                <t t-set="product_image_big" t-value="td_product['x'] + td_product['y'] &gt; 2"/>
-                                                            </t>
-                                                        </div>
-                                                    </td>
-                                                </t>
-                                                <td t-else=""/>
-                                            </t>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                            <t t-else="">
-                                <div class="text-center text-muted">
-                                    <!--                                    <t t-if="not search">-->
-                                    <!--                                        <h3 class="mt8">No product defined</h3>-->
-                                    <!--                                        <p t-if="category">No product defined in category "<strong t-esc="category.display_name"/>".</p>-->
-                                    <!--                                    </t>-->
-                                    <!--                                    <t t-else="">-->
-                                    <!--                                        <h3 class="mt8">No results</h3>-->
-                                    <!--                                        <p>No results for "<strong t-esc='search'/>"<t t-if="category"> in category "<strong t-esc="category.display_name"/>"</t>.</p>-->
-                                    <!--                                    </t>-->
-                                    <!--                                    <p t-ignore="true" groups="sales_team.group_sale_manager">Click <i>'New'</i> in the top-right corner to create your first product.</p>-->
-                                </div>
-                            </t>
-                        </div>
-                    </div>
-                    <!--                    <div class="products_pager form-inline justify-content-center py-3">-->
-                    <!--                        <t t-call="website.pager"/>-->
-                    <!--                    </div>-->
-                </div>
-                <div class="oe_structure oe_empty" id="oe_structure_website_sale_products_2"/>
-            </div>
-        </t>
-    </template>
-
-    <template id="mandatory_products_list" inherit_id="website_sale.cart_lines" customize_show="True" name="Mandatory Products">
+    <template id="none_compulsory_products_list" inherit_id="website_sale.cart_lines" customize_show="True" name="None Compulsory Products">
         <xpath expr="//table[@id='cart_products']" position="after">
-            <h5 class='text-muted js_cart_lines' t-if="mandatory_products">Mandatory Products:</h5>
+            <h5 class='text-muted js_cart_lines' t-if="non_compulsory_products">None Compulsory Products:</h5>
+            <table t-if="non_compulsory_products" id="non_compulsory_products" class="js_cart_lines table table-striped table-sm">
+                <tbody>
+                    <tr t-foreach="non_compulsory_products" t-as="product">
+                        <td class='td-img text-center'>
+                            <a t-att-href="product.website_url">
+                                <span t-field="product.image_128" t-options="{'widget': 'image', 'qweb_img_responsive': False, 'class': 'rounded o_image_64_max'}" />
+                            </a>
+                        </td>
+                        <td class='td-product_name'>
+                            <div>
+                                <a t-att-href="product.website_url">
+                                    <strong t-esc="product.display_name" />
+                                </a>
+                            </div>
+                            <div class="text-muted d-none d-md-block" t-field="product.description_sale" />
+                        </td>
+                        <td class='td-price'>
+                            <!--                            <del t-attf-class="text-danger mr8 {{'' if combination_info['has_discounted_price'] else 'd-none'}}" style="white-space: nowrap;" t-esc="combination_info['list_price']" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>-->
+                            <span t-esc="product.price" style="white-space: nowrap;" t-options="{'widget': 'monetary','display_currency': website.currency_id}"/>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </xpath>
+    </template>
+
+    <template id="compulsory_products_list" inherit_id="website_sale.cart_lines" customize_show="True" name="Compulsory Products">
+        <xpath expr="//table[@id='cart_products']" position="after">
+            <h5 class='text-muted js_cart_lines' t-if="mandatory_products">Compulsory Products:</h5>
             <table t-if="mandatory_products" id="mandatory_products" class="js_cart_lines table table-striped table-sm">
                 <tbody>
                     <tr t-foreach="mandatory_products" t-as="product">
