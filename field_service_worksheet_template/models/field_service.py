@@ -6,7 +6,7 @@ class WorksheetTemplateLine(models.Model):
     _name = 'worksheet.template.line'
     _inherit = ['portal.mixin']
 
-    project_task_id = fields.Many2one('project.task')
+    project_task_id = fields.Many2one('project.task', string="Project Task")
     name = fields.Char('Name')
     template_id = fields.Many2one('project.worksheet.template', string='Template')
     select_user = fields.Many2one('res.users', string='Assigned to', required=True)
