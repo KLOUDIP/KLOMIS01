@@ -24,6 +24,6 @@
         'security/ir.model.access.csv',
 
     ],
-    'depends': ['project', 'industry_fsm_report','web_studio', 'industry_fsm','industry_fsm_sale', 'hr_expense', 'helpdesk', 'helpdesk_fsm'],
+    'depends': ['project', 'fleet', 'industry_fsm_report','web_studio', 'industry_fsm','industry_fsm_sale', 'hr_expense', 'helpdesk', 'helpdesk_fsm'],
     'installable': True,
 }

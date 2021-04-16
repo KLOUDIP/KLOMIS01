@@ -50,7 +50,7 @@ class FreightWizard(models.TransientModel):
                 'name': _('Task'),
                 'res_model': 'project.task',
                 'view_mode': 'form',
-                'view_id': self.env.ref('industry_fsm.project_task_view_form').id,
+                'view_id': self.env.ref('helpdesk_fsm.project_task_view_form').id,
                 'res_id': new_task.id,
                 'target': 'current',
             }
