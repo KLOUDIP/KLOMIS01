@@ -9,7 +9,6 @@
     'data': [
 	
         'views/sale_views.xml'
-		
     ],
     'depends': ['contacts', 'sale'],
 }
