@@ -7,7 +7,9 @@
     'author': 'Nisus Solutions (Pvt) Ltd',
 	'website': 'https://nisus.lk',
     'data': [
+	
         'views/sale_views.xml'
+		
     ],
     'depends': ['contacts', 'sale'],
 }
