@@ -12,7 +12,7 @@
 
     <template id="stock_report_delivery_has_serial_move_line_inherit_vehicle_no" inherit_id="stock.stock_report_delivery_has_serial_move_line">
         <xpath expr="//t[@name='move_line_lot']" position="after">
-            <t t-if="has_expiry_date">
+            <t t-if="has_serial_number">
                 <td><span t-field="move_line.x_vehicle_id.name"/></td>
             </t>
         </xpath>
