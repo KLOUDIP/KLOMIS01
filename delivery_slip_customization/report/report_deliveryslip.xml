@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="report_delivery_document_inherit_vehicle_no" inherit_id="stock.report_delivery_document">
+        <xpath expr="//t[@name='lot_serial']" position="after">
+            <t name="vehicle_no" t-if="has_serial_number">
+                <th>
+                    Vehicle No
+                </th>
+            </t>
+        </xpath>
+    </template>
+
+    <template id="stock_report_delivery_has_serial_move_line_inherit_vehicle_no" inherit_id="stock.stock_report_delivery_has_serial_move_line">
+        <xpath expr="//t[@name='move_line_lot']" position="after">
+            <t t-if="has_expiry_date">
+                <td><span t-field="move_line.x_vehicle_id.name"/></td>
+            </t>
+        </xpath>
+    </template>
+</odoo>
