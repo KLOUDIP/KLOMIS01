@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id='fleet_vehicle_view_form' model='ir.ui.view'>
+        <field name="name">fleet.vehicle.form</field>
+        <field name="model">fleet.vehicle</field>
+        <field name="inherit_id" ref="fleet.fleet_vehicle_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@class='oe_button_box']" position="inside">
+                <button name="open_worksheets"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-calculator">
+                    <field name="worksheet_count" widget="statinfo" string="Worksheet Count"/>
+                </button>
+            </xpath>
+        </field>
+    </record>
+</odoo>

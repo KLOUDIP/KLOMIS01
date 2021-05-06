@@ -1,0 +1,104 @@
+<odoo>
+    <data>
+        <record id="project_task_lines" model="ir.ui.view">
+            <field name='name'>project.task.lines</field>
+            <field name="model">project.task</field>
+            <field name="inherit_id" ref="industry_fsm.project_task_view_form"/>
+            <field name="arch" type="xml">
+                <field name='description' position="before">
+                    <field name="worksheet_template_lines">
+                        <tree editable="bottom">
+                            <field name="name" readonly="1" force_save="1"/>
+                            <field name="template_id" string="Worksheet Template"/>
+                            <field name="select_user"/>
+                            <field name="expense_id" invisible="1"/>
+                            <field name="done_mark"/>
+                            <field name="food" invisible="1"/>
+                            <field name="transport" invisible="1"/>
+                            <field name="beverage" invisible="1"/>
+                            <field name="other" invisible="1"/>
+
+                            <button type="object" class="btn btn-primary" string='UPDATE' name="action_fsm_worksheet_template"
+                                    attrs="{'invisible': [('template_id', '=', False)]}"/>
+
+                            <button type="object" class="btn btn-primary" string='SIG' name="action_preview_worksheet"
+                                    attrs="{'invisible': [('template_id', '=', False)]}"/>
+
+                            <button type="object" class="btn btn-primary" string='SND' name="action_worksheet_send"
+                                    attrs="{'invisible': [('template_id', '=', False)]}"/>
+
+                            <button type="object" class="btn btn-primary" string='FD' name="action_to_create_expense_food"
+                                    attrs="{'invisible': ['|', ('template_id', '=', False), ('food', '!=', False)]}"/>
+
+                            <button type="object" class="btn btn-primary" string='LD' name="action_to_create_expense_beverage"
+                                    attrs="{'invisible': ['|', ('template_id', '=', False), ('beverage', '!=', False)]}"/>
+
+                            <button type="object" class="btn btn-primary" string='KM' name="action_to_create_expense_transport"
+                                    attrs="{'invisible': ['|', ('template_id', '=', False), ('transport', '!=', False)]}"/>
+
+                            <button type="object" class="btn btn-primary" string='EM' name="action_to_create_expense_extra_minutes"
+                                    attrs="{'invisible': ['|', ('template_id', '=', False), ('extra', '!=', False)]}"/>
+
+                            <button type="object" class="btn btn-primary" string='OP' name="action_to_create_expense_other"
+                                    attrs="{'invisible': ['|', ('template_id', '=', False), ('other', '!=', False)]}"/>
+                        </tree>
+                    </field>
+
+                </field>
+
+                <xpath expr="//button[@name='action_fsm_create_invoice'][2]" position="after">
+                    <button class="btn btn-primary" name="action_task_temp" type="object" string="HelpDesk Ticket"
+                            attrs="{'invisible': [('fsm_done', '=', True)]}"/>
+                </xpath>
+
+                <xpath expr="//button[@name='action_fsm_worksheet']" position="replace">
+
+                </xpath>
+
+                <xpath expr="//div[@name='button_box']" position="after">
+                    <field name="mark_as_done_rec" invisible="1"/>
+                    <div role="alert" class="alert-success p-3 text-center"
+                         attrs="{'invisible': [('mark_as_done_rec', '=', False),]}">
+                        <span class="align-middle">This Task has Done</span>
+                    </div>
+                </xpath>
+
+
+            </field>
+        </record>
+
+
+        <record id="hr_expense_custom" model="ir.ui.view">
+            <field name='name'>hr.expense.custom</field>
+            <field name="model">hr.expense</field>
+            <field name="inherit_id" ref="hr_expense.hr_expense_view_form"/>
+            <field name="arch" type="xml">
+                <field name='total_amount' position="after">
+                    <field name="expense_id_worksheet_line"/>
+                    <field name="task_id_rec"/>
+                </field>
+            </field>
+        </record>
+
+        <record id="hide_buttons_in_task_view" model="ir.ui.view">
+            <field name='name'>task.view</field>
+            <field name="model">project.task</field>
+            <field name="inherit_id" ref="industry_fsm_report.project_task_view_form_inherit"/>
+            <field name="arch" type="xml">
+                <xpath expr="//button[@name='action_send_report'][2]" position="replace">
+                    <button name="action_send_report" type="object" string="Send Report" class="btn-secondary" invisible="1"/>
+                </xpath>
+                <xpath expr="//button[@name='action_send_report'][1]" position="replace">
+                    <button name="action_send_report" type="object" string="Send Report" class="btn-secondary" invisible="1"/>
+                </xpath>
+
+                <xpath expr="//button[@name='action_preview_worksheet'][1]" position="replace">
+                </xpath>
+                <xpath expr="//button[@name='action_preview_worksheet']" position="replace">
+                    <button name="action_preview_worksheet" type="object" string="Sign Report" class="btn-primary" invisible="1"/>
+                </xpath>
+            </field>
+        </record>
+
+    </data>
+</odoo>

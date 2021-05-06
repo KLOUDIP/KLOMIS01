@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record model="ir.ui.view" id="task_wizard_view">
+            <field name="name">ticket wizard view</field>
+            <field name="model">task.wizard</field>
+            <field name="arch" type="xml">
+                <form string="Fill this details">
+                    <group>
+                        <group>
+                            <field name="name" required="1"/>
+                            <field name="partner_id" required="1"/>
+                        </group>
+                        <footer>
+                            <button type="object" name="action_task_view" string="Create a new Task" class="oe_highlight"/>
+                            <button special="cancel" string="Cancel"/>
+                        </footer>
+                    </group>
+                </form>
+            </field>
+        </record>
+    </data>
+</odoo>

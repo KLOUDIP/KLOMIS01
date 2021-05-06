@@ -1,0 +1,17 @@
+<odoo>
+    <record id="helpdesk" model="ir.ui.view">
+        <field name='name'>task.view</field>
+        <field name="model">helpdesk.ticket</field>
+        <field name="inherit_id" ref="helpdesk.helpdesk_ticket_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='user_id']" position="after">
+                <field name="help_desk_ticket_id" invisible="0"/>
+            </xpath>
+            <xpath expr="//button[@name='action_view_fsm_tasks']" position="replace">
+                <button class="oe_stat_button" name="action_view_fsm_tasks"  type="object" icon="fa-tasks" attrs="{'invisible': [('fsm_task_count', '=', 0)]}" groups="field_service_worksheet_template.group_coordinator_fsm,industry_fsm.group_fsm_user">
+                    <field string="Tasks" name="fsm_task_count" widget="statinfo" />
+                </button>
+            </xpath>
+        </field>
+    </record>
+</odoo>

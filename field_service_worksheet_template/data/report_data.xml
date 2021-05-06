@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="0">
+        <record id="mail_template_data_send_report_custom1" model="mail.template">
+            <field name="name">Task Reports</field>
+            <field name="model_id" ref="field_service_worksheet_template.model_worksheet_template_line"/>
+            <field name="subject">${object.project_task_id.name} Report</field>
+            <field name="email_to">${(object.project_task_id.partner_id.email_formatted) |safe}</field>
+            <field name="partner_to">${object.project_task_id.partner_id.id}</field>
+            <field name="lang">${object.project_task_id.partner_id.lang}</field>
+            <field name="report_template" ref="task_custom_report_template"/>
+            <field name="report_name">Worksheet ${object.project_task_id.name}${(' - ' + object.project_task_id.partner_id.name) if object.project_task_id.partner_id else ''}.pdf</field>
+            <field name="body_html" type="html">
+                <p>
+                    Dear ${object.project_task_id.partner_id.name or 'Customer'},<br/><br/>
+                    Please find attached the worksheet of our onsite operation. <br/><br/>
+                    Feel free to contact us if you have any questions.<br/><br/>
+                    Best regards,<br/><br/>
+                </p>
+            </field>
+        </record>
+
+    </data>
+</odoo>

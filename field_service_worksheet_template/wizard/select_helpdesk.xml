@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record model="ir.ui.view" id="ticket_wizard_view">
+            <field name="name">ticket wizard view</field>
+            <field name="model">ticket.wizard</field>
+            <field name="arch" type="xml">
+                <form string="Fill this details">
+                    <group>
+                        <field name="select_created_helpdesk_ticket"/>
+                        <field name="help_desk_ticket_id" attrs="{'invisible':[('select_created_helpdesk_ticket', '=', False)], 'required': [('select_created_helpdesk_ticket', '=', True)]}"/>
+                    </group>
+                    <footer>
+                        <button type="object" name="action_ticket_view" string="Create a new HelpDesk Ticket" class="oe_highlight" attrs="{'invisible':[('select_created_helpdesk_ticket', '!=', False)]}"/>
+                        <button type="object" name="action_for_created_ticket" string="Click to add task Data to HelpDesk Ticket" class="oe_highlight"  attrs="{'invisible':[('select_created_helpdesk_ticket', '=', False)]}"/>
+                        <button special="cancel" string="Cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+    </data>
+</odoo>
