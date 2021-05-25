@@ -1,0 +1,13 @@
+<odoo>
+	<data>
+		<record model="ir.model.fields" id="vehicle_contract_serial_number">
+            <field name="name">x_lot_id</field>
+            <field name="field_description">Lot/Serial Number</field>
+            <field name="model_id" eval="ref('fleet.model_fleet_vehicle_log_contract')"/>
+            <field name="ttype">many2one</field>
+            <field name="relation">stock.production.lot</field>
+            <field name="state">manual</field>
+            <field name="copied">False</field>
+        </record>
+	</data>
+</odoo>

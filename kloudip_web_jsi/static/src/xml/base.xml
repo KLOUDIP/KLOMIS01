@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<template id="template" xml:space="preserve">
+    <t t-extend="HomeMenu.Content">
+        <t t-jquery=".o_home_menu_footer" t-operation="replace">
+            <div class="o_home_menu_footer">
+                <img alt="Logo" src="/kloudip_web_jsi/static/src/img/logo.png"/>
+            </div>
+        </t>
+    </t>
+</template>

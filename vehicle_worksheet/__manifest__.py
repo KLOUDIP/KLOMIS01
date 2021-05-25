@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'Vehicle Worksheet',
-    "summary": "",
+    "summary": "This module allow to link workhsheets with the fleet module",
     "description": "",
     'category': 'fleet',
     'version': '1.0.0',

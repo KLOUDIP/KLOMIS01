@@ -5,7 +5,9 @@
     'category': 'contact',
     'version': '1.0.0',
     'author': 'Nisus Solutions (Pvt) Ltd',
+	'website': 'https://nisus.lk',
     'data': [
+	
         'views/sale_views.xml'
     ],
     'depends': ['contacts', 'sale'],

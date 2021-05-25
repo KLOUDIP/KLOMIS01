@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record model='ir.attachment' id="scss_0">
+        <field name="name">variables_overriden.scss</field>
+        <field name="public" eval="True"/>
+        <field name="url">/kloudip_web_jsi/static/src/scss/variables_overriden.scss</field>
+        <field name="res_model">ir.ui.view</field>
+        <field name="type">binary</field>
+        <field name="datas" type="base64" file="kloudip_web_jsi/static/src/scss/variables_overriden.scss"/>
+    </record>
+
+    <record model='ir.attachment' id="js_0">
+        <field name="name">template.js</field>
+        <field name="public" eval="True"/>
+        <field name="url">/kloudip_web_jsi/static/src/js/template.js</field>
+        <field name="res_model">ir.ui.view</field>
+        <field name="type">binary</field>
+        <field name="datas" type="base64" file="kloudip_web_jsi/static/src/js/template.js"/>
+    </record>
+
+    <record model='ir.attachment' id="xml_0">
+        <field name="name">base.xml</field>
+        <field name="public" eval="True"/>
+        <field name="url">/kloudip_web_jsi/static/src/xml/base.xml</field>
+        <field name="res_model">ir.ui.view</field>
+        <field name="type">binary</field>
+        <field name="datas" type="base64" file="kloudip_web_jsi/static/src/xml/base.xml"/>
+    </record>
+
+    <record model='ir.attachment' id="img_0">
+        <field name="name">favicon.png</field>
+        <field name="public" eval="True"/>
+        <field name="url">/kloudip_web_jsi/static/src/img/favicon.png</field>
+        <field name="res_model">ir.ui.view</field>
+        <field name="type">binary</field>
+        <field name="datas" type="base64" file="kloudip_web_jsi/static/src/img/favicon.png"/>
+    </record>
+
+    <record model='ir.attachment' id="img_1">
+        <field name="name">logo.png</field>
+        <field name="public" eval="True"/>
+        <field name="url">/kloudip_web_jsi/static/src/img/logo.png</field>
+        <field name="res_model">ir.ui.view</field>
+        <field name="type">binary</field>
+        <field name="datas" type="base64" file="kloudip_web_jsi/static/src/img/logo.png"/>
+    </record>
+</odoo>

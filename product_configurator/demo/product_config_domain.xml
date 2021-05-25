@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-<data>
+
     <!-- Configuration Domain and domain Lines -->
 
     <!-- Gasoline Engines -->
@@ -69,5 +69,4 @@
             ref('product_attribute_value_220d_xdrive')])]"/>
     </record>
 
-</data>
 </odoo>

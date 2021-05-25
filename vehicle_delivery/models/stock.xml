@@ -1,0 +1,33 @@
+<odoo>
+	<data>
+        <record model="ir.model.fields" id="stock_move_line_partner">
+            <field name="name">x_partner_id</field>
+            <field name="field_description">Customer</field>
+            <field name="model_id" eval="ref('stock.model_stock_move_line')"/>
+            <field name="ttype">many2one</field>
+            <field name="relation">res.partner</field>
+            <field name="state">manual</field>
+            <field name="copied">False</field>
+            <field name="readonly">True</field>
+            <field name="related">picking_id.partner_id.commercial_partner_id</field>
+        </record>
+		<record model="ir.model.fields" id="stock_move_line_vehicle">
+            <field name="name">x_vehicle_id</field>
+            <field name="field_description">Vehicle</field>
+            <field name="model_id" eval="ref('stock.model_stock_move_line')"/>
+            <field name="ttype">many2one</field>
+            <field name="relation">fleet.vehicle</field>
+            <field name="state">manual</field>
+            <field name="copied">False</field>
+        </record>
+        <record model="ir.model.fields" id="stock_move_line_contract">
+            <field name="name">x_contract_id</field>
+            <field name="field_description">Fleet Contract</field>
+            <field name="model_id" eval="ref('stock.model_stock_move_line')"/>
+            <field name="ttype">many2one</field>
+            <field name="relation">fleet.vehicle.log.contract</field>
+            <field name="state">manual</field>
+            <field name="copied">False</field>
+        </record>
+	</data>
+</odoo>

@@ -1,5 +1,5 @@
 {
-    "name": "Product Configurator",
+    "name": "Product Configurator Updated",
     "version": "13.0.1.0.0",
     "category": "Generic Modules/Base",
     "summary": "Base for product configuration interface modules",

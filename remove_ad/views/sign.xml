@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+        <template id="assets_backend" name="sign assets" inherit_id="sign.assets_common">
+            <xpath expr="//script[last()]" position="after">
+                <script type="text/javascript" src="/remove_ad/static/src/js/widgets.js"></script>
+            </xpath>
+        </template>
+    </data>
+</openerp>

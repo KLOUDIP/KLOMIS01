@@ -11,6 +11,6 @@
         'views/help_desk.xml',
         'views/sale_order.xml',
     ],
-    'depends': ['helpdesk_sale','helpdesk', 'sale_management'],
+    'depends': ['helpdesk_sale','helpdesk', 'sale_management', 'sale_timesheet'],
     'installable': True,
 }

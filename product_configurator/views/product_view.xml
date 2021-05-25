@@ -39,9 +39,7 @@
                     groups="product_configurator.group_product_configurator"
                     attrs="{'invisible': [('config_ok', '=', False)]}"/>
             </xpath>
-            <xpath expr="//header/button[@name='action_update_quantity_on_hand']" position="attributes">
-                <attribute name="attrs">{'invisible': ['|', ('product_variant_count', '&lt;', 1), ('type', '!=', 'product')]}</attribute>
-            </xpath>
+            
             <xpath expr="//label[@for='purchase_ok' or @for='sale_ok']" position="after">
                 <div class="oe_left" name="options" groups="base.group_user">
                     <field name="id" invisible="True"/>
@@ -72,9 +70,7 @@
                 <attribute name="attrs">{'required': [('custom','!=',True)]}</attribute>
             </xpath>
 
-            <xpath expr="//field[@name='attribute_line_ids']/tree/field[@name='attribute_id']" position="attributes">
-                <attribute name="context">{'flag_config_ok': not parent and context.get('default_config_ok', False) or parent.config_ok}</attribute>
-            </xpath>
+            
 
             <xpath expr="//field[@name='attribute_line_ids']/tree/field[@name='attribute_id']" position="before">
                 <field name="sequence" widget="handle"/>

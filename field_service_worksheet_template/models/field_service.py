@@ -6,11 +6,11 @@ class WorksheetTemplateLine(models.Model):
     _name = 'worksheet.template.line'
     _inherit = ['portal.mixin']
 
-    project_task_id = fields.Many2one('project.task')
     name = fields.Char('Name')
     template_id = fields.Many2one('project.worksheet.template', string='Template')
     select_user = fields.Many2one('res.users', string='Assigned to', required=True)
-    fleet_id = fields.Many2one('fleet.vehicle', string='Fleet Code', required=True)
+    fleet_id = fields.Many2one('fleet.vehicle', string='Fleet Code')
+    project_task_id = fields.Many2one('project.task', string="Project Task")
     done_mark = fields.Boolean('Mark as Done')
     select_vals = fields.Boolean('Select')
     food = fields.Boolean('Mark as Done')

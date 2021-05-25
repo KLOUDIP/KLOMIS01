@@ -3,23 +3,10 @@
         <record id="hide_buttons_in_task_view" model="ir.ui.view">
             <field name='name'>task.view</field>
             <field name="model">project.task</field>
-            <field name="inherit_id" ref="industry_fsm_report.project_task_view_form_inherit"/>
+            <field name="inherit_id" ref="industry_fsm_report.view_task_form2_inherit"/>
+            <!--            <field name="inherit_id" ref="industry_fsm_report.project_task_view_form_inherit"/>-->
             <field name="arch" type="xml">
                 <field name='description' position="before">
-                    <group>
-                        <group>
-                        </group>
-                        <group>
-                        </group>
-                    </group>
-                    <group>
-                        <group>
-                        </group>
-                        <group>
-                            <field name="extra_minutes" invisible="1"/>
-                            <button type="object" class="btn btn-primary" string="EM" name="get_extra_minutes_expenses" attrs="{'invisible': ['|', ('tech_team_member_id', '=', False), ('extra_minutes', '!=', False)]}" groups="field_service_worksheet_template.group_coordinator_fsm,industry_fsm.group_fsm_manager"/>
-                        </group>
-                    </group>
                     <field name="worksheet_template_lines" context="{'get_license':True}">
                         <tree editable="bottom">
                             <field name="select_vals"/>
@@ -63,16 +50,10 @@
                     </field>
                 </field>
 
-                <xpath expr="//button[@name='action_fsm_create_invoice'][2]" position="after">
-                    <button class="btn btn-primary" name="action_task_temp" type="object" string="HelpDesk Ticket"
-                            attrs="{'invisible': [('fsm_done', '=', True)]}" groups="field_service_worksheet_template.group_coordinator_fsm,industry_fsm.group_fsm_manager"/>
-
-                    <button class="btn btn-primary" name="action_create_new_task" type="object" string="Create New Task"
-                            attrs="{'invisible': [('fsm_done', '=', True)]}" groups="field_service_worksheet_template.group_coordinator_fsm,industry_fsm.group_fsm_manager"/>
-                </xpath>
-
-                <xpath expr="//button[@name='action_fsm_create_quotation']" position="replace">
-                    <button class="btn-secondary" name="action_fsm_create_quotation" type="object" string="New Quotation" attrs="{'invisible': [('allow_quotations', '=', False)]}" groups="sales_team.group_sale_salesman"/>
+                <xpath expr="//field[@name='project_id']" position="after">
+                    <field name="extra_minutes" invisible="1"/>
+                    <field name="tech_team_member_id"/>
+                    <button type="object" class="btn btn-primary" string="EM" name="get_extra_minutes_expenses" attrs="{'invisible': ['|', ('tech_team_member_id', '=', False), ('extra_minutes', '!=', False)]}" groups="field_service_worksheet_template.group_coordinator_fsm,industry_fsm.group_fsm_manager"/>
                 </xpath>
 
                 <xpath expr="//button[@name='action_fsm_worksheet']" position="replace">
@@ -117,20 +98,36 @@
             </field>
         </record>
 
+        <record id="invoice_buttons_in_task_view" model="ir.ui.view">
+            <field name='name'>task.view</field>
+            <field name="model">project.task</field>
+            <field name="inherit_id" ref="industry_fsm_sale.view_task_form2_inherit"/>
+            <field name="arch" type="xml">
+                <!--                <field name="is_fsm" position="after">-->
+                <!--                    <field name="allow_material" invisible="1"/>-->
+                <!--                </field>-->
+
+
+                <xpath expr="//button[@name='action_fsm_create_quotation']" position="replace">
+                    <button class="btn-secondary" name="action_fsm_create_quotation" type="object" string="New Quotation" attrs="{'invisible': [('allow_quotations', '=', False)]}" groups="sales_team.group_sale_salesman"/>
+                </xpath>
+            </field>
+        </record>
+
         <record id="helpdesk_view" model="ir.ui.view">
             <field name='name'>task.view</field>
             <field name="model">project.task</field>
-            <field name="inherit_id" ref="industry_fsm.project_task_view_form"/>
+            <field name="inherit_id" ref="helpdesk_fsm.project_task_view_form"/>
             <field name="arch" type="xml">
-                <xpath expr="(//field[@name='company_id'])[2]" position="after">
-                    <field name="tech_team_member_id"/>
-                </xpath>
-                <xpath expr="//field[@name='project_id']" position="replace">
-                    <field name="project_id" domain="[('is_fsm', '=', True)]" required="True" options="{'no_create': True, 'no_edit': True, 'no_open': 'True'}" />
-                </xpath>
-                <xpath expr="//field[@name='allow_billable']" position="after">
-                    <field name="accessible" invisible="1"/>
-                </xpath>
+                <!--                <xpath expr="(//field[@name='company_id'])[2]" position="after">-->
+                <!--                    <field name="tech_team_member_id"/>-->
+                <!--                </xpath>-->
+                <!--                <xpath expr="//field[@name='project_id']" position="replace">-->
+                <!--                    <field name="project_id" domain="[('is_fsm', '=', True)]" required="True" options="{'no_create': True, 'no_edit': True, 'no_open': 'True'}" />-->
+                <!--                </xpath>-->
+                <!--                <xpath expr="//field[@name='allow_billable']" position="after">-->
+                <!--                    <field name="accessible" invisible="1"/>-->
+                <!--                </xpath>-->
                 <xpath expr="//button[@name='action_view_ticket']" position="replace">
                     <button
                             string="Intervention ticket"
@@ -142,6 +139,15 @@
                             groups="helpdesk.group_helpdesk_user"
                             help="Ticket from this task"/>
                 </xpath>
+
+            </field>
+        </record>
+
+        <record id="view_task_form2_mark_as_done_inherit" model="ir.ui.view">
+            <field name='name'>task.view</field>
+            <field name="model">project.task</field>
+            <field name="inherit_id" ref="industry_fsm.view_task_form2_inherit"/>
+            <field name="arch" type="xml">
                 <xpath expr="(//button[@name='action_fsm_validate'])[1]" position="replace">
                     <button
                             class="btn:primary"
@@ -162,15 +168,22 @@
                             groups="field_service_worksheet_template.group_coordinator_fsm,industry_fsm.group_fsm_manager"
                     />
                 </xpath>
+                <xpath expr="(//button[@name='action_fsm_validate'])[2]" position="after">
+                    <button class="btn btn-primary" name="action_task_temp" type="object" string="HelpDesk Ticket"
+                            attrs="{'invisible': [('fsm_done', '=', True)]}" groups="field_service_worksheet_template.group_coordinator_fsm,industry_fsm.group_fsm_manager"/>
+
+                    <button class="btn btn-primary" name="action_create_new_task" type="object" string="Create New Task"
+                            attrs="{'invisible': [('fsm_done', '=', True)]}" groups="field_service_worksheet_template.group_coordinator_fsm,industry_fsm.group_fsm_manager"/>
+                </xpath>
             </field>
         </record>
 
         <record id="project_task_view_form_fsm_inherit" model="ir.ui.view">
             <field name='name'>task.view</field>
             <field name="model">project.task</field>
-            <field name="inherit_id" ref="industry_fsm_report.project_task_view_form_inherit"/>
+            <field name="inherit_id" ref="industry_fsm_report.view_task_form2_inherit"/>
             <field name="arch" type="xml">
-                <xpath expr="(//field[@name='worksheet_template_id'])[2]" position="attributes">
+                <xpath expr="//field[@name='worksheet_template_id']" position="attributes">
                     <attribute name="invisible">1</attribute>
                 </xpath>
             </field>

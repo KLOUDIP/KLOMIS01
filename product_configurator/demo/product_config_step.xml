@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-<data>
+
 
     <!-- Configuration Steps -->
 
@@ -48,7 +48,7 @@
             ref('product_attribute_line_2_series_tapistry')])]"/>
     </record>
 
-   <record id="2_series_config_step_engine" model="product.config.step.line">
+    <record id="2_series_config_step_engine" model="product.config.step.line">
         <field name="product_tmpl_id" ref="bmw_2_series"/>
         <field name="config_step_id" ref="config_step_engine"/>
         <field name="attribute_line_ids" eval="[(6, 0, [
@@ -56,7 +56,7 @@
             ref('product_attribute_line_2_series_fuel')])]"/>
     </record>
 
-   <record id="2_series_config_step_extras" model="product.config.step.line">
+    <record id="2_series_config_step_extras" model="product.config.step.line">
         <field name="product_tmpl_id" ref="bmw_2_series"/>
         <field name="config_step_id" ref="config_step_extras"/>
         <field name="attribute_line_ids" eval="[(6, 0, [
@@ -64,5 +64,5 @@
             ref('product_attribute_line_2_series_options')])]"/>
     </record>
 
-</data>
+
 </odoo>

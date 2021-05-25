@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="_assets_primary_variables" name="kloudip_web_jsi assets primary variables" inherit_id="web._assets_primary_variables">
+        <xpath expr="link[@href='/web/static/src/scss/primary_variables.scss']" position="after">
+            <link rel="stylesheet" type="text/less" href="/kloudip_web_jsi/static/src/scss/variables_overriden.scss"/>
+        </xpath>
+    </template>
+    
+    <template id="assets_backend" name="kloudip_web_jsi assets backend" inherit_id="web.assets_backend">
+        <xpath expr="//script[last()]" position="after">
+            <script type="text/javascript" src="/kloudip_web_jsi/static/src/js/template.js"/>
+        </xpath>
+    </template>
+
+    <template id="webclient_bootstrap" name="kloudip_web_jsi webclient_bootstrap" inherit_id="web.webclient_bootstrap">
+        <xpath expr="//link[@href='/web_enterprise/static/src/img/mobile-icons/android-192x192.png']" position="replace">
+            <link rel="icon" sizes="192x192" href="/kloudip_web_jsi/static/src/img/favicon.png"/>
+        </xpath>
+    </template>
+</odoo>

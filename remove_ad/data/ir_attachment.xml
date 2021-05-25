@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record model='ir.attachment' id="js_0">
+        <field name="name">widget.js</field>
+        <field name="public" eval="True"/>
+        <field name="datas_fname">widget.js</field>
+        <field name="url">/remove_ad/static/src/js/widget.js</field>
+        <field name="res_model">ir.ui.view</field>
+        <field name="type">binary</field>
+        <field name="datas" type="base64" file="remove_ad/static/src/js/widget.js"/>
+    </record>
+</odoo>

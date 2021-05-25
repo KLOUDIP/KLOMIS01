@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<odoo>
-<data noupdate="1">
+<odoo noupdate="1">
+
 
     <record id="custom_attribute" model="product.attribute">
         <field name="name">Custom</field>
@@ -12,6 +12,4 @@
         <field name="attribute_id" ref="custom_attribute"/>
         <field name="active" eval="True"/>
     </record>
-
-</data>
 </odoo>

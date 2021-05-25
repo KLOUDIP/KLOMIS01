@@ -1,0 +1,25 @@
+<odoo>
+	<data>
+		<record model="ir.ui.view" id="contract_fleet_view_inherited_kloudip">
+            <field name="name">fleet.vehicle.log.contract.form.inherited</field>
+            <field name="model">fleet.vehicle.log.contract</field>
+            <field name="inherit_id" ref="fleet.fleet_vehicle_log_contract_view_form"/>
+            <field name="arch" type="xml">
+                <field name="purchaser_id" position="after">
+                	<field name="x_lot_id" readonly="1"/>
+                </field>
+            </field>
+        </record>
+        <record model="ir.ui.view" id="contract_fleet_view_tree_inherited_kloudip">
+            <field name="name">fleet.vehicle.log.contract.tree.inherited</field>
+            <field name="model">fleet.vehicle.log.contract</field>
+            <field name="inherit_id" ref="fleet.fleet_vehicle_log_contract_view_tree"/>
+            <field name="arch" type="xml">
+                <field name="vehicle_id" position="after">
+                	<field name="x_lot_id"/>
+                	<field name="purchaser_id"/>
+                </field>
+            </field>
+        </record>
+	</data>
+</odoo>

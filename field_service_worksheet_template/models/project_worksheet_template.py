@@ -168,7 +168,7 @@ class ProjectWorksheetTemplateCustom(models.Model):
                             <field name="x_task_id" domain="[('is_fsm', '=', True)]"/>
                     </h1>
                     <h1 invisible="context.get('studio') or context.get('default_x_studio_line_id')">
-                            <field name="x_studio_line_id" domain="[('is_fsm', '=', True)]"/>
+                            <field name="x_studio_line_id"/>
                     </h1>
                     <group class="o_fsm_worksheet_form">
                         <group>

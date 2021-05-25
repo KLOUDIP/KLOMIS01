@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="action_create_contract_vehicle" model="base.automation">
+        <field name="name">Create contract on add vehicle to move line</field>
+        <field name="sequence">1</field>
+        <field name="trigger">on_create_or_write</field>
+        <field name="model_id" ref="stock.model_stock_move_line"/>
+        <field name="state">code</field>
+        <field name="code"><![CDATA[
+for rec in records:
+    if rec.x_vehicle_id.id and rec.state == 'done' and not rec.x_contract_id and not rec.move_id.origin_returned_move_id:
+            
+            contract = env['fleet.vehicle.log.contract'].create({
+                'vehicle_id': rec.x_vehicle_id.id,
+                'x_lot_id': rec.lot_id.id,
+                'purchaser_id': rec.x_vehicle_id.driver_id.id,
+                'expiration_date': False,
+                'state': 'open',
+            })
+
+            rec.write({'x_contract_id': contract.id})
+]]>
+        </field>
+    </record>
+
+    <record id="action_expire_contract_return" model="base.automation">
+        <field name="name">Expire contract on return</field>
+        <field name="model_id" ref="stock.model_stock_move"/>
+        <field name="sequence">1</field>
+        <field name="trigger">on_create_or_write</field>
+        <field name="state">code</field>
+        <field name="code"><![CDATA[
+for rec in records:
+    if rec.origin_returned_move_id and rec.state == 'done':
+        lines = rec.origin_returned_move_id.move_line_ids
+        if any(line.x_contract_id for line in rec.origin_returned_move_id.move_orig_ids.move_line_ids):
+            lines = rec.origin_returned_move_id.move_orig_ids.mapped('move_line_ids')
+        for ml in lines:
+            if ml.x_contract_id and ml.x_contract_id.state != 'expired':
+                map_move_line = rec.move_line_ids.filtered(lambda l: l.lot_id == ml.lot_id and l.x_vehicle_id == ml.x_vehicle_id)
+                if map_move_line:
+                    ml.x_contract_id.write({'state': 'expired', 'expiration_date': datetime.datetime.today()})
+                    map_move_line.write({'x_contract_id': ml.x_contract_id.id})
+
+]]>
+        </field>
+    </record>
+
+    <record id="action_constraint_contract" model="base.automation">
+        <field name="name">Constraint cannot be two open contracts for one vehicle/one product</field>
+        <field name="sequence">1</field>
+        <field name="trigger">on_create</field>
+        <field name="model_id" ref="fleet.model_fleet_vehicle_log_contract"/>
+        <field name="state">code</field>
+        <field name="code"><![CDATA[
+other_rents = env['fleet.vehicle.log.contract'].search([('vehicle_id', '=', record.vehicle_id.id),('state','=','open'), ('id', '!=', record.id)])
+for r in other_rents:
+    if r.x_lot_id.product_id == record.x_lot_id.product_id:
+        raise Warning('Product %s is already present in vehicle %s with contract %s' % (r.x_lot_id.product_id.name, record.vehicle_id.license_plate, r.name))
+]]>
+        </field>
+    </record>
+
+    
+</odoo>
