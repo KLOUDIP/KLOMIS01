@@ -3,6 +3,7 @@ from odoo import fields, models, _, api
 
 class CommentsSelection(models.Model):
     _name = 'comments.selection'
+    _description = 'Comments Selection'
 
     name = fields.Char(string="Comments")
     section = fields.Selection([
