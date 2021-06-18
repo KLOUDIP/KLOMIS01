@@ -295,8 +295,8 @@ class WorksheetTemplateLine(models.Model):
         template_id = self.env.ref('field_service_worksheet_template.mail_template_data_send_report_custom1').id
         lang = self.env.context.get('lang')
         template = self.env['mail.template'].browse(template_id)
-        if template.lang:
-            lang = template._render_template(template.lang, 'worksheet.template.line', self.ids[0])
+        #if template.lang:
+            #lang = template._render_template(template.lang, 'worksheet.template.line', self.ids[0])
         ctx = {
             'default_model': 'worksheet.template.line',
             'default_res_id': self.id,
