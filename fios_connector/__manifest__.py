@@ -2,7 +2,7 @@
 
 {
     'name': 'FIOS Connector',
-    'version': '1.0.6',
+    'version': '1.0.1',
     'category': 'Fleet',
     'summery': """FIOS Integration with Odoo""",
     'description': """
