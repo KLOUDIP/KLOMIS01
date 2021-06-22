@@ -1,0 +1,61 @@
+# -*- encoding: utf-8 -*-
+
+from odoo import api, fields, models, _
+from odoo.exceptions import ValidationError, UserError
+
+
+class MatchFiosMissing(models.Model):
+    _name = 'match.fios.missing'
+    _description = 'Match FIOS Missing'
+    _inherit = 'mail.thread'
+    _rec_name = 'partner_id'
+
+    partner_id = fields.Many2one('res.partner', string='Partner')
+    matching_line_ids = fields.One2many('fios.matching.line', 'match_fios_missing_id', string='Fios Matching Lines')
+    last_updated = fields.Datetime('Last Updated')
+
+    def unlink(self):
+        """Unlink assigned missing serial and plate ids when unlink the record"""
+        self.matching_line_ids.unlink()
+        return super(MatchFiosMissing, self).unlink()
+
+
+class FiosMatchingLine(models.Model):
+    _name = "fios.matching.line"
+    _description = 'FIOS Matching Line'
+
+    fios_plate_no = fields.Many2one('missing.fleets', string='Fios Plate Number', domain=[('state', '=', 'not_updated')])
+    fleet_vehicle_id = fields.Many2one('fleet.vehicle', string='Vehicle Number', domain=[('fios_plate_no_updated', '=', False)])
+    fios_serial_no = fields.Many2one('missing.serial', string='Fios Serial Number', domain=[('state', '=', 'not_updated')])
+    lot_id = fields.Many2one('stock.production.lot', string='Lot/Serial Number', domain=[('fios_lot_no', '=', False)])
+    match_fios_missing_id = fields.Many2one('match.fios.missing', string='Fios Missing')
+    plate_matched = fields.Boolean('Plate Matched', help='For UI Purposes')
+    serial_matched = fields.Boolean('Serial Matched', help='For UI Purposes')
+
+    def match_vehicle(self):
+        """update sync-key in FIOS API"""
+        if not self.fleet_vehicle_id:
+            raise UserError(_('You need to provide a Fleet Vehicle to match!'))
+        # get response from fios API
+        active_units_obj = self.env['active.units']
+        eid = active_units_obj.get_eid(self.match_fios_missing_id.partner_id.fios_token)
+        response = active_units_obj.get_response_from_fios_api(eid)
+        # write fleet vehicle number to the FIOS API (sync-key)-------------------------
+        item = [item for item in response.get('items') if str(item['id']) == self.fios_plate_no.item_id]
+        if len(item) > 1:
+            raise ValidationError(_('Multiple item lines found for item_id %s. Cannot find the correct record '
+                                    'for update sync-key. Please contact the System Administrator') % self.fios_plate_no.item_id)
+        sync_key_rec = active_units_obj.get_sync_key_record(item[0])
+        active_units_obj.update_create_sync_key(item[0], sync_key_rec, self.fleet_vehicle_id.license_plate, eid)
+        # ---------------------------------------------------------------------
+        self.fios_plate_no.update({'state': 'updated'})
+        self.fleet_vehicle_id.update({'fios_plate_no_updated': True})
+        self.update({'plate_matched': True})
+
+    def match_serial(self):
+        """Write fios serial_no to lot, existing in database"""
+        if not self.lot_id:
+            raise UserError(_('You need to provide a Lot/Serial Number to Match!'))
+        self.fios_serial_no.update({'state': 'updated'})
+        self.lot_id.update({'fios_lot_no': self.fios_serial_no.unit_serial})
+        self.update({'serial_matched': True})
