@@ -88,6 +88,10 @@ class ActiveUnits(models.Model):
                 # get vehicle
                 fleet_vehicle = self.env['fleet.vehicle'].search(domain)  # get the fleet vehicle belongs to vehicle license plate
 
+                # raise error when multiple fleet vehicles found
+                if len(fleet_vehicle) > 1:
+                    raise ValidationError(_('Multiple vehicles found for number plate \'%s\'') % item['nm'])
+
                 # check missing_fleets available for the fleet by comparing licence plate
                 missing_fleets_obj = self.env['missing.fleets']
                 missing_fleet_id = missing_fleets_obj.search([('plate_no', '=', item['nm'])])
@@ -101,6 +105,9 @@ class ActiveUnits(models.Model):
 
                 # get the serial for the api serial number
                 lot_serial = self.env['stock.production.lot'].search(['|', ('name', 'ilike', item['uid']), ('fios_lot_no', '=', item['uid'])])
+                # raise error when multiple lot/serials found
+                if len(lot_serial) > 1:
+                    raise ValidationError(_('Multiple Serials found for Serial Number \'%s\'') % item['uid'])
                 # check serial availability in system
                 missing_serial_obj = self.env['missing.serial']
                 missing_serial_id = missing_serial_obj.search([('unit_serial', '=', item['uid'])])
@@ -129,16 +136,11 @@ class ActiveUnits(models.Model):
                 fleet_vehicle = fleet_vehicle.filtered(lambda fleet: fleet.fios_plate_no_updated)
                 lot_serial = lot_serial.filtered(lambda serial: serial.fios_lot_no)
 
-                if len(fleet_vehicle) > 1:
-                    raise ValidationError(_('Multiple vehicles found for number plate \'%s\'') % item['nm'])
-                if len(lot_serial) > 1:
-                    raise ValidationError(_('Multiple Serials found for Serial Number \'%s\'') % item['uid'])
-
                 if fleet_vehicle and lot_serial:
                     contracts = self.env['fleet.vehicle.log.contract'].search([('vehicle_id', '=', fleet_vehicle.id), ('partner_id', '=', env.id), ('state', '!=', 'closed')])
                     # check with serial numbers
                     # contracts = contracts.filtered(lambda contract: contract.x_studio_lot_id == lot_serial).ids
-                    contracts = contracts.filtered(lambda contract: contract.x_lot_id.name == item['uid']).ids  # TODO: Enable this when move to production
+                    contracts = contracts.filtered(lambda contract: contract.x_lot_id == lot_serial).ids  # TODO: Enable this when move to production
                     active_units_data.append({
                         'fleet_vehicle_id': fleet_vehicle.id,
                         'lot_id': lot_serial.id,

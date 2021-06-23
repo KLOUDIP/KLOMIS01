@@ -59,3 +59,13 @@ class FiosMatchingLine(models.Model):
         self.fios_serial_no.update({'state': 'updated'})
         self.lot_id.update({'fios_lot_no': self.fios_serial_no.unit_serial})
         self.update({'serial_matched': True})
+
+    def unmatch_vehicle(self):
+        self.fleet_vehicle_id.update({'fios_plate_no_updated': False})
+        self.update({'plate_matched': False})
+        return True
+
+    def unmatch_serial(self):
+        self.lot_id.update({'fios_lot_no': False})
+        self.update({'serial_matched': False})
+        return True
