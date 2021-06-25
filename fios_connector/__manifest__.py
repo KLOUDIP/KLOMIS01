@@ -22,6 +22,7 @@
         'views/res_partner_views.xml',
         'views/match_fios_missing_views.xml',
         'views/fleet_vehicle_views.xml',
+        'views/fleet_vehicle_log_contract_views.xml',
         'views/stock_production_lot_views.xml',
         'views/odoo_unmatched_serials.xml',
         'views/odoo_unmatched_fleets.xml',
@@ -29,3 +30,4 @@
     'installable': True,
     'auto_install': False,
 }
+# real version : 1.0.8

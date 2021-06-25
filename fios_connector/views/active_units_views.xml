@@ -6,7 +6,7 @@
         <field name="name">active.units.view.form</field>
         <field name="model">active.units</field>
         <field name="arch" type="xml">
-            <form string="Active Units" edit="false" create="false">
+            <form string="Active Units" edit="false" create="false" delete="0">
                 <sheet>
                     <group>
                         <group>

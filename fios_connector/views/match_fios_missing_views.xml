@@ -46,10 +46,10 @@
                                 <field name="plate_matched" invisible="1"/>
                                 <field name="serial_matched" invisible="1"/>
                                 <field name="fios_plate_no" required="1" options="{'no_create': True, 'no_open': True}" readonly="1"/>
-                                <field name="fleet_vehicle_id" context="{'view_license_plate': '1'}"/>
+                                <field name="fleet_vehicle_id" context="{'view_license_plate': '1'}" attrs="{'readonly': [('plate_matched', '=', True)]}"/>
                                 <button name="match_vehicle" type='object' string="Match Plate" class="btn-outline-primary" attrs="{'invisible': [('plate_matched', '=', True)]}"/>
                                 <field name="fios_serial_no" required="1" options="{'no_create': True, 'no_open': True}" readonly="1"/>
-                                <field name="lot_id"/>
+                                <field name="lot_id" attrs="{'readonly': [('serial_matched', '=', True)]}"/>
                                 <button name="match_serial" type='object' string="Match Serial" class="btn-outline-primary" attrs="{'invisible': [('serial_matched', '=', True)]}"/>
                             </tree>
                         </field>
@@ -68,7 +68,7 @@
         <field name="name">match.fios.missing.view.tree</field>
         <field name="model">match.fios.missing</field>
         <field name="arch" type="xml">
-            <tree string="Match Fios Missing" create="0">
+            <tree string="Match Fios Missing" create="0" delete="0">
                 <field name="partner_id"/>
                 <field name="matching_line_ids"/>
             </tree>

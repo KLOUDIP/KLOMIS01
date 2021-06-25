@@ -90,7 +90,7 @@ class ActiveUnits(models.Model):
 
                 # raise error when multiple fleet vehicles found
                 if len(fleet_vehicle) > 1:
-                    raise ValidationError(_('Multiple vehicles found for number plate \'%s\'') % item['nm'])
+                    raise ValidationError(_('Multiple vehicles found for number plate \'%s\'') % fleet_vehicle[0].license_plate)
 
                 # check missing_fleets available for the fleet by comparing licence plate
                 missing_fleets_obj = self.env['missing.fleets']
@@ -107,7 +107,7 @@ class ActiveUnits(models.Model):
                 lot_serial = self.env['stock.production.lot'].search(['|', ('name', 'ilike', item['uid']), ('fios_lot_no', '=', item['uid'])])
                 # raise error when multiple lot/serials found
                 if len(lot_serial) > 1:
-                    raise ValidationError(_('Multiple Serials found for Serial Number \'%s\'') % item['uid'])
+                    raise ValidationError(_('Multiple Serials found for Serial Number \'%s\'') % lot_serial[0].name)
                 # check serial availability in system
                 missing_serial_obj = self.env['missing.serial']
                 missing_serial_id = missing_serial_obj.search([('unit_serial', '=', item['uid'])])
@@ -139,7 +139,7 @@ class ActiveUnits(models.Model):
                 if fleet_vehicle and lot_serial:
                     contracts = self.env['fleet.vehicle.log.contract'].search([('vehicle_id', '=', fleet_vehicle.id), ('partner_id', '=', env.id), ('state', '!=', 'closed')])
                     # check with serial numbers
-                    # contracts = contracts.filtered(lambda contract: contract.x_studio_lot_id == lot_serial).ids
+                    # contracts = contracts.filtered(lambda contract: contract.x_studio_lot_id == lot_serial)
                     contracts = contracts.filtered(lambda contract: contract.x_lot_id == lot_serial).ids  # TODO: Enable this when move to production
                     active_units_data.append({
                         'fleet_vehicle_id': fleet_vehicle.id,
@@ -147,9 +147,11 @@ class ActiveUnits(models.Model):
                         'partner_id': env.id,
                         'unit_serial': item['uid'],
                         'plate_no': item['nm'],
-                        'contract_ids': [(6, 0, contracts)],
+                        'contract_ids': [(6, 0, contracts.ids)],
                         'contracts_empty': True if not contracts else False
                     })
+                    # update contract fios active units available field
+                    contracts.update({'fios_active_unit_available': True})
         if active_units_data:
             for x in active_units_data:
                 existing_active_unit = self.search([('partner_id', '=', x['partner_id']), '|', ('unit_serial', '=', x['unit_serial']), ('plate_no', '=', x['plate_no'])], limit=1)

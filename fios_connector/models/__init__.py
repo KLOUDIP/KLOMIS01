@@ -8,3 +8,4 @@ from . import match_fios_missing
 from . import fleet_vehicle
 from . import fleet_vehicle
 from . import stock_production_lot
+from . import fleet_vehicle_log_contract
