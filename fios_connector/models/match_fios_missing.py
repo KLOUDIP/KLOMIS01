@@ -31,6 +31,7 @@ class FiosMatchingLine(models.Model):
     match_fios_missing_id = fields.Many2one('match.fios.missing', string='Fios Missing')
     plate_matched = fields.Boolean('Plate Matched', help='For UI Purposes')
     serial_matched = fields.Boolean('Serial Matched', help='For UI Purposes')
+    removed_from_fios = fields.Boolean('Removed From FIOS')
 
     def match_vehicle(self):
         """update sync-key in FIOS API"""
@@ -81,3 +82,7 @@ class FiosMatchingLine(models.Model):
         # unlink
         unit_serials.unlink()
         return True
+
+    def remove_matching_line(self):
+        if self.removed_from_fios:
+            self.unlink()

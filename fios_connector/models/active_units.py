@@ -1,10 +1,9 @@
 # -*- encoding: utf-8 -*-
 
-from odoo import api, fields, models, _
 import requests
+
+from odoo import fields, models, _
 from odoo.exceptions import UserError, ValidationError
-from dateutil import tz
-from datetime import datetime
 
 
 class ActiveUnits(models.Model):
@@ -72,25 +71,73 @@ class ActiveUnits(models.Model):
         response = requests.get(url).json()
         return response  # return is unnecessary
 
+    def get_fleet_vehicle(self, fios_item, sync_key):
+        """Get available fleet vehicle belongs to FIOS nm"""
+        # get the fleet vehicle belongs to vehicle license plate
+        # |------------------------------------Domain-------------------------------------------|
+        # |             FIOS                        Database            Status                  |
+        # | 000002826384596867-MOBILE               6867-MOBILE         Will Load to Missing    |
+        # |             65-263                        65-2639           Will Load to Missing    |
+        # |-------------------------------------------------------------------------------------|
+        # FIXME: loading MH-610 and MH-6106 both records when filtering
+        fleet_vehicle = self.env['fleet.vehicle'].search([('license_plate', '!=', False)]).filtered(
+            lambda z: ((z.license_plate in fios_item['nm']) or (fios_item['nm'] in z.license_plate) or
+                       (z.license_plate == sync_key)) if sync_key != 'False'
+            else ((z.license_plate in fios_item['nm']) or (fios_item['nm'] in z.license_plate)))
+        # available_fleet_vehicles = self.env['fleet.vehicle'].search([('license_plate', '!=', False)])
+        # fleet_vehicle = available_fleet_vehicles.filtered(
+        #     lambda z: ((z.license_plate in fios_item['nm']) or (fios_item['nm'] in z.license_plate)))
+        # # when search with the ilike(here 'in') conditions there will be multiple vehicles.
+        # # So we return [0] vehicle as fleet
+        # fleet_vehicle = fleet_vehicle[0]
+        # raise error when multiple fleet vehicles found
+        if len(fleet_vehicle) > 1:
+            raise ValidationError(_('Multiple vehicles found with same plate number: \'%s\' \n\n FIOS \'nm\': \'%s\'') % ((', ').join(fleet_vehicle.mapped('name')), str(fios_item['nm'])))
+        return fleet_vehicle
+
+    def remove_matching_line_data(self, available_plates, available_sync_keys, matching_record, partner_id):
+        """Remove matching line data (fios plate number, fios serial number)"""
+        # TODO: Fix domain
+        available_missing_recs = matching_record.mapped('matching_line_ids').filtered(lambda x: ((x.fios_plate_no.plate_no not in available_plates) if x.fios_plate_no else (x.fleet_vehicle_id.license_plate not in available_sync_keys)) and not x.removed_from_fios)
+        if available_missing_recs:
+            # update fields if the record is matched one--
+            update_recs = available_missing_recs.filtered(lambda x: x.serial_matched and x.plate_matched)
+            # unlink missing fleets and missing serials
+            update_recs.mapped('fios_plate_no').unlink()
+            update_recs.mapped('fios_serial_no').unlink()
+            update_recs.update({'fios_plate_no': False, 'fios_serial_no': False, 'removed_from_fios': True})
+            # unlink the record if either serial or plate matched--
+            unlink_recs = available_missing_recs.filtered(lambda x: not x.serial_matched and not x.plate_matched)
+            # unlink missing fleets and missing serials
+            unlink_recs.mapped('fios_plate_no').unlink()
+            unlink_recs.mapped('fios_serial_no').unlink()
+            unlink_recs.unlink()
+            # unmatch process for missing lines
+            update_recs.unmatch_vehicle()
+            update_recs.unmatch_serial()
+
     def get_active_units(self, env, response, eid):
         """Write necessary values to the system"""
         # create matching record to the partner if not exist
         matching_record = self.env['match.fios.missing'].search([('partner_id', '=', env.id)], limit=1)
         if not matching_record:
             matching_record = self.env['match.fios.missing'].create({'partner_id': env.id})
+
         active_units_data = []
+        available_sync_keys = []
+        available_plates = []
         for item in response.get('items'):
             if 'nm' and 'uid' in item:
                 # get sync key record from response
                 sync_key_rec = self.get_sync_key_record(item)
-                # make domain if sync_key_rec exist
-                domain = ['|',  ('license_plate', 'ilike', item['nm']), ('license_plate', '=', item['aflds'][sync_key_rec[0]]['v'])] if len(sync_key_rec) == 1 else [('license_plate', 'ilike', item['nm'])]
-                # get vehicle
-                fleet_vehicle = self.env['fleet.vehicle'].search(domain)  # get the fleet vehicle belongs to vehicle license plate
+                # get sync_key
+                sync_key = item['aflds'][sync_key_rec[0]]['v'] if len(sync_key_rec) == 1 else 'False'
+                if sync_key != 'False':
+                    available_sync_keys.append(sync_key)
+                available_plates.append(item['nm'])
 
-                # raise error when multiple fleet vehicles found
-                if len(fleet_vehicle) > 1:
-                    raise ValidationError(_('Multiple vehicles found for number plate \'%s\'') % fleet_vehicle[0].license_plate)
+                # get fleet_vehicle
+                fleet_vehicle = self.get_fleet_vehicle(item, sync_key)
 
                 # check missing_fleets available for the fleet by comparing licence plate
                 missing_fleets_obj = self.env['missing.fleets']
@@ -124,11 +171,15 @@ class ActiveUnits(models.Model):
                         'fios_serial_no': missing_serial_id.id,
                         'lot_id': lot_serial.id if lot_serial else False
                     }
-                matching_line_id = matching_record.matching_line_ids.search([('fios_plate_no', '=', missing_fleet_id.id)], limit=1)
+                matching_line_id = matching_record.matching_line_ids.search([('fios_plate_no', '=', missing_fleet_id.id)], limit=1) or matching_record.matching_line_ids.filtered(lambda x: x.fleet_vehicle_id.license_plate == sync_key)
                 if not matching_line_id:
                     matching_record.matching_line_ids.create(matching_line_data)
-                # else:
-                #     matching_line_id.update(matching_line_data)
+                elif matching_line_id.removed_from_fios:
+                    matching_line_id.update({
+                        'fios_plate_no': missing_fleet_id.id,
+                        'fios_serial_no': missing_serial_id.id,
+                        'removed_from_fios': False
+                    })
 
                 # compare api data and create active unit record for the selected customer or update the records
                 # if exist
@@ -163,6 +214,8 @@ class ActiveUnits(models.Model):
         # update matching record last update status
         # matching_record.update({'last_updated': fields.Datetime.now().replace(tzinfo=tz.tzutc()).astimezone(tz.gettz(self.env.context.get('tz')))})
         matching_record.update({'last_updated': fields.Datetime.now()})
+        # remove matching lines if fios not returning the line that belongs to matching line
+        self.remove_matching_line_data(available_plates, available_sync_keys, matching_record, env.id)
         return True
 
     def create_fleet_contracts(self):

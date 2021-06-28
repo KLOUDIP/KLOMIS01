@@ -11,7 +11,7 @@
     'author': 'Nisus Solutions(PVT) Ltd.',
     'website': 'http://www.nisus.lk',
     'depends': [
-        'fleet', 'contacts', 'stock', 'fleet_contract_management'
+        'fleet', 'contacts', 'stock', 'fleet_contract_management', 'sale_subscription'
     ],
     'data': [
         'security/ir.model.access.csv',
@@ -30,4 +30,4 @@
     'installable': True,
     'auto_install': False,
 }
-# real version : 1.0.8
+# real version : 1.0.9

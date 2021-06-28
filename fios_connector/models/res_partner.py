@@ -1,7 +1,7 @@
 # -*- encoding: utf-8 -*-
 
 from odoo import api, fields, models, _
-from odoo.exceptions import UserError
+from odoo.exceptions import UserError, ValidationError
 
 
 class ResPartner(models.Model):
@@ -13,6 +13,9 @@ class ResPartner(models.Model):
     def get_active_units(self):
         if not self.fios_token:
             raise UserError(_('No FIOS Token found for the current driver!'))
+        elif self.subscription_count == 0:
+            raise ValidationError(_('Partner doesn\'t have any subscriptions. '
+                                    'Active units not available for partners without subscription.'))
         else:
             eid = self.env['active.units'].get_eid(self.fios_token)
             response = self.env['active.units'].get_response_from_fios_api(eid)
@@ -20,7 +23,7 @@ class ResPartner(models.Model):
             return True
 
     def scheduler_for_fios(self):
-        for rec in self.search([('type', '=', 'invoice'), ('fios_token', '!=', False)]):
+        for rec in self.search([('type', '=', 'invoice'), ('fios_token', '!=', False), ('subscription_count', '>', 0)]):
             eid = rec.env['active.units'].get_eid(rec.fios_token)
             response = rec.env['active.units'].get_response_from_fios_api(eid)
             rec.env['active.units'].get_active_units(rec, response, eid)

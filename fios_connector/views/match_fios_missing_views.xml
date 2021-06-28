@@ -25,7 +25,7 @@
                                     <group string="Vehicle">
                                         <field name="fios_plate_no" required="1" options="{'no_create': True, 'no_open': True}"/>
                                         <field name="fleet_vehicle_id" context="{'view_license_plate': '1'}" required="1"/>
-                                        <label for="serial_matched"/>
+                                        <label for="plate_matched"/>
                                         <div class="o_raw">
                                             <field name="plate_matched" readonly="1"/>
                                             <button name="unmatch_vehicle" type='object' string="UnMatch Plate" attrs="{'invisible': [('plate_matched', '=', False)]}" icon='fa-times'/>
@@ -40,17 +40,25 @@
                                             <button name="unmatch_serial" type='object' string="UnMatch Serial" attrs="{'invisible': [('serial_matched', '=', False)]}" icon='fa-times'/>
                                         </div>
                                     </group>
+                                    <group string="FIOS Status">
+                                        <label for="removed_from_fios"/>
+                                        <div class="o_raw">
+                                            <field name="removed_from_fios" readonly="1"/>
+                                            <button name="remove_matching_line" type='object' string="Remove Line" attrs="{'invisible': [('removed_from_fios', '=', False)]}" icon='fa-times'/>
+                                        </div>
+                                    </group>
                                 </group>
                             </form>
                             <tree editable="bottom" create="false" delete="0">
                                 <field name="plate_matched" invisible="1"/>
+                                <field name="removed_from_fios" invisible="1"/>
                                 <field name="serial_matched" invisible="1"/>
                                 <field name="fios_plate_no" required="1" options="{'no_create': True, 'no_open': True}" readonly="1"/>
                                 <field name="fleet_vehicle_id" context="{'view_license_plate': '1'}" attrs="{'readonly': [('plate_matched', '=', True)]}"/>
-                                <button name="match_vehicle" type='object' string="Match Plate" class="btn-outline-primary" attrs="{'invisible': [('plate_matched', '=', True)]}"/>
+                                <button name="match_vehicle" type='object' string="Match Plate" class="btn-outline-primary" attrs="{'invisible': ['|', ('plate_matched', '=', True), ('removed_from_fios', '=', True)]}"/>
                                 <field name="fios_serial_no" required="1" options="{'no_create': True, 'no_open': True}" readonly="1"/>
                                 <field name="lot_id" attrs="{'readonly': [('serial_matched', '=', True)]}"/>
-                                <button name="match_serial" type='object' string="Match Serial" class="btn-outline-primary" attrs="{'invisible': [('serial_matched', '=', True)]}"/>
+                                <button name="match_serial" type='object' string="Match Serial" class="btn-outline-primary" attrs="{'invisible': ['|', ('serial_matched', '=', True), ('removed_from_fios', '=', True)]}"/>
                             </tree>
                         </field>
                     </group>
