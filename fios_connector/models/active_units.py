@@ -140,7 +140,7 @@ class ActiveUnits(models.Model):
                     contracts = self.env['fleet.vehicle.log.contract'].search([('vehicle_id', '=', fleet_vehicle.id), ('partner_id', '=', env.id), ('state', '!=', 'closed')])
                     # check with serial numbers
                     # contracts = contracts.filtered(lambda contract: contract.x_studio_lot_id == lot_serial)
-                    contracts = contracts.filtered(lambda contract: contract.x_lot_id == lot_serial).ids  # TODO: Enable this when move to production
+                    contracts = contracts.filtered(lambda contract: contract.x_lot_id == lot_serial)  # TODO: Enable this when move to production
                     active_units_data.append({
                         'fleet_vehicle_id': fleet_vehicle.id,
                         'lot_id': lot_serial.id,
