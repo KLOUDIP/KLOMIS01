@@ -31,4 +31,4 @@
     'installable': True,
     'auto_install': False,
 }
-# real version : 1.1.0
+# real version : 1.1.1

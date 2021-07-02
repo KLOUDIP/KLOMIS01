@@ -40,8 +40,10 @@ class FleetVehicleLogContract(models.Model):
             elif len(move_line) == 1:
                 if move_line.x_vehicle_id:
                     raise ValidationError(_('Vehicle already assigned to move line. (Sale order: %s)') % sale_id.name)
-                _logger.info(_('Updating vehicle number to delivery \'%s\' belong to sale order %s') % (move_line.picking_id.name, sale_id.name))
+                _logger.info(_('Updating vehicle number to delivery \'%s\' belongs to sale order %s') % (move_line.picking_id.name, sale_id.name))
                 move_line.write({'x_vehicle_id': self._context.get('default_vehicle_id'), 'x_contract_id': res.id})
+                # update contract start date
+                res.update({'start_date': move_line.date.date()})
             else:
                 raise ValidationError(_('No move line found for serial %s. (sale order %s)') % (lot_id.name, sale_id.name))
         return res

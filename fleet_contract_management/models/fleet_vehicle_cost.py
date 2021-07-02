@@ -20,3 +20,9 @@ class FleetVehicleLogContract(models.Model):
         if 'is_activated' in vals:
             vals.update({'activated_time': fields.Datetime.now()})
         return super(FleetVehicleLogContract, self).write(vals)
+
+    def create(self, vals):
+        """Override core method to write activated time, if contract activated when creating"""
+        if vals.get('is_activated'):
+            vals.update({'activated_time': fields.Datetime.now()})
+        return super(FleetVehicleLogContract, self).create(vals)

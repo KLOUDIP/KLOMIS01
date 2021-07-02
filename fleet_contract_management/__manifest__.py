@@ -13,4 +13,4 @@
     ],
     'depends': ['fleet'],
 }
-# actual_version 1.0.3
+# actual_version 1.0.4
