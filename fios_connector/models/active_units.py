@@ -188,10 +188,10 @@ class ActiveUnits(models.Model):
                 lot_serial = lot_serial.filtered(lambda serial: serial.fios_lot_no)
 
                 if fleet_vehicle and lot_serial:
-                    contracts = self.env['fleet.vehicle.log.contract'].search([('vehicle_id', '=', fleet_vehicle.id), ('partner_id', '=', env.id), ('state', '!=', 'closed')])
-                    # check with serial numbers
-                    # contracts = contracts.filtered(lambda contract: contract.x_studio_lot_id == lot_serial)
-                    contracts = contracts.filtered(lambda contract: contract.x_lot_id == lot_serial)  # TODO: Enable this when move to production
+                    # check with serial numbers and vehicle
+                    contracts_with_serial_and_vehicle = self.env['fleet.vehicle.log.contract'].search([('vehicle_id', '=', fleet_vehicle.id), ('state', '!=', 'closed')]).filtered(lambda contract: contract.x_lot_id == lot_serial)
+                    # check with partners
+                    contracts = contracts_with_serial_and_vehicle.filtered(lambda y: y.partner_id.id == env.id)
                     active_units_data.append({
                         'fleet_vehicle_id': fleet_vehicle.id,
                         'lot_id': lot_serial.id,
@@ -199,7 +199,8 @@ class ActiveUnits(models.Model):
                         'unit_serial': item['uid'],
                         'plate_no': item['nm'],
                         'contract_ids': [(6, 0, contracts.ids)],
-                        'contracts_empty': True if not contracts else False
+                        # 'contracts_empty': True
+                        'contracts_empty': True if not contracts_with_serial_and_vehicle else False  # we need to check the fleet have any contracts with same serial otherwise show the create contract button
                     })
                     # update contract fios active units available field
                     contracts.update({'fios_active_unit_available': True})
@@ -228,7 +229,8 @@ class ActiveUnits(models.Model):
             'context': {
                 'default_vehicle_id': self.fleet_vehicle_id.id,
                 'default_partner_id': self.partner_id.id,
-                # 'default_x_studio_lot_id': self.lot_id.id,
-                'default_x_lot_id': self.lot_id.id,  # TODO:Enable when move to production
+                'default_expiration_date': False,
+                'add_vehicle_to_stock_move_line': 1,
+                'default_x_lot_id': self.lot_id.id,
             },
         }

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--extend server action to update contract start date-->
+    <record id="vehicle_delivery.action_create_contract_vehicle" model="base.automation">
+                <field name="code"><![CDATA[
+for rec in records:
+    if rec.x_vehicle_id.id and rec.state == 'done' and not rec.x_contract_id and not rec.move_id.origin_returned_move_id:
+
+            contract = env['fleet.vehicle.log.contract'].create({
+                'vehicle_id': rec.x_vehicle_id.id,
+                'x_lot_id': rec.lot_id.id,
+                'purchaser_id': rec.x_vehicle_id.driver_id.id,
+                'start_date': rec.date.date(),
+                'expiration_date': False,
+                'state': 'open',
+            })
+
+            rec.write({'x_contract_id': contract.id})
+]]>
+        </field>
+    </record>
+
+</odoo>
