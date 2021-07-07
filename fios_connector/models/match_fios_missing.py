@@ -62,25 +62,27 @@ class FiosMatchingLine(models.Model):
         self.update({'serial_matched': True})
 
     def unmatch_vehicle(self):
-        self.fleet_vehicle_id.update({'fios_plate_no_updated': False})
-        self.update({'plate_matched': False})
-        # unlink active unit record with fleet_id if assigned
-        unit_serials = self.env['active.units'].search([('fleet_vehicle_id', '=', self.fleet_vehicle_id.id)])
-        # set fios_active_unit_available field to false
-        unit_serials.mapped('contract_ids').update({'fios_active_unit_available': False})
-        # unlink
-        unit_serials.unlink()
+        for rec in self:
+            rec.fleet_vehicle_id.update({'fios_plate_no_updated': False})
+            rec.update({'plate_matched': False})
+            # unlink active unit record with fleet_id if assigned
+            unit_serials = rec.env['active.units'].search([('fleet_vehicle_id', '=', rec.fleet_vehicle_id.id)])
+            # set fios_active_unit_available field to false
+            unit_serials.mapped('contract_ids').update({'fios_active_unit_available': False})
+            # unlink
+            unit_serials.unlink()
         return True
 
     def unmatch_serial(self):
-        self.lot_id.update({'fios_lot_no': False})
-        self.update({'serial_matched': False})
-        # unlink active unit record with serial if assigned
-        unit_serials = self.env['active.units'].search([('lot_id', '=', self.lot_id.id)])
-        # set fios_active_unit_available field to false
-        unit_serials.mapped('contract_ids').update({'fios_active_unit_available': False})
-        # unlink
-        unit_serials.unlink()
+        for rec in self:
+            rec.lot_id.update({'fios_lot_no': False})
+            rec.update({'serial_matched': False})
+            # unlink active unit record with serial if assigned
+            unit_serials = rec.env['active.units'].search([('lot_id', '=', rec.lot_id.id)])
+            # set fios_active_unit_available field to false
+            unit_serials.mapped('contract_ids').update({'fios_active_unit_available': False})
+            # unlink
+            unit_serials.unlink()
         return True
 
     def remove_matching_line(self):
