@@ -24,7 +24,10 @@ class ActiveUnits(models.Model):
         """Get EID From API"""
         # get the response for extract eid number
         url = """http://sdk.kloudip.com/ajax.php?svc=token/login&params={"token":"%s","fl":1}""" % token
-        response = requests.get(url).json()
+        try:
+            response = requests.get(url).json()
+        except:
+            raise ValidationError(_('URL for get eid from FIOS API is incorrect!'))
 
         if 'error' in response:
             raise UserError(_('FIOS Returned with following error\n\n\'%s\'. (Error code \'%s\')') % (
