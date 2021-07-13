@@ -2,7 +2,7 @@
 
 import requests
 
-from odoo import fields, models, _
+from odoo import fields, models, _, api
 from odoo.exceptions import UserError, ValidationError
 
 

@@ -3,6 +3,8 @@
 from odoo import api, fields, models, _
 from odoo.exceptions import ValidationError
 import logging
+from random import randint
+
 
 _logger = logging.getLogger(__name__)
 
@@ -10,6 +12,14 @@ _logger = logging.getLogger(__name__)
 class FleetVehicleLogContract(models.Model):
     _inherit = 'fleet.vehicle.log.contract'
 
+    def _get_contract_color(self):
+        for i in self:
+            if i.state == 'expired':
+                i.color = 5
+            else:
+                i.color = 7
+
+    color = fields.Integer(string='Color', compute =_get_contract_color)
     fios_active_unit_available = fields.Boolean('FIOS Active Unit Available')
 
     @api.onchange('partner_id')

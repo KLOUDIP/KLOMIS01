@@ -24,6 +24,7 @@ class FiosMatchingLine(models.Model):
     _name = "fios.matching.line"
     _description = 'FIOS Matching Line'
 
+
     fios_plate_no = fields.Many2one('missing.fleets', string='Fios Plate Number', domain=[('state', '=', 'not_updated')])
     fleet_vehicle_id = fields.Many2one('fleet.vehicle', string='Vehicle Number', domain=[('fios_plate_no_updated', '=', False)])
     fios_serial_no = fields.Many2one('missing.serial', string='Fios Serial Number', domain=[('state', '=', 'not_updated')])

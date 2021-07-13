@@ -14,7 +14,15 @@ class FleetVehicleLogContract(models.Model):
     def _compute_company(self):
         for i in self:
             i['driver_company_id'] = self.purchaser_id.parent_id
-            
+            if i.purchaser_id:
+                child_ids = i.purchaser_id.parent_id.child_ids
+                for rec in child_ids:
+                    count = rec.subscription_count
+                    if count > 0 and rec.type == 'invoice':
+                        rec.subscription_count_boolean_field = True
+                    else:
+                        rec.subscription_count_boolean_field = False
+
     def write(self, vals):
         """Override core method to write activated/ deactivated time"""
         if 'is_activated' in vals:

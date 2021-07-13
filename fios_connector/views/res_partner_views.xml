@@ -27,7 +27,7 @@
                             <field name="lot_id" invisible="1"/>
                             <field name="unit_serial"/>
                             <field name="plate_no"/>
-                            <field name="contract_ids" widget="many2many_tags"/>
+                            <field name="contract_ids" widget="many2many_tags" options="{'color_field': 'color'}"/>
                             <field name="sync_key"/>
                             <field name="contracts_empty" invisible="1"/>
                             <button name="create_fleet_contracts" string="Create Contract" icon="fa-plus" type="object" attrs="{'invisible': [('contracts_empty', '=', False)]}"/>
