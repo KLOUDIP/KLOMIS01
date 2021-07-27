@@ -7,7 +7,7 @@ class ResPartner(models.Model):
     contract_ids = fields.One2many('fleet.vehicle.log.contract', 'partner_id', string="Contract")
     contract_count = fields.Integer(string="Contracts", compute='_compute_contract_count', store=False)
     active_contract_counts = fields.Integer(string="Active Fleet", compute='_compute_active_contract_count', store=False)
-    #subscription_count_boolean_field = fields.Boolean(string="Sub Count")
+    subscription_count_boolean_field = fields.Boolean(string="Sub Count")
 
     @api.depends('contract_ids')
     def _compute_contract_count(self):
