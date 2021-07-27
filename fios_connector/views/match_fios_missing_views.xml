@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!--match fios missing view form-->
+    <record id="match_fios_missing_view_form" model="ir.ui.view">
+        <field name="name">match.fios.missing.view.form</field>
+        <field name="model">match.fios.missing</field>
+        <field name="arch" type="xml">
+            <form string="Match Fios Missing" create="false" delete="0">
+                <sheet>
+                    <label for="partner_id" string="Partner"/>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="partner_id" required="1" readonly="1"/>
+                        </h1>
+                    </div>
+                    <div>
+                        <label for="last_updated" string="Last Updated" class="oe_inline"/>
+                        <field name="last_updated" required="1" readonly="1" class="oe_inline"/>
+                    </div>
+                    <h2 style="color:#666666; margin-top:1%"><b>Matching Lines</b></h2>
+                    <field name="matching_line_ids" nolabel="1"/>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids" widget="mail_followers"/>
+                    <field name="message_ids" widget="mail_thread"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <!--match fios missing view tree-->
+    <record id="match_fios_missing_view_tree" model="ir.ui.view">
+        <field name="name">match.fios.missing.view.tree</field>
+        <field name="model">match.fios.missing</field>
+        <field name="arch" type="xml">
+            <tree string="Match Fios Missing" create="0" delete="0">
+                <field name="partner_id"/>
+                <field name="matching_line_ids"/>
+            </tree>
+        </field>
+    </record>
+
+    <!--action view match fios missing -->
+    <record id="action_view_match_fios_missing" model="ir.actions.act_window">
+        <field name="name">Match Fios Missing Records</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">match.fios.missing</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_empty_folder">
+                No Records Found!
+            </p>
+        </field>
+    </record>
+
+    <!--menuitem match fios missing-->
+    <menuitem id="menu_match_fios_missing" parent="fios_connector.menu_fios" name="Match Fios Missing Records" action="action_view_match_fios_missing" sequence="4"/>
+
+    <!--fios matching line view tree-->
+    <record id="fios_matching_line_view_tree" model="ir.ui.view">
+        <field name="name">fios.matching.line.view.tree</field>
+        <field name="model">fios.matching.line</field>
+        <field name="arch" type="xml">
+            <tree editable="bottom" create="false" delete="0" string="FIOS Matching Lines" decoration-warning="different_serial_received_from_fios==True">
+                <field name="plate_matched" invisible="1"/>
+                <field name="removed_from_fios" invisible="1"/>
+                <field name="different_serial_received_from_fios" invisible="1"/>
+                <field name="serial_matched" invisible="1"/>
+                <field name="fios_plate_no" required="1" options="{'no_create': True, 'no_open': True}" readonly="1"/>
+                <field name="fleet_vehicle_id" context="{'view_license_plate': '1'}" attrs="{'readonly': [('plate_matched', '=', True)]}"/>
+                <button name="match_vehicle" type='object' string="Match Plate" class="btn-outline-primary" attrs="{'invisible': ['|', ('plate_matched', '=', True), ('removed_from_fios', '=', True)]}"/>
+                <field name="fios_serial_no" required="1" options="{'no_create': True, 'no_open': True}" readonly="1"/>
+                <field name="lot_id" attrs="{'readonly': [('serial_matched', '=', True)]}"/>
+                <button name="match_serial" type='object' string="Match Serial" class="btn-outline-primary" attrs="{'invisible': ['|', ('serial_matched', '=', True), ('removed_from_fios', '=', True)]}"/>
+            </tree>
+        </field>
+    </record>
+
+    <!--fios matching line view form-->
+    <record id='fios_matching_line_view_form' model='ir.ui.view'>
+        <field name="name">fios.matching.line.view.form</field>
+        <field name="model">fios.matching.line</field>
+        <field name="arch" type="xml">
+            <form create="false" string="FIOS Matching Line" edit="false">
+                <group>
+                    <group string="Vehicle">
+                        <field name="fios_plate_no" options="{'no_create': True, 'no_open': True}"/>
+                        <field name="fleet_vehicle_id" context="{'view_license_plate': '1'}"/>
+                        <label for="plate_matched"/>
+                        <div class="o_raw">
+                            <field name="plate_matched" readonly="1"/>
+                            <button name="unmatch_vehicle" type='object' string="UnMatch Plate" attrs="{'invisible': [('plate_matched', '=', False)]}" icon='fa-times'/>
+                        </div>
+                    </group>
+                    <group string="Serial">
+                        <field name="fios_serial_no" options="{'no_create': True, 'no_open': True}"/>
+                        <field name="lot_id"/>
+                        <label for="serial_matched"/>
+                        <div class="o_raw">
+                            <field name="serial_matched" readonly="1"/>
+                            <button name="unmatch_serial" type='object' string="UnMatch Serial" attrs="{'invisible': [('serial_matched', '=', False)]}" icon='fa-times'/>
+                        </div>
+                    </group>
+                    <group string="FIOS Status">
+                        <label for="removed_from_fios"/>
+                        <div class="o_raw">
+                            <field name="removed_from_fios" readonly="1"/>
+                            <button name="remove_matching_line" type='object' string="Remove Line" attrs="{'invisible': [('removed_from_fios', '=', False)]}" icon='fa-times' confirm="Are you sure, you need to remove the matching line?"/>
+                        </div>
+                    </group>
+                </group>
+            </form>
+        </field>
+    </record>
+
+</odoo>

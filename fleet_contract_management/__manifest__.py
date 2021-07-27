@@ -11,5 +11,6 @@
         'views/fleet_vehicle_cost_views.xml',
         'views/res_partner_views.xml',
     ],
-    'depends': ['fleet'],
+    'depends': ['fleet', 'sale_subscription'],
 }
+# actual_version 1.0.5

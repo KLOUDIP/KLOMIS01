@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_partner_view_form" model="ir.ui.view">
+        <field name="name">res.partner.view.form.inherit.fios_connector</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button class="oe_stat_button" type="object" name="action_view_matching_lines" icon="fa-car" attrs="{'invisible': [('fios_fleet_count', '=', 0)]}">
+                    <field string="FIOS Fleets" name="fios_fleet_count" widget="statinfo"/>
+                </button>
+            </xpath>
+
+            <xpath expr="//notebook" position="inside">
+                <page name="active_units" string="Active Units" attrs="{'invisible': ['|', ('type', '!=', 'invoice'),('subscription_count', '=', 0)]}">
+                    <group>
+                        <group string="FIOS Configuration">
+                            <field name="fios_token" password="True"/>
+                        </group>
+                    </group>
+                    <button name="get_active_units" string="Refresh" class="oe_highlight" icon="fa-refresh" type="object"/>
+                    <field name="active_unit_ids">
+                        <tree editable="bottom">
+                            <field name="fleet_vehicle_id" invisible="1"/>
+                            <field name="lot_id" invisible="1"/>
+                            <field name="unit_serial"/>
+                            <field name="plate_no"/>
+                            <field name="contract_ids" widget="many2many_tags" options="{'color_field': 'color_index'}"/>
+                            <field name="sync_key"/>
+                            <field name="contracts_empty" invisible="1"/>
+                            <button name="create_fleet_contracts" string="Create Contract" icon="fa-plus" type="object" attrs="{'invisible': [('contracts_empty', '=', False)]}"/>
+                        </tree>
+                    </field>
+                </page>
+            </xpath>
+
+        </field>
+    </record>
+</odoo>

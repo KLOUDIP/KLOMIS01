@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!--active units view form-->
+    <record id="active_units_view_form" model="ir.ui.view">
+        <field name="name">active.units.view.form</field>
+        <field name="model">active.units</field>
+        <field name="arch" type="xml">
+            <form string="Active Units" edit="false" create="false" delete="0">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="plate_no"/>
+                            <field name="unit_serial"/>
+                        </group>
+                        <group/>
+                        <group>
+                            <field name="contract_ids">
+                                <tree>
+                                    <field name="active" invisible="1"/>
+                                    <field name="color_index" invisible="1"/>
+                                    <field name="name"/>
+                                    <field name="days_left" invisible="1"/>
+                                    <field name="vehicle_id" widget="many2one_avatar"/>
+                                    <field name="insurer_id"/>
+                                    <field name="cost_generated" widget="monetary"/>
+                                    <field name="currency_id" invisible="1"/>
+                                    <field name="state" widget="badge" decoration-info="state == 'open'" decoration-danger="state == 'expired'"/>
+                                    <field name="activity_exception_decoration" widget="activity_exception"/>
+                                </tree>
+                            </field>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!--active units view tree-->
+    <record id="active_units_view_tree" model="ir.ui.view">
+        <field name="name">active.units.view.tree</field>
+        <field name="model">active.units</field>
+        <field name="arch" type="xml">
+            <tree string="Active Units" create="false">
+                <field name="partner_id"/>
+                <field name="plate_no"/>
+                <field name="unit_serial"/>
+                <field name="contract_ids" widget="many2many_tags" options="{'color_field': 'color_index'}"/>
+            </tree>
+        </field>
+    </record>
+
+    <!--active units view search-->
+    <record id="active_units_view_search" model="ir.ui.view">
+        <field name="name">active.units.search.view</field>
+        <field name="model">active.units</field>
+        <field name="arch" type="xml">
+            <search string="Active Units">
+                <field name="partner_id"/>
+                <separator/>
+                <group expand="0" string="Group By" colspan="10" col="8">
+                    <filter string="Partner" name="partner" domain="[]" context="{'group_by' : 'partner_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!--action view active units -->
+    <record id="action_view_active_units" model="ir.actions.act_window">
+        <field name="name">Active Units</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">active.units</field>
+        <field name="view_mode">tree,form</field>
+        <field name="context">{'search_default_partner': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_empty_folder">
+                No Active Units Found!
+            </p>
+        </field>
+    </record>
+
+    <!--change the sequence in configuration menuitem in contacts-->
+    <record model="ir.ui.menu" id="contacts.res_partner_menu_config">
+        <field name="sequence">5</field>
+    </record>
+
+    <!--root menuitem-->
+    <!--<menuitem id="menu_fios" parent="fleet.menu_root" name="FIOS" sequence="99"/>-->
+    <menuitem id="menu_fios" parent="contacts.menu_contacts" name="FIOS" sequence="2"/>
+    <!--menuitem active units-->
+    <menuitem id="menu_active_units" parent="fios_connector.menu_fios" name="Active Units" action="action_view_active_units" sequence="1"/>
+
+</odoo>

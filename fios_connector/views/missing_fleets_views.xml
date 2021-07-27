@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!--missing fleets view tree-->
+    <record id="missing_fleets_view_tree" model="ir.ui.view">
+        <field name="name">missing.fleets.view.tree</field>
+        <field name="model">missing.fleets</field>
+        <field name="arch" type="xml">
+            <tree string="Missing Fleets" create="false">
+                <field name="partner_id"/>
+                <field name="plate_no"/>
+                <field name="item_id" invisible="1"/>
+                <field name="state"/>
+            </tree>
+        </field>
+    </record>
+
+    <!--missing fleets view search-->
+    <record id="missing_fleets_view_search" model="ir.ui.view">
+        <field name="name">missing.fleets.search.view</field>
+        <field name="model">missing.fleets</field>
+        <field name="arch" type="xml">
+            <search string="Missing Fleets">
+                <field name="partner_id"/>
+                <filter name="updated" string="Updated" domain="[('state' ,'=', 'updated')]"/>
+                <filter name="not_updated" string="Not Updated" domain="[('state', '=', 'not_updated')]"/>
+                <separator/>
+                <group expand="0" string="Group By" colspan="10" col="8">
+                    <filter string="Partner" name="partner" domain="[]" context="{'group_by' : 'partner_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!--action view missing fleets -->
+    <record id="action_view_missing_fleets" model="ir.actions.act_window">
+        <field name="name">Missing Fleets</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">missing.fleets</field>
+        <field name="view_mode">tree</field>
+        <field name="search_view_id" ref="missing_fleets_view_search"/>
+        <field name="context">{'search_default_partner': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_empty_folder">
+                No Missing Fleets Found!
+            </p>
+        </field>
+    </record>
+
+    <!--root menuitem-->
+    <menuitem id="menu_fios_missing" parent="fios_connector.menu_fios" name="Missing" sequence="2"/>
+    <!--menuitem missing fleets-->
+    <menuitem id="menu_missing_fleets" parent="fios_connector.menu_fios_missing" name="Fleets" action="action_view_missing_fleets" sequence="2"/>
+
+</odoo>

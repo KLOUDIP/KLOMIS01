@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!--action view odoo unmatched serials -->
+    <record id="action_view_odoo_unmatched_serials" model="ir.actions.act_window">
+        <field name="name">Odoo Unmatched Serials</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">stock.production.lot</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('fios_lot_no','=',False)]</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_empty_folder">
+                No Odoo Unmatched Serials Found!
+            </p>
+        </field>
+    </record>
+
+    <!--root menuitem-->
+    <menuitem id="menu_fios_odoo_unmatched" parent="fios_connector.menu_fios" name="Odoo Unmatched" sequence="3"/>
+    <!--menuitem odoo unmatched serials-->
+    <menuitem id="menu_odoo_unmatched_serials" parent="fios_connector.menu_fios_odoo_unmatched" name="Serials" action="action_view_odoo_unmatched_serials" sequence="1"/>
+
+</odoo>
