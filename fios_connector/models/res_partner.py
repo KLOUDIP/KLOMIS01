@@ -42,7 +42,18 @@ class ResPartner(models.Model):
     def get_active_units(self):
         """Get Active units for the current partner"""
         if not self.fios_token:
-            raise UserError(_('No FIOS Token found for the current driver!'))
+            self.remove_data()  # remove data if serial field is empty
+            # raise UserError(_('No FIOS Token found for the current driver!'))
+            return {
+                'type': 'ir.actions.client',
+                'tag': 'display_notification',
+                'params': {
+                    'type': 'warning',
+                    'message': _("No FIOS Token found for the current driver!"),
+                    'next': {'type': 'ir.actions.act_window_close'},
+                    'sticky': True,
+                }
+            }
         elif self.subscription_count == 0:
             raise ValidationError(_('Partner doesn\'t have any subscriptions. '
                                     'Active units not available for partners without subscription.'))
@@ -53,11 +64,32 @@ class ResPartner(models.Model):
             eid = self.env['active.units'].get_eid(self.fios_token)
             response = self.env['active.units'].get_response_from_fios_api(eid)
             self.env['active.units'].get_active_units(self, response, eid)
+            # raise success message after updating
+            if not self.active_unit_ids:
+                return {
+                    'type': 'ir.actions.client',
+                    'tag': 'display_notification',
+                    'params': {
+                        'type': 'success',
+                        'message': _("Match FIOS missing records updated for partner: %s. Please match serials and "
+                                     "fleets to load active units" % self.name),
+                        'next': {'type': 'ir.actions.act_window_close'},
+                        'sticky': True,
+                    }
+                }
             return True
 
     def scheduler_for_fios(self):
         """Schedule action for get active units for the partners"""
-        for rec in self.search([('type', '=', 'invoice'), ('fios_token', '!=', False), ('subscription_count', '>', 0)]):
-            eid = rec.env['active.units'].get_eid(rec.fios_token)
-            response = rec.env['active.units'].get_response_from_fios_api(eid)
-            rec.env['active.units'].get_active_units(rec, response, eid)
+        for rec in self.search([('type', '=', 'invoice'), ('fios_token', '!=', False)]):
+            if self.env['sale.subscription'].search([('partner_id', '=', rec.id)]):  # check subscriptions available
+                eid = rec.env['active.units'].get_eid(rec.fios_token)
+                response = rec.env['active.units'].get_response_from_fios_api(eid)
+                rec.env['active.units'].get_active_units(rec, response, eid)
+
+    def remove_data(self):
+        """Unlink all partner relevant fios data, if fios token not exist"""
+        self.active_unit_ids.unlink()
+        self.env['match.fios.missing'].search([('partner_id', '=', self.id)]).unlink()
+        self.env['missing.serial'].search([('partner_id', '=', self.id)]).unlink()
+        self.env['missing.fleets'].search([('partner_id', '=', self.id)]).unlink()

@@ -21,7 +21,7 @@ for rec in records:
         </field>
     </record>
 
-    <!--extend server action for create contract when create or write-->
+    <!--extend server action for create contract when create or write stock.picking when return-->
     <record id="vehicle_delivery.action_expire_contract_return" model="base.automation">
         <field name="code"><![CDATA[
 for rec in records:

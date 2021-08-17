@@ -2,13 +2,13 @@
 
 {
     'name': 'FIOS Connector',
-    'version': '1.0.1',
-    'category': 'Fleet',
     'summery': """FIOS Integration with Odoo""",
     'description': """
 FIOS Integration with Odoo
     """,
-    'author': 'Nisus Solutions(PVT) Ltd.',
+    'version': '1.0.1',
+    'category': 'Fleet',
+    'author': 'Nisus Solutions (Pvt) Ltd',
     'website': 'http://www.nisus.lk',
     'depends': [
         'fleet', 'contacts', 'stock', 'fleet_contract_management', 'sale_subscription', 'vehicle_delivery'
@@ -32,4 +32,4 @@ FIOS Integration with Odoo
     'application': True,
     'auto_install': False,
 }
-# real version : 1.2.1
+# real version : 1.2.2

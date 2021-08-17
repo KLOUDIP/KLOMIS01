@@ -54,7 +54,11 @@ class ActiveUnits(models.Model):
 
     def get_sync_key_record(self, item):
         """check sync-key field exist and get key of the field if exist"""
-        return [x for x in item['aflds'] if item['aflds'][x]['n'] == 'sync-key']
+        try:
+            return [x for x in item['aflds'] if item['aflds'][x]['n'] == 'sync-key']
+        except KeyError as e:
+            _logger.error('KeyError: %s ' % e)
+            raise ValidationError('API token does not sent the sync field. (aflds field is missing in the API)')
 
     # update/create sync-key field to FIOS
     def update_create_sync_key(self, item, sync_key_rec, licence_plate, eid):

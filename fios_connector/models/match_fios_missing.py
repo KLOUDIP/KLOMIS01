@@ -15,7 +15,7 @@ class MatchFiosMissing(models.Model):
     last_updated = fields.Datetime('Last Updated')
 
     def unlink(self):
-        """Unlink assigned missing serial and plate ids when unlink the record"""
+        """Unlink assigned missing serials and plate ids when unlink the record"""
         self.matching_line_ids.unlink()
         return super(MatchFiosMissing, self).unlink()
 
@@ -115,3 +115,9 @@ class FiosMatchingLine(models.Model):
                 },
             }
         }
+
+    def unlink(self):
+        """Override core method to unmatch serials, vehicles when unlink"""
+        self.unmatch_serial()
+        self.unmatch_vehicle()
+        return super(FiosMatchingLine, self).unlink()
