@@ -56,4 +56,8 @@ class FleetVehicleLogContract(models.Model):
                     move_line.write({'x_vehicle_id': self._context.get('default_vehicle_id'), 'x_contract_id': res.id})
                     # update contract start date
                     res.update({'start_date': move_line.date.date()})
+
+        # run get active units function for prevent multiple contacts creation
+        if self.env.context.get('active_model') == 'active.units':
+            self.env['active.units'].browse(self.env.context.get('active_id')).partner_id.get_active_units()
         return res

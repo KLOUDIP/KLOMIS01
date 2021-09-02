@@ -17,9 +17,12 @@
                     <group>
                         <group string="FIOS Configuration">
                             <field name="fios_token" password="True"/>
+                            <field name="active_unit_last_updated" readonly="1"/>
                         </group>
                     </group>
-                    <button name="get_active_units" string="Refresh" class="oe_highlight" icon="fa-refresh" type="object"/>
+
+                    <button name="get_active_units" string="Refresh" class="oe_highlight" icon="fa-refresh" type="object" style="margin-bottom:1%; margin-top:-1%; border-radius:25px"/>
+
                     <field name="active_unit_ids">
                         <tree editable="bottom">
                             <field name="fleet_vehicle_id" invisible="1"/>

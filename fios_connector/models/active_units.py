@@ -32,8 +32,10 @@ class ActiveUnits(models.Model):
             raise ValidationError(_('URL for get eid from FIOS API is incorrect!'))
 
         if 'error' in response:
-            raise UserError(_('FIOS Returned with following error\n\n\'%s\'. (Error code \'%s\')') % (
-                response.get('reason'), response.get('error')))
+            if response.get('error') == 7:
+                raise UserError(_('FIOS Returned data with following error\n\nAccount is deactivated, please contact CMS administrator'))
+            raise UserError(_('FIOS Returned data with following error\n\n\'%s\'. (Error code: \'%s\')') %
+                            (response.get('reason'), response.get('error')))
 
         # get the eid number
         eid = response.get('eid')
@@ -48,7 +50,7 @@ class ActiveUnits(models.Model):
         response = requests.get(url).json()
 
         if 'error' in response:
-            raise UserError(_('FIOS Returned data with an error(Error code \'%s\')') % response.get('error'))
+            raise UserError(_('FIOS Returned data with an error(Error code: \'%s\')') % response.get('error'))
 
         return response
 

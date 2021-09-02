@@ -62,7 +62,7 @@
         <field name="name">fios.matching.line.view.tree</field>
         <field name="model">fios.matching.line</field>
         <field name="arch" type="xml">
-            <tree editable="bottom" create="false" delete="0" string="FIOS Matching Lines" decoration-warning="different_serial_received_from_fios==True">
+            <tree editable="bottom" create="false" delete="0" string="FIOS Matching Lines" decoration-warning="different_serial_received_from_fios==True" default_order="fios_plate_no">
                 <field name="plate_matched" invisible="1"/>
                 <field name="removed_from_fios" invisible="1"/>
                 <field name="different_serial_received_from_fios" invisible="1"/>

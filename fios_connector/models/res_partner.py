@@ -10,6 +10,7 @@ class ResPartner(models.Model):
     active_unit_ids = fields.One2many('active.units', 'partner_id', string='Active Units')
     fios_token = fields.Char(string='FIOS Token', help='Partner token for the FIOS Account')
     fios_fleet_count = fields.Integer(string='FIOS Fleet Count', compute='_compute_fios_fleets')
+    active_unit_last_updated = fields.Datetime('Last Updated')
 
     def _compute_fios_fleets(self):
         """Compute matching lines that belongs to current partner"""
@@ -64,6 +65,8 @@ class ResPartner(models.Model):
             eid = self.env['active.units'].get_eid(self.fios_token)
             response = self.env['active.units'].get_response_from_fios_api(eid)
             self.env['active.units'].get_active_units(self, response, eid)
+            # update last updated datetime
+            self.update({'active_unit_last_updated': fields.Datetime.now()})
             # raise success message after updating
             if not self.active_unit_ids:
                 return {
@@ -86,6 +89,8 @@ class ResPartner(models.Model):
                 eid = rec.env['active.units'].get_eid(rec.fios_token)
                 response = rec.env['active.units'].get_response_from_fios_api(eid)
                 rec.env['active.units'].get_active_units(rec, response, eid)
+                # update last updated state
+                rec.update({'active_unit_last_updated': fields.Datetime.now()})
 
     def remove_data(self):
         """Unlink all partner relevant fios data, if fios token not exist"""
