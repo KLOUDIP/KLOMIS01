@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <template id="coupon_created_message">
+        <p>
+            <t>Coupons created as following and Emails sent to the customer regarding created coupons:</t><br/>
+            <t t-foreach="data" t-as="o">
+                <t t-esc="o['product'].name"/> -
+                <t t-foreach="o['coupons']" t-as="x">
+                    <a href="#" t-att-data-oe-model="x._name" t-att-data-oe-id="x.id"> <t t-esc="x.display_name"/></a><span t-if="o['coupons'][-1:] != x.ids">, </span>
+                </t><br/>
+            </t>
+        </p>
+    </template>
+
+</odoo>

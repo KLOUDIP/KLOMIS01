@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="sale_coupon_apply_code_view_form" model="ir.ui.view">
+        <field name="name">sale.coupon.apply.coupon.view.form.inherit.kloudip_coupon_customizations</field>
+        <field name="model">sale.coupon.apply.code</field>
+        <field name="inherit_id" ref="sale_coupon.sale_coupon_apply_code_view_form"/>
+        <field name="arch" type="xml">
+
+            <!--invisible coupon code-->
+            <field name="coupon_code" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </field>
+
+            <!--adding coupon id to the form view-->
+            <field name="coupon_code" position="after">
+                <field name="coupon_id" required="1" domain="[('state', 'in', ['new','sent']), ('partner_id', '=', partner_id)]" options="{'no_create': True}"/>
+                <field name="partner_id" readonly="1" invisible="1"/>
+            </field>
+
+        </field>
+    </record>
+
+</odoo>

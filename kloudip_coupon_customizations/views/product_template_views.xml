@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="product_template_form_view" model="ir.ui.view">
+        <field name="name">product.template.view.form.inherit.kloudip_coupon_customizations</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_form_view"/>
+        <field name="arch" type="xml">
+
+            <!--adding is coupon product field-->
+            <div name="options" position="inside">
+                <div>
+                    <field name="is_coupon_product" force_save="1"/>
+                    <label for="is_coupon_product"/>
+                </div>
+            </div>
+
+            <!--adding coupon configuration page-->
+            <notebook position="inside">
+                <page string="Coupon Configuration" name="Coupon Configuration" attrs="{'invisible': [('is_coupon_product', '!=', True)]}">
+                    <group>
+                        <group string="Coupon">
+                            <field name="coupon_program_id" attrs="{'required': [('is_coupon_product', '=', True)]}"/>
+                        </group>
+                    </group>
+                </page>
+            </notebook>
+
+        </field>
+    </record>
+
+</odoo>

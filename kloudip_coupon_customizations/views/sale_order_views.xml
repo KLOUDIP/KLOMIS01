@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="sale_order_view_form" model="ir.ui.view">
+        <field name="name">sale.order.view.form.inherit.kloudip_coupon_customizations</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale_coupon.sale_order_view_form"/>
+        <field name="arch" type="xml">
+
+            <!--change action in sale coupon apply code wizard view button-->
+            <xpath expr="//button[@name='%(sale_coupon.sale_coupon_apply_code_action)d']" position="attributes">
+                <attribute name="name">sale_coupon_apply_code_action</attribute>
+                <attribute name="type">object</attribute>
+            </xpath>
+
+            <button name="%(sale.action_view_sale_advance_payment_inv)d" position="attributes">
+                <attribute name="context">{'default_visible_refunded_amount': visible_refunded_amount}</attribute>
+            </button>
+
+            <field name="name" position="after">
+                <field name="visible_refunded_amount" invisible="1"/>
+            </field>
+
+        </field>
+    </record>
+
+</odoo>

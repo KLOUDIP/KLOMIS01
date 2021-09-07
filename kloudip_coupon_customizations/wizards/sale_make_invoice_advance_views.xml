@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_sale_advance_payment_inv" model="ir.ui.view">
+        <field name="name">sale.advance.payment.inv.view.form.inherit.kloudip_coupon_customizations</field>
+        <field name="model">sale.advance.payment.inv</field>
+        <field name="inherit_id" ref="sale.view_sale_advance_payment_inv"/>
+        <field name="arch" type="xml">
+
+            <group position="after">
+                <group attrs="{'invisible': [('visible_refunded_amount', '=', False)]}">
+                    <group string="Coupon Refunds">
+                        <field name="visible_refunded_amount" invisible="1"/>
+                        <field name="refunded_amount"/>
+                    </group>
+                </group>
+            </group>
+
+        </field>
+    </record>
+
+</odoo>

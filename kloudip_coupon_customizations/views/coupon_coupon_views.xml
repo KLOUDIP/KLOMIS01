@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="coupon_coupon_view_form" model="ir.ui.view">
+        <field name="name">coupon.coupon.view.form.inherit.kloudip_coupon_customizations</field>
+        <field name="model">coupon.coupon</field>
+        <field name="inherit_id" ref="coupon.coupon_view_form"/>
+        <field name="arch" type="xml">
+
+            <!--adding cancel group to coupon cancel button-->
+            <button name="action_coupon_cancel" position="attributes">
+                <attribute name="groups">kloudip_coupon_customizations.group_allow_cancel_coupons</attribute>
+            </button>
+
+            <!--adding refund coupon button-->
+            <header position="inside">
+                <button name="action_refund_coupon" type="object" string="REFUND" class="btn-danger" attrs="{'invisible': ['|',('invoice_id','=',False),('state', 'not in', ['new','sent'])]}"
+                        help="Only coupons created from invoices can be refunded." confirm="Are you sure you need to refund the coupon ?"/>
+            </header>
+
+            <!--adding invoice id field to view-->
+            <field name="partner_id" position="after">
+                <field name="coupon_product_id" readonly='1' attrs="{'invisible': [('coupon_product_id','=',False)]}"/>
+                <field name="invoice_id" readonly='1' attrs="{'invisible': [('invoice_id','=',False)]}"/>
+                <field name="credit_note_id" readonly='1' attrs="{'invisible': [('credit_note_id','=',False)]}"/>
+            </field>
+
+            <!-- Chatter -->
+            <sheet position="after">
+                <div class="oe_chatter">
+                    <field name="message_follower_ids" groups="base.group_user"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </sheet>
+
+        </field>
+    </record>
+
+</odoo>

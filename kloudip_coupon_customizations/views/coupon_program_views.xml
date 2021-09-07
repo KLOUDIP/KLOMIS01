@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="coupon_program_view_form" model="ir.ui.view">
+        <field name="name">coupon.program.view.form.inherit.kloudip_coupon_customizations</field>
+        <field name="model">coupon.program</field>
+        <field name="inherit_id" ref="coupon.coupon_program_view_form_common"/>
+        <field name="arch" type="xml">
+
+            <!--adding other group-->
+            <xpath expr="//sheet" position="inside">
+                <group>
+                    <group string="Other" name="other">
+                        <field name="allow_redeem_multiple_coupons" widget="boolean_toggle"/>
+                    </group>
+                </group>
+            </xpath>
+
+        </field>
+    </record>
+
+</odoo>
