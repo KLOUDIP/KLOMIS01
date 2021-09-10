@@ -7,7 +7,12 @@
                 <div class="row text-center">
                     <div class="o_offer col-lg-12">
                         <h4>Here is your Deposit Voucher from <t t-esc="o.program_id.company_id.name"/></h4>
-                        <h4>Issued to: <t t-esc="o.partner_id.name"/></h4>
+                        <t t-if="o.invoice_partner_id">
+                            <h4>Issued to: <t t-esc="o.invoice_partner_id.name"/></h4>
+                        </t>
+                        <t t-else="">
+                            <h4>Issued to: <t t-esc="o.partner_id.name"/></h4>
+                        </t>
                         <t t-if="o.program_id.reward_type == 'discount'">
                             <t t-set="trans_text">off %s</t>
                             <t t-set="text" t-value="trans_text % text"/>

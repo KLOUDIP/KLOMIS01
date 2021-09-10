@@ -12,6 +12,10 @@ class CouponCoupon(models.Model):
     credit_note_id = fields.Many2one('account.move', string='Credit Note', help='When refunded credit note will create for 1 quantity.')
     coupon_product_id = fields.Many2one('product.product', string='Coupon Product')
     state = fields.Selection(selection_add=[('refunded', 'Refunded')], ondelete={'refunded': 'cascade'})
+    # when adding coupons from sale order, we need to load coupons that are created for parent company also. so we
+    # added new field to not disturb core functionality
+    invoice_partner_id = fields.Many2one('res.partner', string='Partner',
+                                         help='If the coupon created from invoice, this field will store invoice customer.')
 
     def _check_coupon_code(self, order):
         """Override core method to raise error for refunded coupons and remove error if the program can redeem

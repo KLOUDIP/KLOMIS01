@@ -6,7 +6,7 @@
     'description': """
 Setting coupon again to valid state, when sale order returned
     """,
-    'version': '1.0.9',
+    'version': '1.1.3',
     'category': 'Sale',
     'author': 'Nisus Solutions (Pvt) Ltd',
     'website': 'http://www.nisus.lk',
@@ -23,6 +23,7 @@ Setting coupon again to valid state, when sale order returned
     'data': [
         'security/coupon_security.xml',
         'data/mail_data.xml',
+        'data/coupon_email_data.xml',
         'views/product_template_views.xml',
         'views/coupon_coupon_views.xml',
         'views/coupon_program_views.xml',
