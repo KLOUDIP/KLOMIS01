@@ -55,7 +55,8 @@ class AccountMove(models.Model):
                 # generate coupon
                 coupon = self.env['coupon.coupon'].create({
                     'program_id': line.product_id.coupon_program_id.id,
-                    'partner_id': self.partner_id.id,
+                    'partner_id': False,
+                    'invoice_partner_id': self.partner_id.id,
                     'coupon_product_id': line.product_id.id,
                     'state': 'sent' if self.partner_id.email else 'new',
                     'invoice_id': self.id

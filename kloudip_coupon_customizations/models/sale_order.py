@@ -303,5 +303,5 @@ class SaleOrder(models.Model):
             'type': 'ir.actions.act_window',
             'target': 'new',
             'domain': [],
-            'context': {'default_partner_id': self.partner_id.id}
+            'context': {'default_partner_id': self.partner_invoice_id.id}
         }

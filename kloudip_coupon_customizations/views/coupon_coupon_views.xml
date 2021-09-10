@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
+    <!--coupon form view customization-->
     <record id="coupon_coupon_view_form" model="ir.ui.view">
         <field name="name">coupon.coupon.view.form.inherit.kloudip_coupon_customizations</field>
         <field name="model">coupon.coupon</field>
@@ -18,8 +19,14 @@
                         help="Only coupons created from invoices can be refunded." confirm="Are you sure you need to refund the coupon ?"/>
             </header>
 
+            <!--invisible partner_id if invoice partner id exist-->
+            <field name="partner_id" position="attributes">
+                <attribute name="attrs">{'invisible': [('invoice_partner_id','!=',False)]}</attribute>
+            </field>
+
             <!--adding invoice id field to view-->
             <field name="partner_id" position="after">
+                <field name="invoice_partner_id" readonly='1' attrs="{'invisible': [('invoice_partner_id','=',False)]}"/>
                 <field name="coupon_product_id" readonly='1' attrs="{'invisible': [('coupon_product_id','=',False)]}"/>
                 <field name="invoice_id" readonly='1' attrs="{'invisible': [('invoice_id','=',False)]}"/>
                 <field name="credit_note_id" readonly='1' attrs="{'invisible': [('credit_note_id','=',False)]}"/>
@@ -33,6 +40,37 @@
                     <field name="message_ids"/>
                 </div>
             </sheet>
+
+        </field>
+    </record>
+
+    <!--coupon search view-->
+    <record id="coupon_coupon_search_view" model="ir.ui.view">
+        <field name="name">coupon.coupon.view.search</field>
+        <field name="model">coupon.coupon</field>
+        <field name="arch" type="xml">
+            <search string="Coupons">
+                <field name="code"/>
+                <field name="invoice_partner_id"/>
+                <filter string="Valid Coupons" name="state" domain="[('state', 'in', ['new','sent'])]"/>
+                <group expand="0" string="Group By">
+                    <filter string="Partner" name="invoice_customer" domain="" context="{'group_by':'invoice_partner_id'}"/>
+                    <!--<filter string="For Customer" name="for_customer" domain="" context="{'group_by':'partner_id'}"/>-->
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!--coupon tree view customization-->
+    <record id="coupon_coupon_view_tree" model="ir.ui.view">
+        <field name="name">coupon.coupon.view.tree.inherit.kloudip_coupon_customizations</field>
+        <field name="model">coupon.coupon</field>
+        <field name="inherit_id" ref="coupon.coupon_view_tree"/>
+        <field name="arch" type="xml">
+
+            <field name="partner_id" position="replace">
+                <field name="invoice_partner_id"/>
+            </field>
 
         </field>
     </record>
