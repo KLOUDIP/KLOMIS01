@@ -36,3 +36,4 @@ Setting coupon again to valid state, when sale order returned
     'application': False,
     'auto_install': False,
 }
+
