@@ -28,6 +28,8 @@ Setting coupon again to valid state, when sale order returned
         'views/coupon_coupon_views.xml',
         'views/coupon_program_views.xml',
         'views/sale_order_views.xml',
+        'views/res_partner_views.xml',
+        'views/account_move_views.xml',
         'wizards/sale_coupon_apply_code_views.xml',
         'wizards/sale_make_invoice_advance_views.xml',
         'reports/coupon_report_templates.xml'
@@ -36,3 +38,4 @@ Setting coupon again to valid state, when sale order returned
     'application': False,
     'auto_install': False,
 }
+# actual version 1.1.6

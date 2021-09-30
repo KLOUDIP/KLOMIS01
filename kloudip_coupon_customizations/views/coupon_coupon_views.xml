@@ -75,4 +75,39 @@
         </field>
     </record>
 
+    <!--create new search view for coupon voucher using existing search view-->
+    <record id="coupon_voucher_search_view" model="ir.ui.view">
+        <field name="name">coupon.voucher.view.search</field>
+        <field name="model">coupon.coupon</field>
+        <field name="mode">primary</field>
+        <field name="inherit_id" ref="coupon_coupon_search_view"/>
+        <field name="arch" type="xml">
+
+            <filter name="invoice_customer" position="after">
+                <filter string="Coupon Product" name="coupon_product" domain="" context="{'group_by':'coupon_product_id'}"/>
+                <filter string="Invoice" name="invoice" domain="" context="{'group_by':'invoice_id'}"/>
+                <filter string="Coupon Program" name="coupon_program" domain="" context="{'group_by':'program_id'}"/>
+            </filter>
+
+        </field>
+    </record>
+
+    <!--coupon voucher action-->
+    <record id="coupon_voucher_action" model="ir.actions.act_window">
+        <field name="name">Coupons</field>
+        <field name="res_model">coupon.coupon</field>
+        <field name="view_id" ref="coupon.coupon_view_tree"/>
+        <field name="search_view_id" ref="coupon_voucher_search_view"/>
+        <field name="domain">[]</field>
+        <field name="context">{}</field>
+    </record>
+
+    <!--add new menuitem for vouchers-->
+    <menuitem id="menuitem_coupon_vouchers"
+              name="Vouchers"
+              parent="sale.product_menu_catalog"
+              sequence="5"
+              action="coupon_voucher_action"
+              groups="kloudip_coupon_customizations.group_access_vouchers"/>
+
 </odoo>

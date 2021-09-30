@@ -13,13 +13,16 @@
                 <attribute name="type">object</attribute>
             </xpath>
 
-            <button name="%(sale.action_view_sale_advance_payment_inv)d" position="attributes">
-                <attribute name="context">{'default_visible_refunded_amount': visible_refunded_amount}</attribute>
-            </button>
+            <!--replacing context we had a compute field named visible refunded amount-->
+            <!--<button name="%(sale.action_view_sale_advance_payment_inv)d" position="attributes">-->
+            <!--    <attribute name="context">{'default_visible_refunded_amount': visible_refunded_amount}</attribute>-->
+            <!--</button>-->
 
-            <field name="name" position="after">
-                <field name="visible_refunded_amount" invisible="1"/>
-            </field>
+            <!--Replacing context for the button cause some errors so we open wizard from python action-->
+            <button name="%(sale.action_view_sale_advance_payment_inv)d" position="attributes">
+                <attribute name="name">action_open_sale_make_invoice_advance_wizard</attribute>
+                <attribute name="type">object</attribute>
+            </button>
 
         </field>
     </record>

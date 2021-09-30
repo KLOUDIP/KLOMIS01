@@ -260,16 +260,6 @@ SaleOrderLineBase._get_invoice_qty = _get_invoice_qty
 class SaleOrder(models.Model):
     _inherit = 'sale.order'
 
-    # we needed to show refunded_amount field in payment advance wizard if the sale order line have negative invoice
-    # amount and coupon assigned so we created a compute field for find out
-    visible_refunded_amount = fields.Boolean(string='Visible Refunded Amount', help='For UI Purposes', compute='_visible_refunded_amount_field')
-
-    @api.depends('order_line', 'order_line.qty_to_invoice')
-    def _visible_refunded_amount_field(self):
-        self.update({
-            'visible_refunded_amount': self.order_line.filtered(lambda x: x.qty_to_invoice < 0) and self.order_line.filtered(lambda x: x.coupon_program_id)
-        })
-
     def prepare_refunded_amount_line(self, qty, refunded_amount, reward_line, product_line):
         """Create line values for refunded amount move
         :param qty: float quantity to invoice
@@ -295,6 +285,7 @@ class SaleOrder(models.Model):
         return res
 
     def sale_coupon_apply_code_action(self):
+        """Open sale coupon apply code form view"""
         return {
             'name': _("Enter Promotion or Coupon Code"),
             'view_mode': 'form',
@@ -304,4 +295,18 @@ class SaleOrder(models.Model):
             'target': 'new',
             'domain': [],
             'context': {'default_partner_id': self.partner_invoice_id.id}
+        }
+
+    def action_open_sale_make_invoice_advance_wizard(self):
+        """Open sale_make_invoice_advance_wizard"""
+        return {
+            'name': _("Create invoices"),
+            'view_mode': 'form',
+            'res_model': 'sale.advance.payment.inv',
+            'type': 'ir.actions.act_window',
+            'target': 'new',
+            'domain': [],
+            # We needed to show refunded_amount field in payment advance wizard if the sale order line have
+            # negative invoice
+            'context': {'default_visible_refunded_amount': bool(self.order_line.filtered(lambda x: x.qty_to_invoice < 0) and self.order_line.filtered(lambda x: x.coupon_program_id))}
         }

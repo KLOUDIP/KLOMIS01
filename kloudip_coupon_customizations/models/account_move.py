@@ -40,6 +40,32 @@ class AccountMove(models.Model):
     _inherit = 'account.move'
 
     refund_move = fields.Boolean(string='Refund Move')
+    coupon_ids = fields.Many2many('coupon.coupon', string='Coupons', copy=False)
+    visible_coupon_group = fields.Boolean('Visible Coupon Group', help='For UI Purpose',
+                                          compute='_compute_visible_coupon_group')
+    coupons_email_sent = fields.Boolean(string='Coupon Email Sent', copy=False)
+
+    def _compute_visible_coupon_group(self):
+        """Compute either coupon group is visible or not"""
+        visible_coupon_group = False
+        if self.coupon_ids:
+            visible_coupon_group = True
+        self.update({'visible_coupon_group': visible_coupon_group})
+
+    def send_coupon_email(self):
+        """Send email for the customer notifying generated coupons"""
+        for coupon in self.coupon_ids:
+            subject = '%s, a coupon has been generated for you' % (self.partner_id.name,)
+            template = self.env.ref('coupon.mail_template_sale_coupon', raise_if_not_found=False)
+            if template:
+                email_values = {'email_to': self.partner_id.email, 'email_from': self.env.user.email or '',
+                                'subject': subject}
+                template.send_mail(coupon.id, email_values=email_values,
+                                   notif_layout='mail.mail_notification_light')
+        # post message to logger
+        self.message_post(body=_("Emails sent for the customer - %s, regarding generated coupons.") % self.partner_id.name)
+        self.update({'coupons_email_sent': True})
+        return True
 
     def action_post(self):
         """Override core method for create coupons and sending emails about the created coupons"""
@@ -62,21 +88,29 @@ class AccountMove(models.Model):
                     'invoice_id': self.id
                 })
                 coupons.append(coupon)
+                # writing values to coupon_ids field
+                self.update({'coupon_ids': [(4, coupon.id)]})
+                # feature removed
                 # send specific email to customer FIXME: Performance when sending multiple emails for each quantity
-                subject = '%s, a coupon has been generated for you' % (self.partner_id.name,)
-                template = self.env.ref('coupon.mail_template_sale_coupon', raise_if_not_found=False)
-                if template:
-                    email_values = {'email_to': self.partner_id.email, 'email_from': self.env.user.email or '',
-                                    'subject': subject}
-                    template.send_mail(coupon.id, email_values=email_values,
-                                       notif_layout='mail.mail_notification_light')
+                # if self.partner_id.generate_email_for_coupons:  # checking generate email for coupons setting enabled for invoice partner
+                #     subject = '%s, a coupon has been generated for you' % (self.partner_id.name,)
+                #     template = self.env.ref('coupon.mail_template_sale_coupon', raise_if_not_found=False)
+                #     if template:
+                #         email_values = {'email_to': self.partner_id.email, 'email_from': self.env.user.email or '',
+                #                         'subject': subject}
+                #         template.send_mail(coupon.id, email_values=email_values,
+                #                            notif_layout='mail.mail_notification_light')
             # sort data for the post message
             all_coupons.append({'product': line.product_id, 'coupons': coupons})
         # post message to chatter with linked coupon
         if all_coupons:
             self.message_post_with_view('kloudip_coupon_customizations.coupon_created_message',
-                                        values={'data': all_coupons},
+                                        values={'data': all_coupons, 'partner_generate_email_for_coupons': False},
                                         subtype_id=self.env.ref('mail.mt_note').id)
+            # see data> mail_data.xml file (partner_generate_email_for_coupons)
+            # self.message_post_with_view('kloudip_coupon_customizations.coupon_created_message',
+            #                             values={'data': all_coupons, 'partner_generate_email_for_coupons': self.partner_id.generate_email_for_coupons},
+            #                             subtype_id=self.env.ref('mail.mt_note').id)
         return res
 
     def unlink(self):

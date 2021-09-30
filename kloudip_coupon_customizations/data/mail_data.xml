@@ -1,9 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
+    <!--log message-->
     <template id="coupon_created_message">
         <p>
-            <t>Coupons created as following and Emails sent to the customer regarding created coupons:</t><br/>
+            <!--checking emails sending option for customer is enabled and change log message-->
+            <t t-if="partner_generate_email_for_coupons">
+                <t>Coupons created as following and Emails sent to the customer regarding created coupons:</t><br/>
+            </t>
+            <t t-else="">
+                <t>Following coupons created for the invoice customer:</t>
+            </t>
             <t t-foreach="data" t-as="o">
                 <t t-esc="o['product'].name"/> -
                 <t t-foreach="o['coupons']" t-as="x">

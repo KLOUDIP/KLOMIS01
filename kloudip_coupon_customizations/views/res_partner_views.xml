@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!--res partner form view customization-->
+    <record id="res_partner_view_form" model="ir.ui.view">
+        <field name="name">res.partner.view.form.inherit.kloudip_coupon_customizations</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+
+            <page name="internal_notes" position="after">
+                <!--remove feature-->
+                <!--<page name="coupons" string="Coupons">-->
+                <!--    <group string="Coupons" name="accounting_coupons">-->
+                <!--        <field name="generate_email_for_coupons" widget="boolean_toggle"/>-->
+                <!--     </group>-->
+                <!--</page>-->
+            </page>
+
+        </field>
+    </record>
+
+</odoo>
