@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!--res partner form view customization-->
+    <record id="res_partner_view_form" model="ir.ui.view">
+        <field name="name">res.partner.view.form.inherit.kloudip_so_coordinator_and_billing_responsible</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+
+            <!--adding management page -->
+            <xpath expr="//form[1]/sheet[1]/notebook[1]" position="inside">
+                <page name="management" string="Management">
+                    <group string="Management" name="management">
+                        <group>
+                            <field name="coordination_by_id"/>
+                        </group>
+                        <group>
+                            <field name="billing_by_id"/>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+
+        </field>
+    </record>
+
+</odoo>
