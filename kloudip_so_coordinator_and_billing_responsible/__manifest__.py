@@ -11,9 +11,9 @@ Add coordinator and billing responsible to sales order
     'author': 'Nisus Solutions (Pvt) Ltd',
     'website': 'http://www.nisus.lk',
     'depends': [
-        'contacts',
         'sale_management',
         'account',
+        'hr',
     ],
     'data': [
         'views/res_partner_views.xml',
@@ -24,5 +24,5 @@ Add coordinator and billing responsible to sales order
     'application': False,
     'auto_install': False,
 }
-# Actual Version 1.0.3
+# Actual Version 1.0.5
 

@@ -6,12 +6,12 @@ from odoo import api, fields, models, _
 class SaleOrder(models.Model):
     _inherit = 'sale.order'
 
-    coordination_by_id = fields.Many2one('res.partner', string='Coordination By',
+    coordination_by_id = fields.Many2one('hr.employee', string='Coordination By',
                                          compute='_compute_coordination_and_billing_responsible', store=True)
-    billing_by_id = fields.Many2one('res.partner', string='Billing By',
+    billing_by_id = fields.Many2one('hr.employee', string='Billing By',
                                     compute='_compute_coordination_and_billing_responsible', store=True)
 
-    @api.depends('partner_id', 'partner_id.coordination_by_id', 'partner_id.billing_by_id')
+    @api.depends('partner_id', 'partner_id.coordination_by_id', 'partner_id.billing_by_id', 'partner_id.parent_id.coordination_by_id', 'partner_id.parent_id.billing_by_id')
     def _compute_coordination_and_billing_responsible(self):
         """
         Get coordination and billing to current sale order

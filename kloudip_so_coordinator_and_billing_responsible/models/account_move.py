@@ -6,10 +6,10 @@ from odoo import api, fields, models, _
 class AccountMove(models.Model):
     _inherit = 'account.move'
 
-    billing_by_id = fields.Many2one('res.partner', string='Billing By',
+    billing_by_id = fields.Many2one('hr.employee', string='Billing By',
                                     compute='_compute_billing_responsible', store=True)
 
-    @api.depends('partner_id', 'partner_id.coordination_by_id', 'partner_id.billing_by_id')
+    @api.depends('partner_id', 'partner_id.billing_by_id', 'partner_id.parent_id.coordination_by_id', 'partner_id.parent_id.billing_by_id')
     def _compute_billing_responsible(self):
         """
         Get billing by to current invoice
