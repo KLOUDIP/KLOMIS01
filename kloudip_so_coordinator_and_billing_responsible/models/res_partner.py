@@ -30,10 +30,11 @@ class ResPartner(models.Model):
         elif company_type != 'company' and not self.env.context.get('child_partners', False):
             parent_id = vals.get('parent_id', False) or self.parent_id.id
             parent_id = self.env['res.partner'].browse(parent_id)
-            vals.update({
-                'coordination_by_id': parent_id.coordination_by_id.id,
-                'billing_by_id': parent_id.billing_by_id.id,
-            })
+            if parent_id:
+                vals.update({
+                    'coordination_by_id': parent_id.coordination_by_id.id,
+                    'billing_by_id': parent_id.billing_by_id.id,
+                })
         res = super(ResPartner, self).write(vals)
         return res
 
@@ -46,8 +47,9 @@ class ResPartner(models.Model):
         """
         res = super(ResPartner, self).create(vals)
         if self.company_type != 'company':
-            self.update({
-                'coordination_by_id': self.parent_id.coordination_by_id.id,
-                'billing_by_id': self.parent_id.billing_by_id.id,
-            })
+            if self.parent_id:
+                self.update({
+                    'coordination_by_id': self.parent_id.coordination_by_id.id,
+                    'billing_by_id': self.parent_id.billing_by_id.id,
+                })
         return res

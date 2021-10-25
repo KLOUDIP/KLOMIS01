@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!--sale subscription form view customization-->
+    <record id="sale_subscription_view_form" model="ir.ui.view">
+        <field name="name">sale.subscription.view.form.inherit.kloudip_so_coordinator_and_billing_responsible</field>
+        <field name="model">sale.subscription</field>
+        <field name="inherit_id" ref="sale_subscription.sale_subscription_view_form"/>
+        <field name="arch" type="xml">
+
+            <!--adding billing by id field-->
+            <field name="user_id" position="after">
+                <field name="billing_by_id"/>
+            </field>
+
+        </field>
+    </record>
+
+    <!--sale subscription tree view customizations-->
+    <record id="sale_subscription_view_list" model="ir.ui.view">
+        <field name="name">sale.subscription.tree.inherit.kloudip_so_coordinator_and_billing_responsible</field>
+        <field name="model">sale.subscription</field>
+        <field name="inherit_id" ref="sale_subscription.sale_subscription_view_list"/>
+        <field name="arch" type="xml">
+
+            <!--adding field billing by-->
+            <field name="user_id" position="before">
+                <field name="billing_by_id"/>
+            </field>
+
+        </field>
+    </record>
+
+    <!--sale subscription search view customizations-->
+    <record id="sale_subscription_view_search" model="ir.ui.view">
+        <field name="name">sale.subscription.view.search.inherit.kloudip_so_coordinator_and_billing_responsible</field>
+        <field name="model">sale.subscription</field>
+        <field name="inherit_id" ref="sale_subscription.sale_subscription_view_search"/>
+        <field name="arch" type="xml">
+
+            <!--adding filter billing by-->
+            <filter name="customer" position="after">
+                <filter string="Billing By" name="billing_by" context="{'group_by': 'billing_by_id'}"/>
+            </filter>
+
+        </field>
+    </record>
+
+</odoo>

@@ -14,15 +14,17 @@ Add coordinator and billing responsible to sales order
         'sale_management',
         'account',
         'hr',
+        'sale_subscription',
     ],
     'data': [
         'views/res_partner_views.xml',
         'views/sale_order_views.xml',
         'views/account_move_views.xml',
+        'views/sale_subscription_views.xml',
     ],
     'installable': True,
     'application': False,
     'auto_install': False,
 }
-# Actual Version 1.0.5
+# Actual Version 1.0.6
 
