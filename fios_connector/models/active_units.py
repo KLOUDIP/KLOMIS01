@@ -199,8 +199,11 @@ class ActiveUnits(models.Model):
                     matching_lot_id = matching_line_id.lot_id.id
                     if missing_serial_id.unit_serial != matching_line_id.lot_id.fios_lot_no:
                         different_serial_received_from_fios = True
+                        # Modifications start here====================
                         # unlink fios missing serial
-                        matching_line_id.fios_serial_no.unlink()
+                        if missing_serial_id.id != matching_line_id.fios_serial_no.id:
+                            matching_line_id.fios_serial_no.unlink()
+                        # modifications end here =======================
                         # unmatch serial if different serial received
                         matching_line_id.unmatch_serial()
                         # check there is a serial created for missing serial, assign to matching line if so
@@ -219,8 +222,11 @@ class ActiveUnits(models.Model):
                     matching_lot_id = matching_line_id.lot_id.id
                     if missing_serial_id.unit_serial != matching_line_id.lot_id.fios_lot_no and matching_line_id.serial_matched:
                         different_serial_received_from_fios = True
+                        # Modifications start here
                         # unlink fios missing serial
-                        matching_line_id.fios_serial_no.unlink()
+                        if missing_serial_id.id != matching_line_id.fios_serial_no.id:
+                            matching_line_id.fios_serial_no.unlink()
+                        # Modifications end ====================
                         # unmatch serial if different serial received
                         matching_line_id.unmatch_serial()
                         # check there is a serial created for missing serial, assign to matching line if so

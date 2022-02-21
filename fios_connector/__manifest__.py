@@ -2,7 +2,7 @@
 
 {
     'name': 'FIOS Connector',
-    'summery': """FIOS Integration with Odoo""",
+    'summary': """FIOS Integration with Odoo""",
     'description': """
 FIOS Integration with Odoo
     """,
@@ -32,4 +32,4 @@ FIOS Integration with Odoo
     'application': True,
     'auto_install': False,
 }
-# real version : 1.2.3
+# real version : 1.2.4
