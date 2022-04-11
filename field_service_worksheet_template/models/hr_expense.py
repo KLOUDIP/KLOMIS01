@@ -44,6 +44,16 @@ class Expenses(models.Model):
                     'other': True,
                 })
 
+            if get_context == 'other_2':
+                task_line_id.write({
+                    'other_2': True,
+                })
+
+            if get_context == 'other_3':
+                task_line_id.write({
+                    'other_3': True,
+                })
+
             if line_id:
                 emp = self._context['default_employee']
                 res.write({

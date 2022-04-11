@@ -18,6 +18,8 @@ class WorksheetTemplateLine(models.Model):
     beverage = fields.Boolean('Mark as Done')
     transport = fields.Boolean('Mark as Done')
     other = fields.Boolean('Mark as Done')
+    other_2 = fields.Boolean('Mark as Done')
+    other_3 = fields.Boolean('Mark as Done')
     line_add = fields.Boolean('Line Add')
     worksheet_id = fields.Integer('WorkSheet Id')
     expense_id = fields.One2many('hr.expense', 'expense_id_worksheet_line', string='Hr Expense')
@@ -250,7 +252,8 @@ class WorksheetTemplateLine(models.Model):
             'target': 'current',
             'domain': '[]',
             'context': {
-                'product_val': 'other',
+                # 'product_val': 'other',
+                'product_val': self._context.get('product_val', False),
                 'default_employee_id': self.select_user.employee_id.id,
                 'default_employee': self.select_user.employee_id.id,
                 'default_product_id': pro_id,

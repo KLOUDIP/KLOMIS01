@@ -39,8 +39,14 @@
                             <button type="object" class="btn btn-primary" string='EM' name="action_to_create_expense_extra_minutes"
                                     attrs="{'invisible': ['|', ('template_id', '=', False), ('extra', '!=', False)]}"/>
 
-                            <button type="object" class="btn btn-primary" string='OP' name="action_to_create_expense_other"
+                            <button type="object" class="btn btn-primary" string='OP1' name="action_to_create_expense_other" context="{'product_val': 'other'}"
                                     attrs="{'invisible': ['|', ('template_id', '=', False), ('other', '!=', False)]}"/>
+
+                            <button type="object" class="btn btn-primary" string='OP2' name="action_to_create_expense_other" context="{'product_val': 'other_2'}"
+                                    attrs="{'invisible': ['|', ('template_id', '=', False), ('other_2', '!=', False)]}"/>
+
+                            <button type="object" class="btn btn-primary" string='OP3' name="action_to_create_expense_other" context="{'product_val': 'other_3'}"
+                                    attrs="{'invisible': ['|', ('template_id', '=', False), ('other_3', '!=', False)]}"/>
                         </tree>
                     </field>
 
