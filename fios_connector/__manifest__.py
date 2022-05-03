@@ -32,4 +32,4 @@ FIOS Integration with Odoo
     'application': True,
     'auto_install': False,
 }
-# real version : 1.2.4
+# real version : 1.2.5

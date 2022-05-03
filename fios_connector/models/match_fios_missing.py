@@ -14,6 +14,12 @@ class MatchFiosMissing(models.Model):
     matching_line_ids = fields.One2many('fios.matching.line', 'match_fios_missing_id', string='Fios Matching Lines')
     last_updated = fields.Datetime('Last Updated')
 
+    def get_active_units(self):
+        """
+        Fetch active units for the selected partner
+        """
+        self.partner_id.get_active_units()
+
     def unlink(self):
         """Unlink assigned missing serials and plate ids when unlink the record"""
         self.matching_line_ids.unlink()

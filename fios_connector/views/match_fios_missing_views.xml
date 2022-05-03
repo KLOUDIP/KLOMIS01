@@ -17,6 +17,7 @@
                     <div>
                         <label for="last_updated" string="Last Updated" class="oe_inline"/>
                         <field name="last_updated" required="1" readonly="1" class="oe_inline"/>
+                        <button name="get_active_units" type='object' string="Refresh" class="oe_highlight ml-3" style="border-radius:25px" help="Refresh active units for the selected partner" icon="fa-refresh"/>
                     </div>
                     <h2 style="color:#666666; margin-top:1%"><b>Matching Lines</b></h2>
                     <field name="matching_line_ids" nolabel="1"/>
