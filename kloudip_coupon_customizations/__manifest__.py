@@ -38,4 +38,4 @@ Setting coupon again to valid state, when sale order returned
     'application': False,
     'auto_install': False,
 }
-# actual version 1.1.6
+# actual version 1.1.7

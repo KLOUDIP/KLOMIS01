@@ -260,6 +260,8 @@ SaleOrderLineBase._get_invoice_qty = _get_invoice_qty
 class SaleOrder(models.Model):
     _inherit = 'sale.order'
 
+    coupon_count = fields.Integer('Coupon Count', compute='_compute_coupon_count')
+
     def prepare_refunded_amount_line(self, qty, refunded_amount, reward_line, product_line):
         """Create line values for refunded amount move
         :param qty: float quantity to invoice
@@ -310,3 +312,30 @@ class SaleOrder(models.Model):
             # negative invoice
             'context': {'default_visible_refunded_amount': bool(self.order_line.filtered(lambda x: x.qty_to_invoice < 0) and self.order_line.filtered(lambda x: x.coupon_program_id))}
         }
+
+    def _compute_coupon_count(self):
+        """
+        Get the coupons count for the current sales order
+        """
+        self.update({
+            'coupon_count': len(self.env['coupon.coupon'].search([('sales_order_id', '=', self.id)]).ids)
+        })
+
+    def action_view_assigned_coupons(self):
+        """
+        Action for view assigned coupons for the current sales order
+        """
+        action = {
+            'name': _('Coupon(s)'),
+            'type': 'ir.actions.act_window',
+            'res_model': 'coupon.coupon',
+            'target': 'current',
+        }
+        coupon_ids = self.env['coupon.coupon'].search([('sales_order_id', '=', self.id)]).ids
+        if len(coupon_ids) == 1:
+            action['res_id'] = coupon_ids[0]
+            action['view_mode'] = 'form'
+        else:
+            action['view_mode'] = 'tree,form'
+            action['domain'] = [('id', 'in', coupon_ids)]
+        return action

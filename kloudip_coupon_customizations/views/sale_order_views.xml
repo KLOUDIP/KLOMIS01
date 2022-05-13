@@ -24,6 +24,15 @@
                 <attribute name="type">object</attribute>
             </button>
 
+            <!--Adding custom statinfo buttons-->
+            <div name="button_box" position="inside">
+                <!--Vouchers button-->
+                <field name="coupon_count" invisible="1"/>
+                <button name="action_view_assigned_coupons" type="object" class="oe_stat_button" icon="fa-ticket" attrs="{'invisible': [('coupon_count', '=', 0)]}">
+                    <field name="coupon_count" widget="statinfo" string="Vouchers"/>
+                </button>
+            </div>
+
         </field>
     </record>
 
