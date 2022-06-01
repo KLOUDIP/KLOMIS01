@@ -71,6 +71,9 @@
             <field name="partner_id" position="replace">
                 <field name="invoice_partner_id"/>
             </field>
+            <xpath expr="//field[@name='invoice_partner_id']" position="after">
+                <field name="invoice_id" string="Voucher Invoice Number"/>
+            </xpath>
 
         </field>
     </record>
