@@ -50,7 +50,7 @@ class FleetVehicleLogContract(models.Model):
                 else:
                     # expire contract if contract assigned
                     if move_line.x_contract_id:
-                        move_line.x_contract_id.write({'state': 'expired', 'expiration_date': fields.Datetime.today()})
+                        move_line.x_contract_id.write({'state': 'closed', 'expiration_date': fields.Datetime.today()})
                     _logger.info(_('Updating vehicle number to delivery \'%s\' belongs to sale order %s') % (move_line.picking_id.name, move_line.picking_id.sale_id.name))
                     # write values to move line
                     move_line.write({'x_vehicle_id': self._context.get('default_vehicle_id'), 'x_contract_id': res.id})

@@ -34,7 +34,7 @@ for rec in records:
             if ml.x_contract_id and ml.x_contract_id.state != 'expired':
                 map_move_line = rec.move_line_ids.filtered(lambda l: l.lot_id == ml.lot_id and l.x_vehicle_id == ml.x_vehicle_id)
                 if map_move_line:
-                    ml.x_contract_id.write({'state': 'expired', 'expiration_date': datetime.datetime.today()})
+                    ml.x_contract_id.write({'state': 'closed', 'expiration_date': datetime.datetime.today()})
                     map_move_line.write({'x_contract_id': ml.x_contract_id.id})
 
 ]]>
