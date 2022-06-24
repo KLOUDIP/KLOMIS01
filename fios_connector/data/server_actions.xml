@@ -31,7 +31,8 @@ for rec in records:
         if any(line.x_contract_id for line in rec.origin_returned_move_id.move_orig_ids.move_line_ids):
             lines = rec.origin_returned_move_id.move_orig_ids.mapped('move_line_ids')
         for ml in lines:
-            if ml.x_contract_id and ml.x_contract_id.state != 'expired':
+            # if ml.x_contract_id and ml.x_contract_id.state != 'expired':
+            if ml.x_contract_id and ml.x_contract_id.state != 'closed':
                 map_move_line = rec.move_line_ids.filtered(lambda l: l.lot_id == ml.lot_id and l.x_vehicle_id == ml.x_vehicle_id)
                 if map_move_line:
                     ml.x_contract_id.write({'state': 'closed', 'expiration_date': datetime.datetime.today()})

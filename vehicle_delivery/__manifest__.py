@@ -44,3 +44,4 @@ Kloudip link vehicle with delivery
     'auto_install': False,
     'application': True,
 }
+# real version : 0.2
