@@ -13,10 +13,10 @@
         'views/hr_timesheet_views.xml',
         'views/project_views.xml',
         'wizard/project_task_create_timesheet_views.xml',
-        'security/hr_timesheet_security.xml',
+        # 'security/hr_timesheet_security.xml',
     ],
     'installable': True,
     'auto_install': False,
 }
 
-# Actual Version 1.0.4
+# Actual Version 1.0.5
