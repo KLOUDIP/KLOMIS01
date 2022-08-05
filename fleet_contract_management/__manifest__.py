@@ -13,4 +13,4 @@
     ],
     'depends': ['fleet', 'sale_subscription'],
 }
-# actual_version 1.0.5
+# actual_version 1.0.6
