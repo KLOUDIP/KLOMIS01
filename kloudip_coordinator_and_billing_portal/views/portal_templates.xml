@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="portal_layout_customize" inherit_id="portal.portal_layout">
+        <xpath expr="//div[@class='o_portal_my_details']" position="after">
+            <div class="my-custom-section">
+                <br/>
+                <p><b> Coordination By :</b>
+                    <span t-field="user_id.coordination_by_id"/>
+                    support@kloudip.com
+                </p>
+                <p><b>Billing By :</b>
+                    <span t-field="user_id.billing_by_id"></span>
+                    <br/>
+                    billing@kloudip.com
+                </p>
+            </div>
+        </xpath>
+    </template>
+</odoo>
