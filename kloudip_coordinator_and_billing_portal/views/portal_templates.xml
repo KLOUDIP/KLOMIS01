@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="portal_layout_customize" inherit_id="portal.portal_layout">
+        <xpath expr="//div[@class='o_portal_my_details']" position="after">
+            <div class="my-custom-section">
+                <br/>
+                <p>
+                    <b style="color: #343A40; font-size: 1.9375rem; font-family: Bebas Neue;
+    font-weight: 500;">COORDINATION BY :
+                    </b>
+                    <br/>
+                    <span t-field="user_id.coordination_by_id"/>
+                    <br/>
+                    support@kloudip.com
+                </p>
+                <p>
+                    <b style="color: #343A40; font-size: 1.9375rem; font-family: Bebas Neue;
+    font-weight: 500;">BILLING BY :
+                    </b>
+                    <br/>
+                    <span t-field="user_id.billing_by_id"></span>
+                    <br/>
+                    billing@kloudip.com
+                </p>
+            </div>
+        </xpath>
+    </template>
+</odoo>
