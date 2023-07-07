@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+	<record model="ir.ui.view" id="inherit_view_website_form">
+		<field name="name">google.tag</field>
+		<field name="model">website</field>
+		<field name="inherit_id" ref='website.view_website_form' />
+		<field name="arch" type='xml'>
+			<xpath expr="//field[@name='domain']" position='after'>
+				<field name="google_tag" />
+			</xpath>
+		</field>
+	</record>
+
+</odoo>
+

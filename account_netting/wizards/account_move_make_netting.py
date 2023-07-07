@@ -14,10 +14,11 @@ class AccountMoveMakeNetting(models.TransientModel):
         required=True,
         domain="[('type', '=', 'general')]",
     )
-    move_line_ids = fields.Many2many(comodel_name="account.move.line",)
-    balance = fields.Float(readonly=True,)
+    move_line_ids = fields.Many2many(comodel_name="account.move.line")
+    balance = fields.Float(readonly=True)
     balance_type = fields.Selection(
-        selection=[("pay", "To pay"), ("receive", "To receive")], readonly=True,
+        selection=[("pay", "To pay"), ("receive", "To receive")],
+        readonly=True,
     )
 
     @api.model
@@ -116,12 +117,13 @@ class AccountMoveMakeNetting(models.TransientModel):
                     break
         if move_lines:
             move.write({"line_ids": move_lines})
+            move.action_post()
         # Make reconciliation
-        # for move_line in move.line_ids:
-        #     to_reconcile = move_line + self.move_line_ids.filtered(
-        #         lambda x: x.account_id == move_line.account_id
-        #     )
-        #     to_reconcile.reconcile()
+        for move_line in move.line_ids:
+            to_reconcile = move_line + self.move_line_ids.filtered(
+                lambda x: x.account_id == move_line.account_id
+            )
+            to_reconcile.reconcile()
         # Open created move
         action = self.env.ref("account.action_move_journal_line").read()[0]
         action["view_mode"] = "form"

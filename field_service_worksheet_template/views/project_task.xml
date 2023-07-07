@@ -8,14 +8,15 @@
             <field name="arch" type="xml">
                 <field name='description' position="before">
                     <field name="worksheet_template_lines" context="{'get_license':True}">
-                        <tree editable="bottom">
+                        <tree>
                             <field name="select_vals"/>
                             <field name="name" readonly="1" force_save="1"/>
                             <field name="template_id" string="Worksheet Template"/>
                             <field name="fleet_id" context="{'get_license':True}"/>
                             <field name="select_user"/>
                             <field name="expense_id" invisible="1"/>
-                            <field name="done_mark"/>
+                            <field name="is_telematics_technicians" invisible="1"/>
+                            <field name="done_mark" attrs="{'readonly': [('is_telematics_technicians', '!=', True)]}"/>
                             <field name="food" invisible="1"/>
                             <field name="extra" invisible="1"/>
                             <field name="transport" invisible="1"/>
@@ -58,12 +59,6 @@
                         </tree>
                     </field>
                 </field>
-
-                <xpath expr="//field[@name='project_id']" position="after">
-                    <field name="extra_minutes" invisible="1"/>
-                    <field name="tech_team_member_id"/>
-                    <button type="object" class="btn btn-primary" string="EM" name="get_extra_minutes_expenses" attrs="{'invisible': ['|', ('tech_team_member_id', '=', False), ('extra_minutes', '!=', False)]}" groups="field_service_worksheet_template.group_coordinator_fsm,industry_fsm.group_fsm_manager"/>
-                </xpath>
 
                 <xpath expr="//button[@name='action_fsm_worksheet']" position="replace">
 
@@ -126,7 +121,7 @@
         <record id="helpdesk_view" model="ir.ui.view">
             <field name='name'>task.view</field>
             <field name="model">project.task</field>
-            <field name="inherit_id" ref="helpdesk_fsm.project_task_view_form"/>
+            <field name="inherit_id" ref="project.view_task_form2"/>
             <field name="arch" type="xml">
                 <!--                <xpath expr="(//field[@name='company_id'])[2]" position="after">-->
                 <!--                    <field name="tech_team_member_id"/>-->
@@ -137,7 +132,8 @@
                 <!--                <xpath expr="//field[@name='allow_billable']" position="after">-->
                 <!--                    <field name="accessible" invisible="1"/>-->
                 <!--                </xpath>-->
-                <xpath expr="//button[@name='action_view_ticket']" position="replace">
+                <xpath expr="//div[@name='button_box']" position="inside">
+                    <field string="Tickets" name="helpdesk_ticket_id" invisible="1" />
                     <button
                             string="Intervention ticket"
                             class="oe_stat_button"
@@ -195,6 +191,32 @@
                 <xpath expr="//field[@name='worksheet_template_id']" position="attributes">
                     <attribute name="invisible">1</attribute>
                 </xpath>
+            </field>
+        </record>
+
+	  <record id="project_task_view_form_service_inherit" model="ir.ui.view">
+            <field name='name'>task.view</field>
+            <field name="model">project.task</field>
+            <field name="inherit_id" ref="project.view_task_form2"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='display_project_id']" position="after">
+                    <field name="extra_minutes" invisible="1"/>
+                    <field name="tech_team_member_id"/>
+                    <field name="is_technician" invisible="1"/>
+                    <button type="object" class="btn btn-primary" string="EM" name="get_extra_minutes_expenses" attrs="{'invisible': ['|', ('tech_team_member_id', '=', False), ('extra_minutes', '!=', False)]}" groups="field_service_worksheet_template.group_coordinator_fsm,industry_fsm.group_fsm_manager"/>
+                </xpath>
+
+                <xpath expr="//field[@name='partner_mobile']" position="replace">
+                    <field name="partner_mobile" widget="phone" attrs="{'readonly': [('is_technician', '=', True)]}"/>
+                </xpath>
+                <xpath expr="//field[@name='partner_email']" position="replace">
+                    <field name="partner_email" widget="email" attrs="{'invisible': [('partner_id', '=', False)], 'readonly': [('is_technician', '=', True)]}"/>
+                </xpath>
+
+                <xpath expr="//field[@name='name']" position="replace">
+                    <field name="name" class="o_task_name text-truncate" placeholder="Task Title..." default_focus="1" attrs="{'readonly': [('is_technician', '=', True)]}" />
+                </xpath>
+
             </field>
         </record>
 

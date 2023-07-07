@@ -43,14 +43,14 @@ class FreightWizard(models.TransientModel):
                     })],
                 })
                 ln = new_task.worksheet_template_lines.filtered(lambda x: x.name == worksheet.x_worksheet_no)
-                worksheet.write({'x_studio_line_id': ln.id, 'x_task_id': new_task.id})
+                worksheet.write({'x_studio_line_id': ln.id, 'x_project_task_id': new_task.id})
                 rec.unlink()
             return {
                 'type': 'ir.actions.act_window',
                 'name': _('Task'),
                 'res_model': 'project.task',
                 'view_mode': 'form',
-                'view_id': self.env.ref('helpdesk_fsm.project_task_view_form').id,
+                'view_id': self.env.ref('helpdesk_fsm.project_sharing_inherit_project_task_view_form').id,
                 'res_id': new_task.id,
                 'target': 'current',
             }

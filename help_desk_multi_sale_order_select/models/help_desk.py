@@ -38,6 +38,27 @@ class HelpDeskSale(models.Model):
         }
         return action
 
+    @api.depends('partner_id')
+    def _compute_partner_ticket_count(self):
+        data = self.env['helpdesk.ticket'].read_group([
+            ('partner_id', 'in', self.mapped('partner_id').ids),
+            ('stage_id.is_close', '=', False)
+        ], ['partner_id'], ['partner_id'], lazy=False)
+        ticket_per_partner_map = dict((item['partner_id'][0], item['__count']) for item in data)
+        records = self.env['helpdesk.ticket'].search([('partner_id', 'in', self.mapped('partner_id').ids),
+                                                      ('stage_id.is_close', '=', False)])
+        for ticket in self:
+            ticket.partner_ticket_count = ticket_per_partner_map.get(ticket.partner_id.id, 0)
+            ticket.partner_ticket_ids = records.filtered(lambda x: x.partner_id == ticket.partner_id.id)
+
+    def action_open_helpdesk_ticket(self):
+        records = self.env['helpdesk.ticket'].search([('partner_id', 'in', self.mapped('partner_id').ids),
+                                                      ('stage_id.is_close', '=', False)])
+        action = self.env["ir.actions.actions"]._for_xml_id("helpdesk.helpdesk_ticket_action_main_tree")
+        if len(records) > 1:
+            action['domain'] = [('id', 'in', records.ids)]
+            return action
+
     # def write(self, vals):
     #     res = super(HelpDeskSale, self).write(vals)
     #     if 'sale_order_ids' in vals:

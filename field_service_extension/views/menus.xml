@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- My Tasks: kanban action -->
+    <record id="project_task_action_fsm_technicians" model="ir.actions.act_window">
+        <field name="name">My Tasks</field>
+        <field name="res_model">project.task</field>
+        <field name="view_mode">kanban,calendar,tree,form,activity</field>
+        <field name="search_view_id" ref="industry_fsm.project_task_view_search_fsm"/>
+        <field name="domain">[('is_fsm', '=', True),('display_project_id', '!=', False),('user_ids', 'in', uid)]</field>
+        <field name="context">{
+            'fsm_mode': True,
+            }
+        </field>
+        <field name="help" type="html">
+            <p class='o_view_nocontent_smiling_face'>No tasks found. Let's create one!</p>
+            <p>Find here your tasks planned for the following days.</p>
+        </field>
+    </record>
+
+
+    <record id="project_task_action_fsm_view_kanban_technicians" model="ir.actions.act_window.view">
+        <field name="sequence" eval="5"/>
+        <field name="view_mode">kanban</field>
+        <field name="view_id" ref="industry_fsm.project_task_view_kanban_fsm"/>
+        <field name="act_window_id" ref="field_service_extension.project_task_action_fsm_technicians"/>
+    </record>
+
+    <menuitem id="fsm_menu_tasks_kanban_technician"
+              name="Technician Tasks"
+              action="field_service_extension.project_task_action_fsm_technicians"
+              sequence="10"
+              parent="industry_fsm.fsm_tasks_menu"
+              groups="field_service_extension.group_fsm_technical_user"/>
+
+    <record model='ir.ui.menu' id='industry_fsm.fsm_menu_tasks_kanban'>
+        <field name="groups_id" eval="[(4,ref('field_service_extension.group_fsm_basic_user'))]"/>
+    </record>
+
+    <record model='ir.ui.menu' id='industry_fsm.fsm_menu_tasks_map'>
+        <field name="groups_id" eval="[(4,ref('field_service_extension.group_fsm_basic_user'))]"/>
+    </record>
+
+</odoo>

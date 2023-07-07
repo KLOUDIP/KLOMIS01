@@ -40,6 +40,18 @@ class FiosMatchingLine(models.Model):
     removed_from_fios = fields.Boolean('Removed From FIOS')
     different_serial_received_from_fios = fields.Boolean('Different Serial Received from FIOS')
 
+    def form_pop_up(self):
+        """Pop up the form view"""
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Open: Fios Matching Lines'),
+            'res_model': 'fios.matching.line',
+            'view_mode': 'form',
+            'res_id': self.id,
+            'target': 'new',
+
+        }
+
     def match_vehicle(self):
         """update sync-key in FIOS API"""
         if not self.fleet_vehicle_id:

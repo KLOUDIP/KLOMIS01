@@ -7,7 +7,7 @@ class WorksheetTemplateLine(models.Model):
     _inherit = ['portal.mixin']
 
     name = fields.Char('Name')
-    template_id = fields.Many2one('project.worksheet.template', string='Template')
+    template_id = fields.Many2one('worksheet.template', string='Template')
     select_user = fields.Many2one('res.users', string='Assigned to', required=True)
     fleet_id = fields.Many2one('fleet.vehicle', string='Fleet Code')
     project_task_id = fields.Many2one('project.task', string="Project Task")
@@ -32,6 +32,18 @@ class WorksheetTemplateLine(models.Model):
     technician_signature = fields.Binary('Signature', help='Signature received through the portal.', copy=False,
                                          attachment=True)
     technician_signed_by = fields.Char('Signed By', help='Name of the person that signed the task.', copy=False)
+
+    is_telematics_technicians = fields.Boolean(string="Telematics Engineer", compute="_check_telematics_technician")
+
+    def _check_telematics_technician(self):
+        """Check User is Telematics Technician or Not """
+        user_group = self.env['res.groups'].sudo().search([('name', '=', 'KloudIP-Telematics Technician')])
+        uid = self.env.uid
+        for record in self:
+            if uid in user_group.users.ids:
+                record.is_telematics_technicians = True
+            else:
+                record.is_telematics_technicians = False
 
     @api.onchange('template_id')
     def _user_error(self):
@@ -64,7 +76,7 @@ class WorksheetTemplateLine(models.Model):
                 if len(match) != len(set(match)):
                     worksheet = self.env[template_id.model_id.model].sudo().search([('x_studio_line_id', '=', get_line_id)])
                 else:
-                    worksheet = self.env[template_id.model_id.model].sudo().search([('x_task_id', '=', 'not')])
+                    worksheet = self.env[template_id.model_id.model].sudo().search([('x_project_task_id', '=', 'not')])
         context = literal_eval(action.get('context', '{}'))
         action.update({
             'res_id': worksheet.id if worksheet else False,
@@ -72,7 +84,7 @@ class WorksheetTemplateLine(models.Model):
             'context': {
                 **context,
                 'edit': True,
-                'default_x_task_id': self.id,
+                'default_x_project_task_id': self.id,
                 'default_x_studio_line_id': get_line_id,
                 'form_view_initial_mode': 'edit',
             },
@@ -203,7 +215,7 @@ class WorksheetTemplateLine(models.Model):
     def action_to_create_expense_transport(self):
 
         pro_id = False
-        get_pro_id = self.env['product.product'].search([('name', '=', 'Transport - Private Motorbike')])
+        get_pro_id = self.env['product.product'].search([('name', '=', 'Technician Transport - Private Motorbike')])
         if get_pro_id:
             pro_id = get_pro_id.id
 

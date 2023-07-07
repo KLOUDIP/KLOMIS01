@@ -9,6 +9,9 @@
     "website": "https://nisus.lk/",
     'data': [
         'views/project_views.xml',
+        'security/fsm_security.xml',
+        'security/ir.model.access.csv',
+        'views/menus.xml'
     ],
     'depends': ['project', 'project_enterprise'],
 }

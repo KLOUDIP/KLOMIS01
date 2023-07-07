@@ -33,12 +33,33 @@ Odoo Web Client - Kloudip Customisations
 Modify some default styling to match Kloudip branding
         """,
     'data': [
-        'views/assets.xml',
         'data/ir_attachment.xml',
-             ],
+    ],
     'depends': ['web_enterprise'],
     'qweb': [],
     'installable': True,
     'auto_install': False,
     'application': False,
+
+    'assets': {
+        'web._assets_primary_variables': [
+            (
+                "after",
+                "web/static/src/legacy/scss/primary_variables.scss",
+                "kloudip_web_jsi/static/src/scss/variables_overriden.scss",
+            )
+        ],
+
+        'web.webclient_bootstrap': [
+            (
+                "replace",
+                "web_enterprise/static/src/img/mobile-icons/android-192x192.png",
+                "kloudip_web_jsi/static/src/img/favicon.png",
+            )
+        ],
+        'web.assets_backend': [
+            'kloudip_web_jsi/static/src/js/template.js',
+
+        ],
+    },
 }

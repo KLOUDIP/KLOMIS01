@@ -1,4 +1,5 @@
 from odoo import models, fields, api, _
+from odoo.exceptions import UserError, ValidationError
 
 
 class Expenses(models.Model):
@@ -6,6 +7,22 @@ class Expenses(models.Model):
 
     expense_id_worksheet_line = fields.Many2one('worksheet.template.line', 'Worksheet Id')
     task_id_rec = fields.Many2one('project.task', 'Task Id')
+
+    @api.constrains('product_id', 'product_uom_id')
+    def _check_product_uom_category(self):
+        for expense in self:
+            msg = 'Product name :' + str(expense.product_id.name) + " , " + str(
+                expense.product_uom_id.name) + ": " + str(expense.product_uom_id.category_id.id) + " - " + str(
+                expense.product_uom_id.category_id.name) + " , " + str(expense.product_id.uom_id.name) + ": " + str(
+                expense.product_id.uom_id.category_id.id) + " - " + str(expense.product_id.uom_id.category_id.name)
+
+            # raise UserError(msg)
+            if expense.product_id and expense.product_uom_id.category_id != expense.product_id.uom_id.category_id:
+                raise UserError(_(
+                    'Selected Unit of Measure for expense %(expense)s does not belong to the same category as the Unit of Measure of product %(product)s.',
+                    expense=expense.name, product=expense.product_id.name,
+                ))
+
 
     @api.model
     def create(self, vals):
@@ -37,7 +54,6 @@ class Expenses(models.Model):
                 task_line_id.write({
                     'extra': True,
                 })
-
 
             if get_context == 'other':
                 task_line_id.write({

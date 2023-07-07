@@ -9,9 +9,9 @@
         <field name="arch" type="xml">
 
             <!--adding billing by id field-->
-            <field name="user_id" position="after">
+            <group name="sales" position="inside">
                 <field name="billing_by_id"/>
-            </field>
+            </group>
 
         </field>
     </record>

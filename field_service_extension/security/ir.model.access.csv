@@ -1,0 +1,4 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+task_restrict_user_ir_model,task_restrict_user_ir_model,base.model_ir_model,group_fsm_technical_user,1,0,0,0
+task_none_restrict_user_ir_model,task_none_restrict_user_ir_model,base.model_ir_model,group_fsm_basic_user,1,0,0,0
+

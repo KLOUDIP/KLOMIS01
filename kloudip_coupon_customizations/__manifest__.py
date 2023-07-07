@@ -6,7 +6,7 @@
     'description': """
 Setting coupon again to valid state, when sale order returned
     """,
-    'version': '1.1.3',
+    'version': '15.0.2.0.0',
     'category': 'Sale',
     'author': 'Nisus Solutions (Pvt) Ltd',
     'website': 'http://www.nisus.lk',
@@ -38,4 +38,3 @@ Setting coupon again to valid state, when sale order returned
     'application': False,
     'auto_install': False,
 }
-# actual version 1.1.8

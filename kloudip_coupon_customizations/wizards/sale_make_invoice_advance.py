@@ -52,4 +52,25 @@ class SaleAdvancePaymentInv(models.TransientModel):
     _inherit = "sale.advance.payment.inv"
 
     refunded_amount = fields.Monetary(string='Amount To Be Charged')
-    visible_refunded_amount = fields.Boolean(string='Visible Refunded Amount', help='For UI Purposes')
+    visible_refunded_amount = fields.Boolean(string='Visible Refunded Amount', help='For UI Purposes',
+                                             compute="_check_coupon_visibility")
+
+    @api.depends('refunded_amount')
+    def _check_coupon_visibility(self):
+        for record in self:
+            active_id = self.env.context.get('active_id')
+            active_model = self.env.context.get('active_model')
+            if active_model == 'sale.order':
+                sale_object = self.env['sale.order'].browse(active_id)
+                if sale_object:
+                    order_lines = sale_object.order_line
+                    value = bool(order_lines.filtered(lambda x: x.qty_to_invoice < 0) and order_lines.filtered(
+                        lambda x: x.coupon_program_id))
+                    if value == True:
+                        record.visible_refunded_amount = True
+                    else:
+                        record.visible_refunded_amount = False
+                else:
+                    record.visible_refunded_amount = False
+            else:
+                record.visible_refunded_amount = False

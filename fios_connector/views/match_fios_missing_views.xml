@@ -74,6 +74,7 @@
                 <field name="fios_serial_no" required="1" options="{'no_create': True, 'no_open': True}" readonly="1"/>
                 <field name="lot_id" attrs="{'readonly': [('serial_matched', '=', True)]}"/>
                 <button name="match_serial" type='object' string="Match Serial" class="btn-outline-primary" attrs="{'invisible': ['|', ('serial_matched', '=', True), ('removed_from_fios', '=', True)]}"/>
+                <button name="form_pop_up" type="object" class="btn-primary" icon="fa-share"/>
             </tree>
         </field>
     </record>

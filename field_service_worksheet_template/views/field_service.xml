@@ -12,7 +12,8 @@
                             <field name="template_id" string="Worksheet Template"/>
                             <field name="select_user"/>
                             <field name="expense_id" invisible="1"/>
-                            <field name="done_mark"/>
+                            <field name="is_telematics_technicians" invisible="1"/>
+                            <field name="done_mark" attrs="{'readonly': [('is_telematics_technicians', '!=', True)]}"/>
                             <field name="food" invisible="1"/>
                             <field name="transport" invisible="1"/>
                             <field name="beverage" invisible="1"/>

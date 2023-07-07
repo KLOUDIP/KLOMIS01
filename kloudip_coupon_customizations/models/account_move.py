@@ -45,12 +45,20 @@ class AccountMove(models.Model):
                                           compute='_compute_visible_coupon_group')
     coupons_email_sent = fields.Boolean(string='Coupon Email Sent', copy=False)
 
+    # def _compute_visible_coupon_group(self):
+    #     """Compute either coupon group is visible or not"""
+    #     visible_coupon_group = False
+    #     if self.coupon_ids:
+    #         visible_coupon_group = True
+    #     self.update({'visible_coupon_group': visible_coupon_group})
+
     def _compute_visible_coupon_group(self):
         """Compute either coupon group is visible or not"""
-        visible_coupon_group = False
-        if self.coupon_ids:
-            visible_coupon_group = True
-        self.update({'visible_coupon_group': visible_coupon_group})
+        for record in self:
+            visible_coupon_group = False
+            if record.coupon_ids:
+                visible_coupon_group = True
+            record.update({'visible_coupon_group': visible_coupon_group})
 
     def send_coupon_email(self):
         """Send email for the customer notifying generated coupons"""
@@ -130,3 +138,4 @@ class AccountMove(models.Model):
             for coupon in coupons:
                 coupon.message_post(body='Invoice (%s) set to draft. Stage changed to Cancelled.' % self.display_name)
         return super(AccountMove, self).button_draft()
+

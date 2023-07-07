@@ -2,3 +2,4 @@ id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 user01,worksheet_template_line,model_worksheet_template_line,base.group_user,1,1,1,1
 user02,ticket_wizard,model_ticket_wizard,base.group_user,1,1,1,1
 user03,task_wizard,model_task_wizard,base.group_user,1,1,1,1
+

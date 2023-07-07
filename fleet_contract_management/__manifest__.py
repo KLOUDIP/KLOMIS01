@@ -4,13 +4,16 @@
     "summary": "This module allow to add billing contact to contract view",
     "description": "This module allow to add billing contact to contract view",
     'category': 'fleet',
-    'version': '1.0.1',
+    'version': '15.0.2.0.0',
     "author": "Nisus Solutions (Pvt) Ltd",
     "website": "https://nisus.lk/",
     'data': [
         'views/fleet_vehicle_cost_views.xml',
         'views/res_partner_views.xml',
     ],
-    'depends': ['fleet', 'sale_subscription'],
+    'depends': [
+        'fleet',
+        'sale_subscription'
+    ],
+    'licence': 'LGPL-3',
 }
-# actual_version 1.0.6

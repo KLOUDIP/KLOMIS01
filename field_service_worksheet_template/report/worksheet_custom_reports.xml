@@ -1,14 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <data>
-        <report
-                id="task_custom_report_template"
-                string="Worksheet Report (PDF)"
-                model="worksheet.template.line"
-                report_type="qweb-pdf"
-                name="field_service_worksheet_template.custom_worksheet"
-                file="field_service_worksheet_template.custom_worksheet"
-                print_report_name="'Worksheet %s - %s' % (object.project_task_id.name, object.project_task_id.partner_id.name)"
-        />
+        <record id="task_custom_report_template" model="ir.actions.report">
+            <field name="name">Worksheet Report (PDF)</field>
+            <field name="model">worksheet.template.line</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">field_service_worksheet_template.custom_worksheet</field>
+            <field name="report_file">field_service_worksheet_template.custom_worksheet</field>
+            <field name="print_report_name">
+                'Worksheet %s - %s' % (object.project_task_id.name, object.project_task_id.partner_id.name)</field>
+        </record>
+<!--        <report-->
+<!--                id="task_custom_report_template"-->
+<!--                string="Worksheet Report (PDF)"-->
+<!--                model="worksheet.template.line"-->
+<!--                report_type="qweb-pdf"-->
+<!--                name="field_service_worksheet_template.custom_worksheet"-->
+<!--                file="field_service_worksheet_template.custom_worksheet"-->
+<!--                print_report_name="'Worksheet %s - %s' % (object.project_task_id.name, object.project_task_id.partner_id.name)"/>-->
     </data>
 </odoo>

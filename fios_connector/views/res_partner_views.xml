@@ -24,7 +24,7 @@
                     <button name="get_active_units" string="Refresh" class="oe_highlight" icon="fa-refresh" type="object" style="margin-bottom:1%; margin-top:-1%; border-radius:25px"/>
 
                     <field name="active_unit_ids">
-                        <tree editable="bottom">
+                        <tree editable="bottom" delete="false">
                             <field name="fleet_vehicle_id" invisible="1"/>
                             <field name="lot_id" invisible="1"/>
                             <field name="unit_serial"/>

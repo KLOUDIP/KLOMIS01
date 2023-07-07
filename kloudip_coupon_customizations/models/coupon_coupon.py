@@ -17,10 +17,11 @@ class CouponCoupon(models.Model):
     invoice_partner_id = fields.Many2one('res.partner', string='Partner',
                                          help='If the coupon created from invoice, this field will store invoice customer.')
 
-    def _check_coupon_code(self, order):
+    def _check_coupon_code(self, order, partner_id):
         """Override core method to raise error for refunded coupons and remove error if the program can redeem
         multiple coupons"""
-        message = super(CouponCoupon, self)._check_coupon_code(order)
+        order_date = order.date_order.date()
+        message = super(CouponCoupon, self)._check_coupon_code(order_date, partner_id)
         # handle multiple coupons
         if message.get('error', False) == _('A Coupon is already applied for the same reward') and self.program_id.allow_redeem_multiple_coupons:
             order_lines = order.order_line.filtered(lambda x: (x.display_type not in ('line_section', 'line_note')))
@@ -42,10 +43,13 @@ class CouponCoupon(models.Model):
         return message
 
     def action_refund_coupon(self):
+        journals = self.env['account.move'].browse(self.invoice_id.ids).journal_id.filtered(lambda x: x.active)
+        # raise ValidationError(journals[0])
         """create credit note for assigned invoice id"""
         move_action = self.env['account.move.reversal'].with_context(active_id=self.invoice_id.id, active_ids=self.invoice_id.ids).create({
             'refund_method': 'refund',
-            'move_ids': self.env['account.move'].browse(self.invoice_id.ids)
+            'move_ids': self.env['account.move'].browse(self.invoice_id.ids),
+            'journal_id': journals[0].id if journals else None
         }).reverse_moves()
         # find credit note from action
         credit_note = self.env[move_action['res_model']].browse(move_action['res_id'])

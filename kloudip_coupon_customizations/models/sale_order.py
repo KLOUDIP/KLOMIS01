@@ -5,8 +5,8 @@ from itertools import groupby
 from odoo import api, fields, models, _
 from odoo.exceptions import AccessError, ValidationError
 from odoo.tools import float_is_zero
-from odoo.addons.sale.models.sale import SaleOrder as SaleOrderBase
-from odoo.addons.sale.models.sale import SaleOrderLine as SaleOrderLineBase
+from odoo.addons.sale.models.sale_order import SaleOrder as SaleOrderBase
+from odoo.addons.sale.models.sale_order_line import SaleOrderLine as SaleOrderLineBase
 
 
 def _create_invoices(self, grouped=False, final=False, date=None):

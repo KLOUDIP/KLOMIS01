@@ -13,6 +13,20 @@ class ProjectTaskLine(models.Model):
     accessible = fields.Boolean(compute='_compute_cordinator_group')
     extra_minutes = fields.Boolean("Extra Minutes")
 
+    is_technician = fields.Boolean(string="Is Technician", compute="_check_technician_group")
+
+    def _check_technician_group(self):
+        """Written this type of code because this group was already created by front end"""
+        group = self.env['res.groups'].search([("name", "=", "Technicians")])
+        uid = self.env.uid
+        for i in self:
+            if uid in group.users.ids:
+                i['is_technician'] = True
+            else:
+                i['is_technician'] = False
+
+
+
     def _compute_cordinator_group(self):
         for i in self:
             if i.env.user.has_group('field_service_worksheet_template.group_coordinator_fsm') or i.env.user.has_group('industry_fsm.group_fsm_manager'):

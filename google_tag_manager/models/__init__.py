@@ -1,2 +1,2 @@
-from . import main
-from . import website_google_tag
+from . import website
+from . import res_config_settings

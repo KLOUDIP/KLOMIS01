@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record model="ir.ui.menu" id="project.menu_main_pm">
+            <field name="groups_id" eval="[(6,0,[ref('access_rights.group_project_menu_restrict'), ref('project.group_project_manager')])]"/>
+        </record>
+    </data>
+</odoo>

@@ -33,11 +33,16 @@ Odoo Customizable WMS Barcode interface
 Manage field to be editable on package in the WMS interface
         """,
     'data': [
-        'views/sign.xml',
-             ],
+    ],
     'depends': ['sign'],
     'qweb': [],
     'installable': True,
     'auto_install': False,
     'application': True,
+
+    'assets': {
+        'sign.assets_common': [
+            'remove_ad/static/src/js/widgets.js',
+        ],
+    },
 }

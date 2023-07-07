@@ -9,7 +9,7 @@
     'name': 'Website Sale Automatic Workflow',
     'category': 'Website Sale',
     'summary': 'Manage automatic sale order confirmation, invoice creation, invoice validate, and pay invoice.',
-    'version': '13.0.1',
+    'version': '1.0.0',
     'license': 'OPL-1',
     'description': """Manage automatic sale order confirmation, invoice creation, invoice validate, and pay invoice.""",
     'depends': ['sale_management', 'website_sale'],

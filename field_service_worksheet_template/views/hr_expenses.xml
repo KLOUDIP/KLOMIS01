@@ -9,6 +9,17 @@
                     <field name="expense_id_worksheet_line"/>
                     <field name="task_id_rec"/>
                 </field>
+                <xpath expr="//field[@name='unit_amount']" position="attributes">
+                    <attribute name="readonly">0</attribute>
+                </xpath>
+                <!-- Reference field set visible-->
+                <xpath expr="//field[@name='reference']" position="replace">
+                    <field name="reference" attrs="{'readonly': [('is_ref_editable', '=', False)]}"/>
+                </xpath>
+                 <!-- Unit price set editable-->
+                <xpath expr="//field[@name='unit_amount']" position="replace">
+                    <field name="unit_amount" required="1" widget="monetary" options="{'currency_field': 'currency_id', 'field_digits': True}" readonly="0"/>
+                </xpath>
             </field>
         </record>
     </data>

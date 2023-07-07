@@ -6,12 +6,17 @@
     'description': """
 FIOS Integration with Odoo
     """,
-    'version': '1.0.1',
+    'version': '15.0.2.0.0',
     'category': 'Fleet',
     'author': 'Nisus Solutions (Pvt) Ltd',
     'website': 'http://www.nisus.lk',
     'depends': [
-        'fleet', 'contacts', 'stock', 'fleet_contract_management', 'sale_subscription', 'vehicle_delivery'
+        'fleet',
+        'contacts',
+        'stock',
+        'fleet_contract_management',
+        'sale_subscription',
+        'vehicle_delivery'
     ],
     'data': [
         'security/ir.model.access.csv',
@@ -31,5 +36,6 @@ FIOS Integration with Odoo
     'installable': True,
     'application': True,
     'auto_install': False,
+    'licence': 'LGPL-3',
 }
-# real version : 1.2.7
+

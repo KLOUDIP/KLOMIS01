@@ -20,7 +20,7 @@ class FreightWizard(models.TransientModel):
             'target': 'new',
             'context': {
                 'default_partner_id': self.current_task_tmpl_id.partner_id.id if self.current_task_tmpl_id.partner_id else False,
-                'default_user_id': self.current_task_tmpl_id.user_id.id if self.current_task_tmpl_id.user_id else False,
+                'default_user_id': self.current_task_tmpl_id.user_ids[0].id if self.current_task_tmpl_id.user_ids else False,
                 'default_help_desk_ticket_id': self.current_task_tmpl_id.id if self.current_task_tmpl_id else False,
             }
         }

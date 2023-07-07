@@ -29,7 +29,7 @@ def apply_coupon(self, order, coupon_code):
     else:
         coupon = self.env['coupon.coupon'].search([('code', '=', coupon_code)], limit=1)
         if coupon:
-            error_status = coupon._check_coupon_code(order)
+            error_status = coupon._check_coupon_code(order, self.partner_id)
             if not error_status:
                 # --
                 coupon_program_line = order.order_line.filtered(lambda x: x.coupon_program_id)

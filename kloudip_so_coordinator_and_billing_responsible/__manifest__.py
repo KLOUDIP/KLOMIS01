@@ -6,7 +6,7 @@
     'description': """
 Add coordinator and billing responsible to sales order
     """,
-    'version': '1.0.2',
+    'version': '15.0.2.0.0',
     'category': 'Sale',
     'author': 'Nisus Solutions (Pvt) Ltd',
     'website': 'http://www.nisus.lk',
@@ -25,6 +25,5 @@ Add coordinator and billing responsible to sales order
     'installable': True,
     'application': False,
     'auto_install': False,
+    'licence': 'LGPL-3',
 }
-# Actual Version 1.0.6
-
