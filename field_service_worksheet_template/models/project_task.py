@@ -10,9 +10,8 @@ class ProjectTaskLine(models.Model):
     related_task = fields.Many2one('project.task')
     tech_team_member_id = fields.Many2one("res.users", "TECH Team Member")
     count = fields.Boolean()
-    accessible = fields.Boolean(compute='_compute_cordinator_group')
+    accessible = fields.Boolean(string="Is Coordinator", compute='_compute_cordinator_group')
     extra_minutes = fields.Boolean("Extra Minutes")
-
     is_technician = fields.Boolean(string="Is Technician", compute="_check_technician_group")
 
     def _check_technician_group(self):
@@ -24,8 +23,6 @@ class ProjectTaskLine(models.Model):
                 i['is_technician'] = True
             else:
                 i['is_technician'] = False
-
-
 
     def _compute_cordinator_group(self):
         for i in self:

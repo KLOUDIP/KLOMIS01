@@ -8,7 +8,7 @@
             <field name="arch" type="xml">
                 <field name='description' position="before">
                     <field name="worksheet_template_lines" context="{'get_license':True}">
-                        <tree>
+                        <tree editable="bottom">
                             <field name="select_vals"/>
                             <field name="name" readonly="1" force_save="1"/>
                             <field name="template_id" string="Worksheet Template"/>
@@ -16,7 +16,7 @@
                             <field name="select_user"/>
                             <field name="expense_id" invisible="1"/>
                             <field name="is_telematics_technicians" invisible="1"/>
-                            <field name="done_mark" attrs="{'readonly': [('is_telematics_technicians', '!=', True)]}"/>
+                            <field name="done_mark" attrs="{'readonly': [('is_telematics_technicians', '=', True)]}"/>
                             <field name="food" invisible="1"/>
                             <field name="extra" invisible="1"/>
                             <field name="transport" invisible="1"/>
@@ -203,6 +203,7 @@
                     <field name="extra_minutes" invisible="1"/>
                     <field name="tech_team_member_id"/>
                     <field name="is_technician" invisible="1"/>
+                    <field name="accessible" invisible="1"/>
                     <button type="object" class="btn btn-primary" string="EM" name="get_extra_minutes_expenses" attrs="{'invisible': ['|', ('tech_team_member_id', '=', False), ('extra_minutes', '!=', False)]}" groups="field_service_worksheet_template.group_coordinator_fsm,industry_fsm.group_fsm_manager"/>
                 </xpath>
 
