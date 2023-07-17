@@ -29,6 +29,9 @@
                             <button type="object" class="btn btn-primary" string='UPDATE' name="action_fsm_worksheet_template"
                                     attrs="{'invisible': ['|', ('template_id', '=', False), ('done_mark', '=', True)]}"/>
 
+                            <button type="object" class="btn btn-primary" string='OPEN' name="action_form_worksheet_template"
+                                        attrs="{'invisible': ['|', ('template_id', '=', False), ('done_mark', '!=', True)]}"/>
+
                             <button type="object" class="btn btn-primary" string='SIG' name="action_preview_worksheet"
                                     attrs="{'invisible': [('template_id', '=', False)]}"/>
 
