@@ -17,12 +17,14 @@ class CouponCoupon(models.Model):
     invoice_partner_id = fields.Many2one('res.partner', string='Partner',
                                          help='If the coupon created from invoice, this field will store invoice customer.')
 
-    def _check_coupon_code(self, order, partner_id):
+    # def _check_coupon_code(self, order, partner_id):
+    def _check_coupon_code(self, order_date, partner_id, **kwargs):
         """Override core method to raise error for refunded coupons and remove error if the program can redeem
         multiple coupons"""
-        order_date = order.date_order.date()
-        message = super(CouponCoupon, self)._check_coupon_code(order_date, partner_id)
+        # order_date = order.date_order.date()
+        message = super(CouponCoupon, self)._check_coupon_code(order_date, partner_id, **kwargs)
         # handle multiple coupons
+        order = kwargs.get('order')
         if message.get('error', False) == _('A Coupon is already applied for the same reward') and self.program_id.allow_redeem_multiple_coupons:
             order_lines = order.order_line.filtered(lambda x: (x.display_type not in ('line_section', 'line_note')))
             product_qty = sum(order_lines.filtered(lambda x: x.price_unit > 0).mapped('product_uom_qty'))
@@ -36,8 +38,8 @@ class CouponCoupon(models.Model):
             message = {'error': _('This coupon is refunded (%s).') % (self.code)}
         elif len(order.order_line.filtered(lambda x: x.product_id.id in self.program_id.discount_specific_product_ids.ids)) > 1:
             message = {'error': _('You can only add 1 order line with products in discount specific products (Coupon Program - %s)') % (self.program_id.name)}
-        # elif len(order.order_line.mapped('coupon_program_id')) > 0:
-        #     message = {'error': _('You can only add 1 coupon program to a sale order!')}
+        elif len(order.order_line.mapped('coupon_program_id')) > 0:
+            message = {'error': _('You can only add 1 coupon program to a sale order!')}
         elif order.order_line.mapped('coupon_program_id').id and order.order_line.mapped('coupon_program_id').id != self.program_id.id:
             message = {'error': _('You can only add 1 coupon program to a sale order!')}
         return message

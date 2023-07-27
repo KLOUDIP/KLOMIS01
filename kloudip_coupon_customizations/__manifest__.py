@@ -6,7 +6,7 @@
     'description': """
 Setting coupon again to valid state, when sale order returned
     """,
-    'version': '15.0.2.0.0',
+    'version': '15.0.2.0.1',
     'category': 'Sale',
     'author': 'Nisus Solutions (Pvt) Ltd',
     'website': 'http://www.nisus.lk',

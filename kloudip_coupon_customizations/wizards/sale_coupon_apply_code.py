@@ -29,21 +29,21 @@ def apply_coupon(self, order, coupon_code):
     else:
         coupon = self.env['coupon.coupon'].search([('code', '=', coupon_code)], limit=1)
         if coupon:
-            error_status = coupon._check_coupon_code(order, self.partner_id)
+            error_status = coupon._check_coupon_code(order.date_order.date(), order.partner_id.id, order=order)
             if not error_status:
-                # --
                 coupon_program_line = order.order_line.filtered(lambda x: x.coupon_program_id)
+                # order_line_count = len(order.order_line)
                 if len(coupon_program_line) == 1:
                     coupon_program_line.update({'product_uom_qty': coupon_program_line['product_uom_qty'] + 1})
                 elif len(coupon_program_line) == 0:
                     order._create_reward_line(coupon.program_id)
                 else:
                     raise ValidationError(_('Multiple coupon order lines found'))
-                # --
                 order.applied_coupon_ids += coupon
                 coupon.write({'state': 'used'})
         else:
             error_status = {'not_found': _('This coupon is invalid (%s).') % (coupon_code)}
+
     return error_status
 
 
