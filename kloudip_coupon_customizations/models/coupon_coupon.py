@@ -38,8 +38,8 @@ class CouponCoupon(models.Model):
             message = {'error': _('This coupon is refunded (%s).') % (self.code)}
         elif len(order.order_line.filtered(lambda x: x.product_id.id in self.program_id.discount_specific_product_ids.ids)) > 1:
             message = {'error': _('You can only add 1 order line with products in discount specific products (Coupon Program - %s)') % (self.program_id.name)}
-        elif len(order.order_line.mapped('coupon_program_id')) > 0:
-            message = {'error': _('You can only add 1 coupon program to a sale order!')}
+        # elif len(order.order_line.mapped('coupon_program_id')) > 0:
+        #     message = {'error': _('You can only add 1 coupon program to a sale order!')}
         elif order.order_line.mapped('coupon_program_id').id and order.order_line.mapped('coupon_program_id').id != self.program_id.id:
             message = {'error': _('You can only add 1 coupon program to a sale order!')}
         return message
