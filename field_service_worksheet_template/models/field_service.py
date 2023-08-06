@@ -277,6 +277,19 @@ class WorksheetTemplateLine(models.Model):
 
         }
 
+    def action_open_expense_view(self):
+        return {
+            'name': _('EXPENSE view'),
+            'view_mode': 'tree',
+            'view_type': 'tree',
+            'view_id': self.env.ref('hr_expense.hr_expense_view_expenses_analysis_tree').id,
+            'res_model': 'hr.expense',
+            'type': 'ir.actions.act_window',
+            'nodestroy': True,
+            'target': 'new',
+            'domain': [('expense_id_worksheet_line', '=', self.id)],
+        }
+
     def action_send_report_template(self):
         self.ensure_one()
         if not self.project_task_id:

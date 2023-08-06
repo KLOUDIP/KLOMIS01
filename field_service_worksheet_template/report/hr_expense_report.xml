@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
     <data>
-
         <template id="expense_inherit_report" inherit_id="hr_expense.report_expense_sheet">
             <xpath expr="//div[@class='row mt32 mb32']" position="after">
                 <div class="row mt32 mb32">
