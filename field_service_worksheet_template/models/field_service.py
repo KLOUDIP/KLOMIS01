@@ -277,17 +277,17 @@ class WorksheetTemplateLine(models.Model):
 
         }
 
-    def action_open_expense_view(self):
+    def action_open_worksheet_line_view(self):
         return {
-            'name': _('EXPENSE view'),
-            'view_mode': 'tree',
-            'view_type': 'tree',
-            'view_id': self.env.ref('hr_expense.hr_expense_view_expenses_analysis_tree').id,
-            'res_model': 'hr.expense',
+            'name': _('Worksheet Lines'),
+            'view_mode': 'form',
+            'view_type': 'form',
+            'view_id': self.env.ref('field_service_worksheet_template.worksheet_template_line_form').id,
+            'res_model': 'worksheet.template.line',
             'type': 'ir.actions.act_window',
             'nodestroy': True,
             'target': 'new',
-            'domain': [('expense_id_worksheet_line', '=', self.id)],
+            'domain': [],
         }
 
     def action_send_report_template(self):
