@@ -282,6 +282,7 @@ class WorksheetTemplateLine(models.Model):
             'name': _('Worksheet Lines'),
             'view_mode': 'form',
             'view_type': 'form',
+            'res_id': self.id,
             'view_id': self.env.ref('field_service_worksheet_template.worksheet_template_line_form').id,
             'res_model': 'worksheet.template.line',
             'type': 'ir.actions.act_window',
