@@ -34,7 +34,7 @@
                             <field name="lot_id" attrs="{'readonly': [('serial_matched', '=', True)]}"/>
                             <button name="match_serial" type='object' string="Match Serial" class="btn-outline-primary" attrs="{'invisible': ['|', ('serial_matched', '=', True), ('removed_from_fios', '=', True)]}"/>
                             <button name="unmatch_serial" type='object' string="UnMatch Serial" attrs="{'invisible': [('serial_matched', '=', False)]}" icon='fa-times'/>
-                            <button name="remove_matching_line" type='object' string="Remove Line" attrs="{'invisible': [('removed_from_fios', '=', False)]}" icon='fa-times' confirm="Are you sure, you need to remove the matching line?"/>
+                            <button name="form_pop_up" type="object" class="btn-primary" icon="fa-share"/>
                         </tree>
                     </field>
                 </sheet>
@@ -91,8 +91,6 @@
                 <field name="lot_id" attrs="{'readonly': [('serial_matched', '=', True)]}"/>
                 <button name="match_serial" type='object' string="Match Serial" class="btn-outline-primary" attrs="{'invisible': ['|', ('serial_matched', '=', True), ('removed_from_fios', '=', True)]}"/>
                 <button name="form_pop_up" type="object" class="btn-primary" icon="fa-share"/>
-                <field name="removed_from_fios" readonly="1"/>
-                            <button name="remove_matching_line" type='object' string="Remove Line" attrs="{'invisible': [('removed_from_fios', '=', False)]}" icon='fa-times' confirm="Are you sure, you need to remove the matching line?"/>
             </tree>
         </field>
     </record>
