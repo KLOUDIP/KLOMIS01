@@ -277,6 +277,20 @@ class WorksheetTemplateLine(models.Model):
 
         }
 
+    def action_open_worksheet_line_view(self):
+        return {
+            'name': _('Worksheet Lines'),
+            'view_mode': 'form',
+            'view_type': 'form',
+            'res_id': self.id,
+            'view_id': self.env.ref('field_service_worksheet_template.worksheet_template_line_form').id,
+            'res_model': 'worksheet.template.line',
+            'type': 'ir.actions.act_window',
+            'nodestroy': True,
+            'target': 'new',
+            'domain': [],
+        }
+
     def action_send_report_template(self):
         self.ensure_one()
         if not self.project_task_id:
