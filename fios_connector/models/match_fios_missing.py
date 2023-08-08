@@ -48,7 +48,7 @@ class FiosMatchingLine(models.Model):
             'res_model': 'fios.matching.line',
             'view_mode': 'form',
             'res_id': self.id,
-            'target': 'new',
+            'target': 'current',
 
         }
 

@@ -20,7 +20,23 @@
                         <button name="get_active_units" type='object' string="Refresh" class="oe_highlight ml-3" style="border-radius:25px" help="Refresh active units for the selected partner" icon="fa-refresh"/>
                     </div>
                     <h2 style="color:#666666; margin-top:1%"><b>Matching Lines</b></h2>
-                    <field name="matching_line_ids" nolabel="1"/>
+                    <field name="matching_line_ids" nolabel="1">
+                        <tree editable="bottom" create="false" delete="0" string="FIOS Matching Lines" decoration-warning="different_serial_received_from_fios==True" default_order="fios_plate_no">
+                            <field name="plate_matched" invisible="1"/>
+                            <field name="removed_from_fios" invisible="1"/>
+                            <field name="different_serial_received_from_fios" invisible="1"/>
+                            <field name="serial_matched" invisible="1"/>
+                            <field name="fios_plate_no" required="1" options="{'no_create': True, 'no_open': True}" readonly="1"/>
+                            <field name="fleet_vehicle_id" context="{'view_license_plate': '1'}" attrs="{'readonly': [('plate_matched', '=', True)]}"/>
+                            <button name="match_vehicle" type='object' string="Match Plate" class="btn-outline-primary" attrs="{'invisible': ['|', ('plate_matched', '=', True), ('removed_from_fios', '=', True)]}"/>
+                            <button name="unmatch_vehicle" type='object' string="UnMatch Plate" attrs="{'invisible': [('plate_matched', '=', False)]}" icon='fa-times'/>
+                            <field name="fios_serial_no" required="1" options="{'no_create': True, 'no_open': True}" readonly="1"/>
+                            <field name="lot_id" attrs="{'readonly': [('serial_matched', '=', True)]}"/>
+                            <button name="match_serial" type='object' string="Match Serial" class="btn-outline-primary" attrs="{'invisible': ['|', ('serial_matched', '=', True), ('removed_from_fios', '=', True)]}"/>
+                            <button name="unmatch_serial" type='object' string="UnMatch Serial" attrs="{'invisible': [('serial_matched', '=', False)]}" icon='fa-times'/>
+                            <button name="form_pop_up" type="object" class="btn-primary" icon="fa-share"/>
+                        </tree>
+                    </field>
                 </sheet>
                 <div class="oe_chatter">
                     <field name="message_follower_ids" widget="mail_followers"/>
