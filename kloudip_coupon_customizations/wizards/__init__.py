@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from . import sale_coupon_apply_code
+from . import sale_loyalty_coupon_wizard
 from . import sale_make_invoice_advance
-from . import coupon_generate
+from . import loyalty_generate_wizard

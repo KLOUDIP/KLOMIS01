@@ -21,7 +21,7 @@
 
 {
     'name': 'Kloudip link vehicle with delivery',
-    'version': '15.0.2.0.0',
+    'version': '16.0.2.0.0',
     'summary': 'Odoo Kloudip Custom module',
     'sequence': '19',
     'category': 'Tools',
@@ -42,10 +42,9 @@ Kloudip link vehicle with delivery
     'depends': [
         'stock',
         'fleet',
-        'base_automation',
     ],
     'installable': True,
     'auto_install': False,
     'application': True,
-    'licence': 'LGPL-3',
+    'license': 'LGPL-3',
 }

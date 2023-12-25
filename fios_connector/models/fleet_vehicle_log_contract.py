@@ -33,7 +33,7 @@ class FleetVehicleLogContract(models.Model):
         """Add vehicle to stock move line when creating contract from active units"""
         res = super(FleetVehicleLogContract, self).create(vals)
         if 'add_vehicle_to_stock_move_line' in self._context:
-            lot_id = self.env['stock.production.lot'].browse(self._context.get('default_x_lot_id'))
+            lot_id = self.env['stock.lot'].browse(self._context.get('default_x_lot_id'))
             stock_move_line = self.env['stock.move.line'].search([('lot_id', '=', lot_id.name)])
             if not stock_move_line:
                 raise ValidationError(_('No traceability for the respective serial number(%s).') % lot_id.name)

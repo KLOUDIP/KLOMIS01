@@ -210,15 +210,16 @@
                     <field name="tech_team_member_id"/>
                     <field name="is_technician" invisible="1"/>
                     <field name="accessible" invisible="1"/>
+                    <label for="get_extra_minutes_expenses"/>
                     <button type="object" class="btn btn-primary" string="EM" name="get_extra_minutes_expenses" attrs="{'invisible': ['|', ('tech_team_member_id', '=', False), ('extra_minutes', '!=', False)]}" groups="field_service_worksheet_template.group_coordinator_fsm,industry_fsm.group_fsm_manager"/>
                 </xpath>
 
-                <xpath expr="//field[@name='partner_mobile']" position="replace">
-                    <field name="partner_mobile" widget="phone" attrs="{'readonly': [('is_technician', '=', True)]}"/>
+                <xpath expr="//field[@name='partner_phone']" position="replace">
+                    <field name="partner_phone" widget="phone" attrs="{'readonly': [('is_technician', '=', True)]}"/>
                 </xpath>
-                <xpath expr="//field[@name='partner_email']" position="replace">
-                    <field name="partner_email" widget="email" attrs="{'invisible': [('partner_id', '=', False)], 'readonly': [('is_technician', '=', True)]}"/>
-                </xpath>
+<!--                <xpath expr="//field[@name='partner_email']" position="replace">-->
+<!--                    <field name="partner_email" widget="email" attrs="{'invisible': [('partner_id', '=', False)], 'readonly': [('is_technician', '=', True)]}"/>-->
+<!--                </xpath>-->
 
                 <xpath expr="//field[@name='name']" position="replace">
                     <field name="name" class="o_task_name text-truncate" placeholder="Task Title..." default_focus="1" attrs="{'readonly': [('is_technician', '=', True)]}" />

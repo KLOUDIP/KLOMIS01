@@ -5,7 +5,7 @@
     <record id="action_view_odoo_unmatched_serials" model="ir.actions.act_window">
         <field name="name">Odoo Unmatched Serials</field>
         <field name="type">ir.actions.act_window</field>
-        <field name="res_model">stock.production.lot</field>
+        <field name="res_model">stock.lot</field>
         <field name="view_mode">tree,form</field>
         <field name="domain">[('fios_lot_no','=',False)]</field>
         <field name="help" type="html">

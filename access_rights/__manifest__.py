@@ -1,6 +1,6 @@
 {
     'name': 'KLOUDIP Access Rights',
-    'version': '1.0.0',
+    'version': '16.0.1.0.3',
     'author': 'Nisus Solutions (Pvt) Ltd',
     'category': '',
     'description': """
@@ -8,7 +8,7 @@
         """,
     'website': 'https://www.nisus.lk',
     'depends': [
-        'base', 'mail', 'contacts', 'stock', 'sale'
+        'base', 'mail', 'contacts', 'stock', 'sale', 'project'
     ],
 
     'data': [
@@ -16,7 +16,7 @@
         'views/menu_items.xml',
         'views/res_users.xml',
         'views/stock_picking_views.xml',
-        'views/sale_views.xml'
+        # 'views/sale_views.xml'
     ],
 
     'installable': True,

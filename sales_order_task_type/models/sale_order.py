@@ -8,5 +8,5 @@ class SaleOrder(models.Model):
 
     def _prepare_invoice(self):
         inv = super(SaleOrder, self)._prepare_invoice()
-        inv.update({"task_type_id": self.task_type_id})
+        inv.update({"task_type_id": self.task_type_id.id})
         return inv

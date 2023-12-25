@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+<odoo>
+
+    <!-- Add EPORT details to contact view -->
+    <record id="view_partners_form_eport" model="ir.ui.view">
+        <field name="name">view.res.partner.form.eport</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='internal_notes']" position="after">
+                <page name="eport" string="EPORT" attrs="{'invisible': [('type', '!=', 'invoice')]}">
+                    <group>
+                        <group>
+                            <field name="last_updated_epc_amount" readonly="1"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group>
+                            <field name="current_coin_balance" readonly="1"/>
+                        </group>
+                    </group>
+                    <field name="transaction_ids" readonly="1">
+                        <tree>
+                            <field name="name"/>
+                            <field name="date"/>
+                            <field name="amount"/>
+                        </tree>
+                    </field>
+                    <group>
+                        <group>
+                            <label for="uuid"/>
+                            <div class="o_row">
+                                <field name="uuid" readonly="1"/>
+                                <button name="generate_uuid" type="object" string="Get UUID" attrs="{'invisible': [('uuid', '!=', False)]}"/>
+                            </div>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

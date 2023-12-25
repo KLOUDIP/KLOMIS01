@@ -42,14 +42,6 @@ Modify some default styling to match Kloudip branding
     'application': False,
 
     'assets': {
-        'web._assets_primary_variables': [
-            (
-                "after",
-                "web/static/src/legacy/scss/primary_variables.scss",
-                "kloudip_web_jsi/static/src/scss/variables_overriden.scss",
-            )
-        ],
-
         'web.webclient_bootstrap': [
             (
                 "replace",

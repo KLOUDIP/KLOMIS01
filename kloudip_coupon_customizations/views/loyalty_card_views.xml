@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!--Loyalty card form view customization-->
+    <record id="loyalty_card_view_form" model="ir.ui.view">
+        <field name="name">loyalty.card.view.form.inherit.kloudip_coupon_customizations</field>
+        <field name="model">loyalty.card</field>
+        <field name="inherit_id" ref="loyalty.loyalty_card_view_form"/>
+        <field name="arch" type="xml">
+            <!--adding refund coupon button-->
+            <sheet position="before">
+                <header>
+                    <button name="action_refund_coupon" type="object" string="REFUND" class="btn-danger" attrs="{'invisible': ['|', ('invoice_id','=',False),'|', ('refunded_coupon','=',True), ('state', 'in', ['used', 'cancel'])]}"
+                            help="Only coupons created from invoices can be refunded." confirm="Are you sure you need to refund the coupon ?"/>
+                    <field name="state" widget="statusbar" statusbar_visible="new,sent,used,expired" context="{'state': state}"/>
+                </header>
+            </sheet>
+
+            <!--invisible partner_id if invoice partner id exist-->
+            <field name="partner_id" position="attributes">
+                <attribute name="attrs">{'invisible': [('invoice_partner_id','!=',False)]}</attribute>
+            </field>
+
+            <!--adding invoice id field to view-->
+            <field name="partner_id" position="after">
+                <field name="refunded_coupon" readonly='1'/>
+                <field name="invoice_partner_id" readonly='1' attrs="{'invisible': [('invoice_partner_id','=',False)]}"/>
+                <field name="coupon_product_id" readonly='1' attrs="{'invisible': [('coupon_product_id','=',False)]}"/>
+                <field name="invoice_id" readonly='1' attrs="{'invisible': [('invoice_id','=',False)]}"/>
+                <field name="credit_note_id" readonly='1' attrs="{'invisible': [('credit_note_id','=',False)]}"/>
+                <field name="sales_order_id" readonly='1'/>
+            </field>
+
+        </field>
+    </record>
+
+    <!--Loyalty card search view-->
+    <record id="loyalty_card_search_view" model="ir.ui.view">
+        <field name="name">loyalty.card.view.search</field>
+        <field name="model">loyalty.card</field>
+        <field name="arch" type="xml">
+            <search string="Loyalty Card">
+                <field name="code"/>
+                <field name="invoice_partner_id"/>
+                <field name="program_id"/>
+                <separator/>
+                <filter name="active" string="Active" domain="['&amp;', ('points', '>', 0), '|', ('expiration_date', '>=', context_today().strftime('%Y-%m-%d 00:00:00')), ('expiration_date', '=', False)]"/>
+                <filter name="inactive" string="Inactive" domain="['|', ('points', '&lt;=', 0), ('expiration_date', '&lt;', context_today().strftime('%Y-%m-%d 23:59:59'))]"/>
+                <!--<filter string="Valid Coupons" name="state" domain="[('state', 'in', ['new','sent'])]"/>-->
+                <group expand="0" string="Group By">
+                    <filter string="Partner" name="invoice_customer" domain="" context="{'group_by':'invoice_partner_id'}"/>
+                    <!--<filter string="For Customer" name="for_customer" domain="" context="{'group_by':'partner_id'}"/>-->
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!--Loyalty card tree view customization-->
+    <record id="loyalty_card_view_tree" model="ir.ui.view">
+        <field name="name">loyalty.card.view.tree.inherit.kloudip_coupon_customizations</field>
+        <field name="model">loyalty.card</field>
+        <field name="inherit_id" ref="loyalty.loyalty_card_view_tree"/>
+        <field name="arch" type="xml">
+
+            <field name="partner_id" position="replace">
+                <field name="invoice_partner_id"/>
+            </field>
+            <xpath expr="//field[@name='invoice_partner_id']" position="after">
+                <field name="invoice_id" string="Voucher Invoice Number"/>
+                <field name="state"/>
+            </xpath>
+
+        </field>
+    </record>
+
+    <!--create new search view for loyalty card using existing search view-->
+    <record id="loyalty_card_voucher_search_view" model="ir.ui.view">
+        <field name="name">loyalty.card.voucher.view.search</field>
+        <field name="model">loyalty.card</field>
+        <field name="mode">primary</field>
+        <field name="inherit_id" ref="loyalty_card_search_view"/>
+        <field name="arch" type="xml">
+
+            <filter name="invoice_customer" position="after">
+                <!--<filter string="Coupon Product" name="coupon_product" domain="" context="{'group_by':'coupon_product_id'}"/>-->
+                <filter string="Invoice" name="invoice" domain="" context="{'group_by':'invoice_id'}"/>
+                <filter string="Coupon Program" name="coupon_program" domain="" context="{'group_by':'program_id'}"/>
+            </filter>
+
+        </field>
+    </record>
+
+    <!--loyalty card voucher action-->
+    <record id="loyalty_card_voucher_action" model="ir.actions.act_window">
+        <field name="name">Loyalty Cards</field>
+        <field name="res_model">loyalty.card</field>
+        <field name="view_id" ref="loyalty.loyalty_card_view_tree"/>
+        <field name="search_view_id" ref="loyalty_card_voucher_search_view"/>
+        <field name="domain">[]</field>
+        <field name="context">{}</field>
+    </record>
+
+    <!--add new menuitem for Loyalty Card Vouchers-->
+    <menuitem id="menuitem_loyalty_card_vouchers"
+              name="Vouchers"
+              parent="sale.product_menu_catalog"
+              sequence="5"
+              action="loyalty_card_voucher_action"
+              groups="kloudip_coupon_customizations.group_access_vouchers"/>
+
+</odoo>

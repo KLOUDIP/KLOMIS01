@@ -1,6 +1,6 @@
 {
     'name': 'Check Layout',
-    'version': '1.0.0',
+    'version': '16.0.0.0.1',
     'author': 'Nisus Solutions (Pvt) Ltd',
     'category': 'sale',
     'description': """

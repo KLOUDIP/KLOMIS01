@@ -39,6 +39,20 @@ class HideMenuUser(models.Model):
                                           'hidden to this user ')
     is_admin = fields.Boolean(compute=_get_is_admin)
 
+    @property
+    def SELF_READABLE_FIELDS(self):
+        return super().SELF_READABLE_FIELDS + [
+            'hide_menu_ids',
+            'is_admin',
+        ]
+
+    @property
+    def SELF_WRITEABLE_FIELDS(self):
+        return super().SELF_WRITEABLE_FIELDS + [
+            'hide_menu_ids',
+            'is_admin',
+        ]
+
 
 class RestrictMenu(models.Model):
     _inherit = 'ir.ui.menu'

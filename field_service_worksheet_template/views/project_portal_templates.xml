@@ -22,10 +22,10 @@
                     <t t-set="entries">
                         <ul class="list-group list-group-flush flex-wrap flex-row flex-lg-column">
                             <li class="list-group-item flex-grow-1">
-                                <a t-if="sheet.customer_has_to_be_signed()" role="button" class="btn btn-primary m-3" data-toggle="modal" data-target="#modalaccept" href="#">
+                                <a t-if="sheet.customer_has_to_be_signed()" role="button" class="btn btn-primary m-3" data-bs-toggle="modal" data-bs-target="#modalaccept" href="#">
                                     <i class="fa fa-check mr-2"/>Customer Sign
                                 </a>
-                                <a t-if="sheet.technician_has_to_be_signed()" role="button" class="btn btn-primary m-3" data-toggle="modal" data-target="#tmodalaccept" href="#">
+                                <a t-if="sheet.technician_has_to_be_signed()" role="button" class="btn btn-primary m-3" data-bs-toggle="modal" data-bs-target="#tmodalaccept" href="#">
                                     <i class="fa fa-check mr-2"/>TECH Team Signed
                                 </a>
                                 <div class="o_download_pdf btn-toolbar flex-sm-nowrap">

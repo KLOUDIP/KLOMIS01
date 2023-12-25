@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="sequence_epc_transaction" model="ir.sequence">
+            <field name="name">EPC Transaction Sequence</field>
+            <field name="code">coin.transaction</field>
+            <field name="prefix">EPCT</field>
+            <field name="padding">5</field>
+            <field eval="1" name="number_next"/>
+            <field eval="1" name="number_increment"/>
+            <field eval="False" name="company_id"/>
+        </record>
+    </data>
+</odoo>

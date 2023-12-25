@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <data>
-		<template id="inherit_layout" inherit_id="website.layout" name="Google Tag Header" >
-			<xpath expr="//meta" position="before">
-					
+	<data>
+		<template id="inherit_layout" inherit_id="website.layout" name="Google Tag Header">
+			<xpath expr="//meta[@name='generator']" position="before">
 				<!-- Google Tag Manager -->
 				<script>
 					(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
@@ -13,18 +12,17 @@
 					})(window,document,'script','dataLayer','<t t-esc="website.google_tag" />');
 				</script>
 				<!-- End Google Tag Manager -->
-				
-			</xpath>
-
-			<xpath expr="//div[@id='wrapwrap']" position="before">
-					
-					<!-- Google Tag Manager (noscript) -->
-					<noscript>
-						<iframe t-attf-src="https://www.googletagmanager.com/ns.html?id={{website.google_tag}}" height="0" width="0" style="display:none;visibility:hidden"></iframe>
-					</noscript>
-					<!-- End Google Tag Manager (noscript) -->
-
 			</xpath>
 		</template>
-  </data>
+
+		<template id="frontend_layout" inherit_id="portal.frontend_layout" name="Tag Manager Snippet" priority="200">
+			<xpath expr="//div[@id='wrapwrap']" position="before">
+				<!-- Google Tag Manager (noscript) -->
+				<noscript>
+					<iframe t-attf-src="https://www.googletagmanager.com/ns.html?id={{website.google_tag}}" height="0" width="0" style="display:none;visibility:hidden"></iframe>
+				</noscript>
+				<!-- End Google Tag Manager (noscript) -->
+			</xpath>
+		</template>
+	</data>
 </odoo>

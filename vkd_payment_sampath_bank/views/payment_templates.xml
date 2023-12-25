@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <template id="redirect_form">
+        <form t-att-action="api_url" method="post">
+            <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+            <input type="hidden" name="provider_id" t-att-value="provider_id"/>
+            <input type="hidden" name="reference" t-att-value="reference"/>
+            <input type="hidden" name="payment_transaction_id" t-att-value="payment_transaction_id"/>
+<!--            <input t-if="returnUrl" type='hidden' name='returnUrl' t-att-value="returnUrl" />-->
+        </form>
+    </template>
+
+</odoo>

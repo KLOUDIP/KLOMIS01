@@ -33,7 +33,7 @@ class FiosMatchingLine(models.Model):
     fios_plate_no = fields.Many2one('missing.fleets', string='Fios Plate Number', domain=[('state', '=', 'not_updated')])
     fleet_vehicle_id = fields.Many2one('fleet.vehicle', string='Vehicle Number', domain=[('fios_plate_no_updated', '=', False)])
     fios_serial_no = fields.Many2one('missing.serial', string='Fios Serial Number', domain=[('state', '=', 'not_updated')])
-    lot_id = fields.Many2one('stock.production.lot', string='Lot/Serial Number', domain=[('fios_lot_no', '=', False)])
+    lot_id = fields.Many2one('stock.lot', string='Lot/Serial Number', domain=[('fios_lot_no', '=', False)])
     match_fios_missing_id = fields.Many2one('match.fios.missing', string='Fios Missing')
     plate_matched = fields.Boolean('Plate Matched', help='For UI Purposes')
     serial_matched = fields.Boolean('Serial Matched', help='For UI Purposes')
@@ -48,7 +48,7 @@ class FiosMatchingLine(models.Model):
             'res_model': 'fios.matching.line',
             'view_mode': 'form',
             'res_id': self.id,
-            'target': 'current',
+            'target': 'new',
 
         }
 
