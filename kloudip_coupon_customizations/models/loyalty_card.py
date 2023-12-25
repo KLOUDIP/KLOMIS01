@@ -17,7 +17,7 @@ class LoyaltyCard(models.Model):
     invoice_partner_id = fields.Many2one('res.partner', string='Partner',
                                          help='If the coupon created from invoice, this field will store invoice customer.')
     refunded_coupon = fields.Boolean(string='Refunded Coupon')
-    sales_order_id = fields.Many2one('sale.order', string='Used in', readonly=True,
+    sales_order_id = fields.Many2one('sale.order', string='Used in',
                                      help="The sales order on which the coupon is applied")
     initial_balance = fields.Float(string="Initial balance")
     state = fields.Selection([
