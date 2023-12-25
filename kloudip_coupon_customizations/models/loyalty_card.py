@@ -26,6 +26,7 @@ class LoyaltyCard(models.Model):
         ('sent', 'Sent'),
         ('used', 'Used'),
         ('expired', 'Expired'),
+        ('refunded', 'Refunded'),
         ('cancel', 'Cancelled')
     ], required=True, default='new')
 
