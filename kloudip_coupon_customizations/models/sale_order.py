@@ -178,25 +178,25 @@ def _create_invoices(self, grouped=False, final=False, date=None):
 SaleOrderBase._create_invoices = _create_invoices
 
 
-def _try_apply_program(self, program, coupon=None):
-
-    self.ensure_one()
-    # Basic checks
-    if not program.filtered_domain(self._get_program_domain()):
-        return {'error': _('The program is not available for this order.')}
-
-    if not program.allow_redeem_multiple_coupons:
-        if program in self._get_applied_programs():
-            return {'error': _('This program is already applied to this order.')}
-    # Check for applicability from the program's triggers/rules.
-    # This step should also compute the amount of points to give for that program on that order.
-    status = self._program_check_compute_points(program)[program]
-    if 'error' in status:
-        return status
-    return self.__try_apply_program(program, coupon, status)
-
-
-SaleOrderLoyalty._try_apply_program = _try_apply_program
+# def _try_apply_program(self, program, coupon=None):
+#
+#     self.ensure_one()
+#     # Basic checks
+#     if not program.filtered_domain(self._get_program_domain()):
+#         return {'error': _('The program is not available for this order.')}
+#
+#     if not program.allow_redeem_multiple_coupons:
+#         if program in self._get_applied_programs():
+#             return {'error': _('This program is already applied to this order.')}
+#     # Check for applicability from the program's triggers/rules.
+#     # This step should also compute the amount of points to give for that program on that order.
+#     status = self._program_check_compute_points(program)[program]
+#     if 'error' in status:
+#         return status
+#     return self.__try_apply_program(program, coupon, status)
+#
+#
+# SaleOrderLoyalty._try_apply_program = _try_apply_program
 
 
 @api.depends('qty_invoiced', 'qty_delivered', 'product_uom_qty', 'state')
@@ -412,6 +412,23 @@ class SaleOrder(models.Model):
                 rec.invoice_partner_id = self.partner_invoice_id.id
                 rec.points = 1
         return coupons
+
+    def _try_apply_program(self, program, coupon=None):
+
+        self.ensure_one()
+        # Basic checks
+        if not program.filtered_domain(self._get_program_domain()):
+            return {'error': _('The program is not available for this order.')}
+
+        if not program.allow_redeem_multiple_coupons:
+            if program in self._get_applied_programs():
+                return {'error': _('This program is already applied to this order.')}
+        # Check for applicability from the program's triggers/rules.
+        # This step should also compute the amount of points to give for that program on that order.
+        status = self._program_check_compute_points(program)[program]
+        if 'error' in status:
+            return status
+        return self.__try_apply_program(program, coupon, status)
 
     def _write_vals_from_reward_vals(self, reward_vals, old_lines, delete=True):
         """
