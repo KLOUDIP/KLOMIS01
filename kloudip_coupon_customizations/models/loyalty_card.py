@@ -27,6 +27,7 @@ class LoyaltyCard(models.Model):
         ('used', 'Used'),
         ('expired', 'Expired'),
         ('refunded', 'Refunded'),
+        ('forfeited', 'Forfeited'),
         ('cancel', 'Cancelled')
     ], required=True, default='new')
 
@@ -68,6 +69,32 @@ class LoyaltyCard(models.Model):
         # update necessary fields
         self.update({'refunded_coupon': True, 'credit_note_id': credit_note.id})
         return True
+
+    def action_forfeited_coupon(self):
+        journal = self.env['account.move']
+        journals = journal.browse(self.invoice_id.ids).journal_id.filtered(lambda x: x.active)
+        other_income_account_id = self.env['account.account'].search([('name', '=', 'Grant Income - KIP')])
+        values = {
+            'journal_id': journals.id,
+            'move_type': 'entry',
+            'line_ids': [
+                (0, 0, {
+                    'account_id': self.coupon_product_id.property_account_income_id.id,
+                    'name': self.coupon_product_id.name + "Forfeited",
+                    'debit': self.coupon_product_id.list_price,
+                    'credit': 0
+                }),
+                (0, 0, {
+                    'account_id': other_income_account_id.id if other_income_account_id else False,
+                    'name': '',
+                    'debit': 0,
+                    'credit': self.coupon_product_id.list_price
+                })
+            ]
+        }
+        move = journal.create(values)
+        move.action_post()
+        self.write({'state': 'forfeited'})
 
     def name_get(self):
         """"Override name get for show coupon program name"""
