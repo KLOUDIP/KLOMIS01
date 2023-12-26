@@ -16,7 +16,7 @@
             <!--adding refund coupon button-->
             <sheet position="before">
                 <header>
-                    <button name="action_refund_coupon" type="object" string="REFUND" class="btn-danger" attrs="{'invisible': [('invoice_id','=',False)]}"
+                    <button name="action_refund_coupon" type="object" string="REFUND" class="btn-danger" attrs="{'invisible': ['|', ('invoice_id','=',False),'|', ('refunded_coupon','=',True), ('state', 'in', ['used','forfeited','cancel'])]}"
                             help="Only coupons created from invoices can be refunded." confirm="Are you sure you need to refund the coupon ?"/>
 
                     <button name="action_forfeited_coupon" type="object" string="FORFEITED" class="btn-primary" attrs="{'invisible': [('state','!=','used')]}"
