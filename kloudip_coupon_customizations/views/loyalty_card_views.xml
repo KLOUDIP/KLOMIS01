@@ -7,11 +7,21 @@
         <field name="model">loyalty.card</field>
         <field name="inherit_id" ref="loyalty.loyalty_card_view_form"/>
         <field name="arch" type="xml">
+
+            <!--adding cancel group to coupon cancel button-->
+            <!--<button name="action_coupon_cancel" position="attributes">-->
+            <!--    <attribute name="groups">kloudip_coupon_customizations.group_allow_cancel_coupons</attribute>-->
+            <!--</button>-->
+
             <!--adding refund coupon button-->
             <sheet position="before">
                 <header>
-                    <button name="action_refund_coupon" type="object" string="REFUND" class="btn-danger" attrs="{'invisible': ['|', ('invoice_id','=',False),'|', ('refunded_coupon','=',True), ('state', 'in', ['used', 'cancel'])]}"
+                    <button name="action_refund_coupon" type="object" string="REFUND" class="btn-danger" attrs="{'invisible': [('invoice_id','=',False)]}"
                             help="Only coupons created from invoices can be refunded." confirm="Are you sure you need to refund the coupon ?"/>
+
+                    <button name="action_forfeited_coupon" type="object" string="FORFEITED" class="btn-primary" attrs="{'invisible': [('state','!=','used')]}"
+                            confirm="Are you sure you need to forfeited the coupon ?"/>
+
                     <field name="state" widget="statusbar" statusbar_visible="new,sent,used,expired" context="{'state': state}"/>
                 </header>
             </sheet>
@@ -28,7 +38,6 @@
                 <field name="coupon_product_id" readonly='1' attrs="{'invisible': [('coupon_product_id','=',False)]}"/>
                 <field name="invoice_id" readonly='1' attrs="{'invisible': [('invoice_id','=',False)]}"/>
                 <field name="credit_note_id" readonly='1' attrs="{'invisible': [('credit_note_id','=',False)]}"/>
-                <field name="sales_order_id" readonly='1'/>
             </field>
 
         </field>
@@ -67,7 +76,6 @@
             </field>
             <xpath expr="//field[@name='invoice_partner_id']" position="after">
                 <field name="invoice_id" string="Voucher Invoice Number"/>
-                <field name="state"/>
             </xpath>
 
         </field>
