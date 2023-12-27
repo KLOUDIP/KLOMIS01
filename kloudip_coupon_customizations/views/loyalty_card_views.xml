@@ -38,6 +38,8 @@
                 <field name="coupon_product_id" readonly='1' attrs="{'invisible': [('coupon_product_id','=',False)]}"/>
                 <field name="invoice_id" readonly='1' attrs="{'invisible': [('invoice_id','=',False)]}"/>
                 <field name="credit_note_id" readonly='1' attrs="{'invisible': [('credit_note_id','=',False)]}"/>
+                <field name="sales_order_id" readonly='1' attrs="{'invisible': [('sales_order_id','=',False)]}"/>
+                <field name="entry_id" readonly='1' attrs="{'invisible': [('entry_id','=',False)]}"/>
             </field>
 
         </field>

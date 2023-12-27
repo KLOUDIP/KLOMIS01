@@ -30,6 +30,7 @@ class LoyaltyCard(models.Model):
         ('forfeited', 'Forfeited'),
         ('cancel', 'Cancelled')
     ], required=True, default='new')
+    entry_id = fields.Many2one('account.move', string='Entry')
 
     def action_refund_coupon(self):
         journals = self.env['account.move'].browse(self.invoice_id.ids).journal_id.filtered(lambda x: x.active)
@@ -94,7 +95,7 @@ class LoyaltyCard(models.Model):
         }
         move = journal.create(values)
         move.action_post()
-        self.write({'state': 'forfeited'})
+        self.write({'state': 'forfeited', 'entry_id': move.id})
 
     def name_get(self):
         """"Override name get for show coupon program name"""
