@@ -22,7 +22,7 @@
                     <button name="action_forfeited_coupon" type="object" string="FORFEITED" class="btn-primary" attrs="{'invisible': [('state','!=','used')]}"
                             confirm="Are you sure you need to forfeited the coupon ?"/>
 
-                    <field name="state" widget="statusbar" statusbar_visible="new,sent,used,expired" context="{'state': state}"/>
+                    <field name="state" widget="statusbar" statusbar_visible="new,sent,used,expired,forfeited" context="{'state': state}"/>
                 </header>
             </sheet>
 
@@ -76,6 +76,7 @@
             </field>
             <xpath expr="//field[@name='invoice_partner_id']" position="after">
                 <field name="invoice_id" string="Voucher Invoice Number"/>
+                <field name="state"/>
             </xpath>
 
         </field>
