@@ -435,11 +435,13 @@ class SaleOrder(models.Model):
         Returns the untouched old lines.
         """
         self.ensure_one()
-        command_list = []
         product_ids = list(map(lambda x: x['product_id'], reward_vals))
+        command_list = []
         if not old_lines:
             old_lines = self.order_line.filtered(lambda x: x.product_id.id in product_ids)
-        qty = old_lines.product_uom_qty
+            qty = old_lines.product_uom_qty if old_lines else 1
+        else:
+            qty = old_lines.product_uom_qty
         if self.order_line.reward_id.program_id.allow_redeem_multiple_coupons:
             if not old_lines.coupon_id.id in list(map(lambda x: x['coupon_id'], reward_vals)):
                 if product_ids:
@@ -455,7 +457,7 @@ class SaleOrder(models.Model):
         self.write({'order_line': command_list})
         order_ln = self.order_line.filtered(lambda x: x.is_reward_line)
         if order_ln:
-            order_ln.coupon_id.write({'points': 0, 'state': 'used', 'sales_order_id': self.id})
+            order_ln.coupon_id.write({'state': 'used', 'sales_order_id': self.id})
 
         return self.env['sale.order.line'] if delete else old_lines[len(reward_vals):]
 
