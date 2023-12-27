@@ -437,12 +437,13 @@ class SaleOrder(models.Model):
         self.ensure_one()
         command_list = []
         product_ids = list(map(lambda x: x['product_id'], reward_vals))
-        old_lines = self.order_line.filtered(lambda x: x.product_id.id in product_ids)
-        qty = old_lines.product_uom_qty
+        ol = self.order_line.filtered(lambda x: x.product_id.id in product_ids)
+        qty = ol.product_uom_qty
         if self.order_line.reward_id.program_id.allow_redeem_multiple_coupons:
-            if not old_lines.coupon_id.id in list(map(lambda x: x['coupon_id'], reward_vals)):
+            if not ol.coupon_id.id in list(map(lambda x: x['coupon_id'], reward_vals)):
                 if product_ids:
-                    qty = ((old_lines.product_uom_qty if old_lines else 0) + 1)
+                    qty = ((ol.product_uom_qty if ol else 0) + 1)
+                    old_lines = ol
 
         for vals, line in zip(reward_vals, old_lines):
             vals.update({'product_uom_qty': qty})
