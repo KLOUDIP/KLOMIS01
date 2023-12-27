@@ -1,14 +1,12 @@
 # -*- coding: utf-8 -*-
-
+import itertools
 from itertools import groupby
 
 from odoo import api, fields, models, _, Command
 from odoo.exceptions import AccessError, ValidationError, UserError
-from odoo.osv import expression
 from odoo.addons.sale.models.sale_order import SaleOrder as SaleOrderBase
-from odoo.addons.sale_loyalty.models.sale_order import SaleOrder as SaleOrderLoyalty
 from odoo.addons.sale.models.sale_order_line import SaleOrderLine as SaleOrderLineBase
-
+from collections import defaultdict
 
 def _create_invoices(self, grouped=False, final=False, date=None):
     """
@@ -438,7 +436,16 @@ class SaleOrder(models.Model):
         """
         self.ensure_one()
         command_list = []
+        product_ids = list(map(lambda x: x['product_id'], reward_vals))
+        old_lines = self.order_line.filtered(lambda x: x.product_id.id in product_ids)
+        qty = old_lines.product_uom_qty
+        if self.order_line.reward_id.program_id.allow_redeem_multiple_coupons:
+            if not old_lines.coupon_id.id in list(map(lambda x: x['coupon_id'], reward_vals)):
+                if product_ids:
+                    qty = ((old_lines.product_uom_qty if old_lines else 0) + 1)
+
         for vals, line in zip(reward_vals, old_lines):
+            vals.update({'product_uom_qty': qty})
             command_list.append((Command.UPDATE, line.id, vals))
         if len(reward_vals) > len(old_lines):
             command_list.extend((Command.CREATE, 0, vals) for vals in reward_vals[len(old_lines):])
@@ -447,8 +454,84 @@ class SaleOrder(models.Model):
         self.write({'order_line': command_list})
         order_ln = self.order_line.filtered(lambda x: x.is_reward_line)
         if order_ln:
-            order_ln.coupon_id.write({'state': 'used', 'sales_order_id': self.id})
+            order_ln.coupon_id.write({'points': 0, 'state': 'used', 'sales_order_id': self.id})
 
         return self.env['sale.order.line'] if delete else old_lines[len(reward_vals):]
+
+    def _discountable_specific(self, reward):
+        """
+        Special function to compute the discountable for 'specific' types of discount.
+        The goal of this function is to make sure that applying a 5$ discount on an order with a
+         5$ product and a 5% discount does not make the order go below 0.
+
+        Returns the discountable and discountable_per_tax for a discount that only applies to specific products.
+        """
+        self.ensure_one()
+        assert reward.discount_applicability == 'specific'
+
+        lines_to_discount = self.env['sale.order.line']
+        discount_lines = defaultdict(lambda: self.env['sale.order.line'])
+        order_lines = self.order_line - self._get_no_effect_on_threshold_lines()
+        remaining_amount_per_line = defaultdict(int)
+        for line in order_lines:
+            if not line.product_uom_qty or not line.price_unit:
+                continue
+            remaining_amount_per_line[line] = line.price_total
+            domain = reward._get_discount_product_domain()
+            if not line.reward_id and line.product_id.filtered_domain(domain):
+                lines_to_discount |= line
+            elif line.reward_id.reward_type == 'discount':
+                discount_lines[line.reward_identifier_code] |= line
+
+        order_lines -= self.order_line.filtered("reward_id")
+        cheapest_line = False
+        for lines in discount_lines.values():
+            line_reward = lines.reward_id
+            discounted_lines = order_lines
+            if line_reward.discount_applicability == 'cheapest':
+                cheapest_line = cheapest_line or self._cheapest_line()
+                discounted_lines = cheapest_line
+            elif line_reward.discount_applicability == 'specific':
+                discounted_lines = self._get_specific_discountable_lines(line_reward)
+            if not discounted_lines:
+                continue
+            common_lines = discounted_lines & lines_to_discount
+            if line_reward.discount_mode == 'percent':
+                for line in discounted_lines:
+                    if line_reward.discount_applicability == 'cheapest':
+                        remaining_amount_per_line[line] *= (1 - line_reward.discount / 100 / line.product_uom_qty)
+                    else:
+                        remaining_amount_per_line[line] *= (1 - line_reward.discount / 100 / line.product_uom_qty)
+            else:
+                non_common_lines = discounted_lines - lines_to_discount
+                # Fixed prices are per tax
+                discounted_amounts = {line.tax_id: abs(line.price_total) for line in lines}
+                for line in itertools.chain(non_common_lines, common_lines):
+                    # For gift card and eWallet programs we have no tax but we can consume the amount completely
+                    if lines.reward_id.program_id.is_payment_program:
+                        discounted_amount = discounted_amounts[lines.tax_id]
+                    else:
+                        discounted_amount = discounted_amounts[line.tax_id]
+                    if discounted_amount == 0:
+                        continue
+                    remaining = remaining_amount_per_line[line]
+                    consumed = min(remaining, discounted_amount)
+                    if lines.reward_id.program_id.is_payment_program:
+                        discounted_amounts[lines.tax_id] -= consumed
+                    else:
+                        discounted_amounts[line.tax_id] -= consumed
+                    remaining_amount_per_line[line] -= consumed
+
+        discountable = 0
+        discountable_per_tax = defaultdict(int)
+        for line in lines_to_discount:
+            discountable += remaining_amount_per_line[line]
+            line_discountable = line.price_unit * line.product_uom_qty * (1 - (line.discount or 0.0) / 100.0)
+            # line_discountable is the same as in a 'order' discount
+            #  but first multiplied by a factor for the taxes to apply
+            #  and then multiplied by another factor coming from the discountable
+            discountable_per_tax[line.tax_id] += line_discountable * \
+                                                 (remaining_amount_per_line[line] / line.price_total)
+        return discountable, discountable_per_tax
 
 
