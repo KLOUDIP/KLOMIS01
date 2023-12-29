@@ -18,9 +18,11 @@ Setting coupon again to valid state, when sale order returned
         'sale_management',
         'product',
         'mail',
+        'sale_subscription'
     ],
     'data': [
         'security/coupon_security.xml',
+        'security/ir.model.access.csv',
         'data/mail_data.xml',
         'data/coupon_email_data.xml',
         'views/product_template_views.xml',
@@ -31,6 +33,7 @@ Setting coupon again to valid state, when sale order returned
         'views/account_move_views.xml',
         'wizards/sale_loyalty_coupon_wizard_views.xml',
         'wizards/sale_make_invoice_advance_views.xml',
+        'wizards/subscription_make_invoice_advance_views.xml',
         'reports/coupon_report_templates.xml'
     ],
     'installable': True,

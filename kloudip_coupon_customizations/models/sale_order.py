@@ -67,13 +67,12 @@ def _create_invoices(self, grouped=False, final=False, date=None):
 
         # Extended content start
         # we needed to create an invoice with total value of refunded amount
-        if not self.is_subscription:
-            if refunded_amount > 0:
-                refund_move_vals = order._prepare_invoice()
-                refund_move_vals.update({'refund_move': True})
-                refund_line_vals = order.prepare_refunded_amount_line(product_line.qty_to_invoice, refunded_amount, reward_line, product_line)
-                refund_move_vals['invoice_line_ids'] = [(0, 0, invoice_line_id) for invoice_line_id in refund_line_vals]
-                refund_moves.append(refund_move_vals)
+        if refunded_amount > 0:
+            refund_move_vals = order._prepare_invoice()
+            refund_move_vals.update({'refund_move': True})
+            refund_line_vals = order.prepare_refunded_amount_line(product_line.qty_to_invoice, refunded_amount, reward_line, product_line)
+            refund_move_vals['invoice_line_ids'] = [(0, 0, invoice_line_id) for invoice_line_id in refund_line_vals]
+            refund_moves.append(refund_move_vals)
         # Extended content end
 
     if not invoice_vals_list and self._context.get('raise_if_nothing_to_invoice', True):
@@ -160,15 +159,14 @@ def _create_invoices(self, grouped=False, final=False, date=None):
 
     # Extended content start
     # generate move for refunded amount
-    if not self.is_subscription:
-        if refunded_amount > 0:
-            refund_move = self.env['account.move'].sudo().with_context(default_move_type='out_invoice').create(refund_moves)
-            # post message with origin
-            for rmove in refund_move:
-                rmove.message_post_with_view('mail.message_origin_link', values={
-                    'self': rmove,
-                    'origin': rmove.line_ids.mapped('sale_line_ids.order_id')
-                }, subtype_id=self.env.ref('mail.mt_note').id)
+    if refunded_amount > 0:
+        refund_move = self.env['account.move'].sudo().with_context(default_move_type='out_invoice').create(refund_moves)
+        # post message with origin
+        for rmove in refund_move:
+            rmove.message_post_with_view('mail.message_origin_link', values={
+                'self': rmove,
+                'origin': rmove.line_ids.mapped('sale_line_ids.order_id')
+            }, subtype_id=self.env.ref('mail.mt_note').id)
     # Extended content end
     return moves
 
@@ -536,5 +534,22 @@ class SaleOrder(models.Model):
             discountable_per_tax[line.tax_id] += line_discountable * \
                                                  (remaining_amount_per_line[line] / line.price_total)
         return discountable, discountable_per_tax
+
+    def action_invoice_subscription(self):
+        value = bool(self.order_line.filtered(lambda x: x.qty_to_invoice < 0) and self.order_line.filtered(lambda x: x.reward_id))
+        if not value:
+            account_move = self.with_context(refunded_amount=0)._create_recurring_invoice()
+            if account_move:
+                return self.action_view_invoice()
+            else:
+                raise UserError(self._nothing_to_invoice_error_message())
+        return {
+            'name': _('Subscription Invoice'),
+            'view_mode': 'form',
+            'view_id': self.env.ref('kloudip_coupon_customizations.view_subscription_advance_payment_inv').id,
+            'res_model': 'subscription.advance.payment.inv',
+            'target': 'new',
+            'type': 'ir.actions.act_window',
+        }
 
 

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_subscription_advance_payment_inv" model="ir.ui.view">
+        <field name="name">Invoice Orders</field>
+        <field name="model">subscription.advance.payment.inv</field>
+        <field name="arch" type="xml">
+            <form string="Invoice Subscriptions">
+                <group attrs="{'invisible': [('visible_refunded_amount', '=', False)]}">
+                    <group string="Coupon Refunds">
+                        <field name="visible_refunded_amount" invisible="1"/>
+                        <field name="refunded_amount"/>
+                    </group>
+                </group>
+                <footer>
+                    <button name="create_subscription_invoices" type="object"
+                            id="create_invoice"
+                            string="Create Invoice"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel" data-hotkey="z"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_view_subscription_advance_payment_inv" model="ir.actions.act_window">
+        <field name="name">Create Invoices</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">subscription.advance.payment.inv</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="binding_model_id" ref="sale.model_sale_order"/>
+        <field name="binding_view_types">list</field>
+    </record>
+
+</odoo>
