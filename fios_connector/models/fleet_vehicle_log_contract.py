@@ -24,7 +24,7 @@ class FleetVehicleLogContract(models.Model):
     @api.onchange('partner_id')
     def _onchange_billing_contract(self):
         """Check partner have subscriptions available"""
-        subscription_count = len(self.env['sale.subscription'].search([('partner_id', '=', self.partner_id.id)]))
+        subscription_count = len(self.env['sale.order'].search([('partner_id', '=', self.partner_id.id), ('is_subscription', '=', True)]))
         if self.partner_id and subscription_count == 0:
             raise ValidationError(_('No subscriptions are available for the selected billing contact! \nYou need to select a billing contact which contains subscriptions.'))
 
