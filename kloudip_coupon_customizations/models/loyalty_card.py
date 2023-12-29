@@ -74,7 +74,7 @@ class LoyaltyCard(models.Model):
     def action_forfeited_coupon(self):
         journal = self.env['account.move']
         journals = journal.browse(self.invoice_id.ids).journal_id.filtered(lambda x: x.active)
-        debit = self.env['account.account'].search([('name', '=', 'Refundable Deposit Revenue - KIP')])
+        debit = self.env['account.account'].search([('name', '=', 'Refundable Deposit Liability - KIP')])
         credit = self.env['account.account'].search([('name', '=', 'Forfeited Deposit Income - KIP')])
         values = {
             'journal_id': journals.id,
