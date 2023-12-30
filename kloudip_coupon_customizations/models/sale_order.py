@@ -19,6 +19,10 @@ def _create_invoices(self, grouped=False, final=False, date=None):
         except AccessError:
             return self.env['account.move']
 
+    deduct_down_payments = self.env.context.get('deduct_down_payments')
+    if deduct_down_payments:
+        final = True
+
     # 1) Create invoices.
     invoice_vals_list = []
     # Extended content
@@ -288,6 +292,7 @@ class SaleOrder(models.Model):
             'sequence': reward_line.sequence,
             'name': (product_line.name or '') + ' - Refunded Amount',
             'product_id': False,
+            'account_id': product_line.product_id.property_account_income_id.id if product_line else False,
             'product_uom_id': reward_line.product_uom.id,
             'quantity': abs(qty),
             'discount': False,
