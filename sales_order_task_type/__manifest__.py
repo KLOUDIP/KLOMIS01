@@ -4,7 +4,7 @@
     "summary": "This module allow to add task type to sale order, delivery order and invoice",
     "description": "This module allow to add task type to sale order, delivery order and invoice",
     'category': 'sale',
-    'version': '1.0.0',
+    'version': '16.0.0.0.0',
     "author": "Nisus Solutions (Pvt) Ltd",
     "website": "https://nisus.lk/",
     'data': [

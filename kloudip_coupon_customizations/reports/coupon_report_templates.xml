@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <template id="report_coupon" inherit_id="coupon.report_coupon">
+    <template id="loyalty_report" inherit_id="loyalty.loyalty_report">
 
         <div class="page" position="replace">
             <div class="page">

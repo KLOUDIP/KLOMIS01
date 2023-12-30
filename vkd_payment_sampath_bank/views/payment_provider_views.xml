@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="payment_provider_form_sampath" model="ir.ui.view">
+            <field name="name">acquirer.form.payhere</field>
+            <field name="model">payment.provider</field>
+            <field name="inherit_id" ref="payment.payment_provider_form"/>
+            <field name="arch" type="xml">
+                <group name="provider_credentials" position='inside'>
+                    <group attrs="{'invisible': [('code', '!=', 'sampathbank')]}">
+                        <field name="sampathbank_clientId"/>
+                        <field name="sampathbank_hmac_secret"/>
+                        <field name="sampathbank_authtoken"/>
+                        <field name="sampathbank_base_url_test"/>
+                        <field name="sampathbank_base_url_production"/>
+
+                        <a colspan="2" href="https://sampath.paycorp.lk/" target="_blank">Signup for Sampath Bank (paycorp) account</a>
+                    </group>
+                </group>
+            </field>
+        </record>
+
+    </data>
+</odoo>

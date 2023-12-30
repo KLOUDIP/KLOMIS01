@@ -6,11 +6,12 @@
 		<field name="model">website</field>
 		<field name="inherit_id" ref='website.view_website_form' />
 		<field name="arch" type='xml'>
-			<xpath expr="//field[@name='domain']" position='after'>
-				<field name="google_tag" />
+			<xpath expr="//group[@name='domain']" position='after'>
+				<group>
+					<field name="google_tag" />
+				</group>
 			</xpath>
 		</field>
 	</record>
-
 </odoo>
 

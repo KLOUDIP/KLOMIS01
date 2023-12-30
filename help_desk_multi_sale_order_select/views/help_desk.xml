@@ -6,7 +6,7 @@
             <field name="inherit_id" ref="helpdesk_sale.helpdesk_ticket_view_form_inherit_helpdesk_invoicing"/>
             <field name="arch" type="xml">
                 <xpath expr="//field[@name='sale_order_id']" position="replace">
-					<field name="sale_order_id" invisible="1"/>
+                    <field name="sale_order_id" invisible="1"/>
                     <field name="sale_order_ids" widget="many2many_tags" domain="[('partner_id', 'child_of', partner_id)]"/>
                 </xpath>
             </field>
@@ -20,11 +20,20 @@
             <field name="arch" type="xml">
                 <div name='button_box' position="inside">
                     <field name="count" class="o_stat_value" invisible="1"/>
-                    <button class="oe_stat_button" type="object"
-                            name="action_view_sale_ids" icon="fa-life-ring">
-                        <div class="o_stat_info">
-                            <field name="helpdesk_ticket_ids_cou" class="o_stat_value"/>
-                            <span class="o_stat_text"> Sale Orders</span>
+                    <button class="oe_stat_button" type="object" name="action_view_sale_ids" icon="fa-life-ring">
+                        <div class="o_field_widget o_stat_info">
+                            <span class="o_stat_value">
+                                <field name="helpdesk_ticket_ids_cou" class="o_stat_value"/>
+                                <span class="o_stat_text"> Sale Orders</span>
+                            </span>
+                        </div>
+                    </button>
+                    <button class="oe_stat_button" type="object" name="action_open_helpdesk_pending_ticket" icon="fa-life-ring" attrs="{'invisible': ['|', ('partner_id', '=', False), ('partner_open_ticket_count', '=', 0)]}">
+                        <div class="o_field_widget o_stat_info">
+                            <span class="o_stat_value">
+                                <field name="partner_open_ticket_count" nolabel="1"/>
+                                <span class="text-secondary fw-normal">Open Tickets</span>
+                            </span>
                         </div>
                     </button>
                 </div>

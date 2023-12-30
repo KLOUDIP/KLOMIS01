@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="payment_transaction_form_inherit" model="ir.ui.view">
+        <field name="name">payment.transaction.form.inherit</field>
+        <field name="model">payment.transaction</field>
+        <field name="inherit_id" ref="payment.payment_transaction_form"/>
+        <field name="arch" type="xml">
+
+            <field name="reference" position="after">
+                <field name="sampathbank_reqid"/>
+                <field name="sampathbank_expireAt"/>
+            </field>
+
+        </field>
+    </record>
+</odoo>

@@ -151,3 +151,11 @@ class ProjectTaskLine(models.Model):
             },
             'flags': {'form': {'action_buttons': False}}
         }
+
+    def action_view_ticket(self):
+        return {
+            'type': 'ir.actions.act_window',
+            'res_model': 'helpdesk.ticket',
+            'view_mode': 'form',
+            'res_id': self.helpdesk_ticket_id.id,
+        }

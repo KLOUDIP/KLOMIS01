@@ -16,6 +16,7 @@
 
             <xpath expr="//button[@name='action_view_delivery']" position="attributes">
                 <attribute name="groups">stock.group_stock_user,field_service_worksheet_template.group_visible_delivery</attribute>
+<!--                <attribute name="groups">stock.group_stock_user</attribute>-->
             </xpath>
 
         </field>

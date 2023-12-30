@@ -7,8 +7,8 @@ class ProductTemplate(models.Model):
     _inherit = 'product.template'
 
     is_coupon_product = fields.Boolean('Is Coupon Product', store=True)
-    coupon_program_id = fields.Many2one('coupon.program', string='Coupon Program',
-                                        domain="[('program_type','=', 'coupon_program')]",
+    coupon_program_id = fields.Many2one('loyalty.program', string='Loyalty Program',
+                                        domain="[('program_type','=', 'coupons')]",
                                         help='This field will use for identify coupon program when selling this product')
 
     @api.onchange('is_coupon_product')

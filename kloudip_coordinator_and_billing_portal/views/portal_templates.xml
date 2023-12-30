@@ -5,20 +5,16 @@
             <div class="my-custom-section">
                 <br/>
                 <p>
-                    <b style="color: #343A40; font-size: 1.9375rem; font-family: Bebas Neue;
-    font-weight: 500;">COORDINATION BY :
-                    </b>
+                    <b style="color: #343A40; font-size: 1.9375rem; font-family: Bebas Neue;font-weight: 500;">COORDINATION BY :</b>
                     <br/>
                     <span t-field="user_id.coordination_by_id"/>
                     <br/>
                     support@kloudip.com
                 </p>
                 <p>
-                    <b style="color: #343A40; font-size: 1.9375rem; font-family: Bebas Neue;
-    font-weight: 500;">BILLING BY :
-                    </b>
+                    <b style="color: #343A40; font-size: 1.9375rem; font-family: Bebas Neue; font-weight: 500;">BILLING BY :</b>
                     <br/>
-                    <span t-field="user_id.billing_by_id"></span>
+                    <span t-field="user_id.billing_by_id"/>
                     <br/>
                     billing@kloudip.com
                 </p>

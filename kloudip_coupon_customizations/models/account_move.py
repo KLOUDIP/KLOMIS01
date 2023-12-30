@@ -1,36 +1,30 @@
 # -*- coding: utf-8 -*-
-
-from odoo import api, fields, models, _
+from odoo import api, fields, models, _, Command
 from odoo.exceptions import ValidationError
 from odoo.addons.account.models.account_move import AccountMove as AccountMoveBase
 
 
 def action_switch_invoice_into_refund_credit_note(self):
-    """Overload core method to change line values when move amount total == 0"""
+    """
+    @overload - change line values when move amount total == 0
+    """
     if any(move.move_type not in ('in_invoice', 'out_invoice') for move in self):
         raise ValidationError(_("This action isn't available for this document."))
 
     for move in self:
-        reversed_move = move._reverse_move_vals({}, False)
-        new_invoice_line_ids = []
-        for cmd, virtualid, line_vals in reversed_move['line_ids']:
-            if not line_vals['exclude_from_invoice_tab']:
-                new_invoice_line_ids.append((0, 0, line_vals))
-        if move.amount_total < 0 or (self.env.context.get('credit_note_with_coupon', False) and move.amount_total == 0):
-            # Inverse all invoice_line_ids
-            for cmd, virtualid, line_vals in new_invoice_line_ids:
-                line_vals.update({
-                    'quantity': -line_vals['quantity'],
-                    'amount_currency': -line_vals['amount_currency'],
-                    'debit': line_vals['credit'],
-                    'credit': line_vals['debit']
-                })
         move.write({
             'move_type': move.move_type.replace('invoice', 'refund'),
-            'invoice_line_ids': [(5, 0, 0)],
             'partner_bank_id': False,
+            'currency_id': move.currency_id.id,
         })
-        move.write({'invoice_line_ids': new_invoice_line_ids})
+        if move.amount_total < 0 or (self.env.context.get('credit_note_with_coupon', False) and move.amount_total == 0):
+            move.write({
+                'line_ids': [
+                    Command.update(line.id, {'quantity': -line.quantity})
+                    for line in move.line_ids
+                    if line.display_type == 'product'
+                ]
+            })
 
 
 AccountMoveBase.action_switch_invoice_into_refund_credit_note = action_switch_invoice_into_refund_credit_note
@@ -40,17 +34,10 @@ class AccountMove(models.Model):
     _inherit = 'account.move'
 
     refund_move = fields.Boolean(string='Refund Move')
-    coupon_ids = fields.Many2many('coupon.coupon', string='Coupons', copy=False)
+    coupon_ids = fields.Many2many('loyalty.card', string='Coupons', copy=False)
     visible_coupon_group = fields.Boolean('Visible Coupon Group', help='For UI Purpose',
                                           compute='_compute_visible_coupon_group')
     coupons_email_sent = fields.Boolean(string='Coupon Email Sent', copy=False)
-
-    # def _compute_visible_coupon_group(self):
-    #     """Compute either coupon group is visible or not"""
-    #     visible_coupon_group = False
-    #     if self.coupon_ids:
-    #         visible_coupon_group = True
-    #     self.update({'visible_coupon_group': visible_coupon_group})
 
     def _compute_visible_coupon_group(self):
         """Compute either coupon group is visible or not"""
@@ -87,12 +74,13 @@ class AccountMove(models.Model):
             coupons = []
             for i in range(int(line.quantity)):
                 # generate coupon
-                coupon = self.env['coupon.coupon'].create({
+                coupon = self.env['loyalty.card'].create({
                     'program_id': line.product_id.coupon_program_id.id,
                     'partner_id': False,
                     'invoice_partner_id': self.partner_id.id,
                     'coupon_product_id': line.product_id.id,
-                    'state': 'sent' if self.partner_id.email else 'new',
+                    'points': 1,
+                    'order_id': line.sale_line_ids.mapped('order_id')[0].id if line.sale_line_ids else False,
                     'invoice_id': self.id
                 })
                 coupons.append(coupon)
@@ -113,7 +101,10 @@ class AccountMove(models.Model):
         # post message to chatter with linked coupon
         if all_coupons:
             self.message_post_with_view('kloudip_coupon_customizations.coupon_created_message',
-                                        values={'data': all_coupons, 'partner_generate_email_for_coupons': False},
+                                        values={
+                                            'data': all_coupons,
+                                            'partner_generate_email_for_coupons': False
+                                        },
                                         subtype_id=self.env.ref('mail.mt_note').id)
             # see data> mail_data.xml file (partner_generate_email_for_coupons)
             # self.message_post_with_view('kloudip_coupon_customizations.coupon_created_message',
@@ -124,7 +115,7 @@ class AccountMove(models.Model):
     def unlink(self):
         """Override core method for cancel relevant coupon when invoice unlink"""
         for rec in self:
-            coupons = self.env['coupon.coupon'].search([('invoice_id', '=', rec.id)])
+            coupons = self.env['loyalty.card'].search([('invoice_id', '=', rec.id)])
             coupons.update({'state': 'cancel'})
             for coupon in coupons:
                 coupon.message_post(body='Invoice (%s) deleted. Stage changed to Cancelled.' % self.display_name)
@@ -133,7 +124,7 @@ class AccountMove(models.Model):
     def button_draft(self):
         """Override core method for cancel relevant coupon when invoice set state to draft"""
         for rec in self:
-            coupons = self.env['coupon.coupon'].search([('invoice_id', '=', rec.id)])
+            coupons = self.env['loyalty.card'].search([('invoice_id', '=', rec.id)])
             coupons.update({'state': 'cancel'})
             for coupon in coupons:
                 coupon.message_post(body='Invoice (%s) set to draft. Stage changed to Cancelled.' % self.display_name)

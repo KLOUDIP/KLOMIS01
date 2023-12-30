@@ -9,39 +9,39 @@
                         <div style="width:180mm;">
                             <table style="margin-left: 172mm; font-size: 12px;" width="240mm" height="6mm">
                                 <tr>
-                                    <td class="text-center" width="6mm" height="6mm">
+                                    <td style="border-style : hidden!important;" class="text-center" width="6mm" height="6mm">
                                         <span t-esc="str(o.date)[8:9]"></span>
                                     </td>
 <!--                                    <td class="text-center" width="6mm" height="6mm" style="visibility:hidden;">.</td>-->
 
-                                    <td class="text-center" width="6mm" height="6mm">
+                                    <td style="border-style : hidden!important;" class="text-center" width="6mm" height="6mm">
                                         <span t-esc="str(o.date)[9:10]"></span>
                                     </td>
 <!--                                    <td class="text-center" width="6mm" height="6mm" style="visibility:hidden;">.</td>-->
 
-                                    <td class="text-center" width="6mm" height="6mm">
+                                    <td style="border-style : hidden!important;" class="text-center" width="6mm" height="6mm">
                                         <span t-esc="str(o.date)[5:6]"></span>
                                     </td>
 <!--                                    <td class="text-center" width="6mm" height="6mm" style="visibility:hidden;">.</td>-->
 
-                                    <td class="text-center" width="6mm" height="6mm">
+                                    <td style="border-style : hidden!important;" class="text-center" width="6mm" height="6mm">
                                         <span t-esc="str(o.date)[6:7]"></span>
                                     </td>
 <!--                                    <td class="text-center" width="6mm" height="6mm" style="visibility:hidden;">.</td>-->
 
-                                    <td class="text-center" width="6mm" height="6mm">
+                                    <td style="border-style : hidden!important;" class="text-center" width="6mm" height="6mm">
                                         <span t-esc="str(o.date)[0:1]"></span>
                                     </td>
 
-                                    <td class="text-center" width="6mm" height="6mm">
+                                    <td style="border-style : hidden!important;" class="text-center" width="6mm" height="6mm">
                                         <span t-esc="str(o.date)[1:2]"></span>
                                     </td>
-                                    <td class="text-center" width="6mm" height="6mm">
+                                    <td style="border-style : hidden!important;" class="text-center" width="6mm" height="6mm">
                                         <span t-esc="str(o.date)[2:3]"></span>
                                     </td>
 <!--                                    <td class="text-center" width="6mm" height="6mm" style="visibility:hidden;">.</td>-->
 
-                                    <td class="text-center" width="6mm" height="6mm">
+                                    <td style="border-style : hidden!important;" class="text-center" width="6mm" height="6mm">
                                         <span t-esc="str(o.date)[3:4]"></span>
                                     </td>
                                 </tr>
@@ -62,7 +62,7 @@
                                     <table>
                                         <tbody>
                                             <tr>
-                                                <td>
+                                                <td style="border-style : hidden!important;">
                                                     <span
                                                             t-esc="'{0:,.2f}'.format(float(o.amount)).replace(',', ',')"></span>
                                                 </td>

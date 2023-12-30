@@ -22,7 +22,9 @@
 
     <menuitem name="Comments Selection"
               id="menu_comments_selection"
+              sequence="21"
               action="comments_selection_action"
               parent="industry_fsm.fsm_menu_settings"
               groups="industry_fsm.group_fsm_manager"/>
+
 </odoo>

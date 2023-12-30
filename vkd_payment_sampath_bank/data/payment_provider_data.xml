@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <record id="payment_provider_sampathbank" model="payment.provider">
+        <field name="name">Sampath Bank</field>
+        <field name="display_as">Credit Card (powered by Sampath Bank)</field>
+        <field name="code">sampathbank</field>
+        <field name="redirect_form_view_id" ref="redirect_form"/>
+        <!-- <field name="image_128" type="base64" file="vkd_payment_sampath_bank/static/description/icon.png"/> -->
+        <field name="module_id" ref="base.module_vkd_payment_sampath_bank"/>
+        <field name="payment_icon_ids"
+               eval="[(6, 0, [
+                    ref('payment.payment_icon_cc_mastercard'),
+                    ref('payment.payment_icon_cc_visa'),
+                    ref('payment.payment_icon_cc_american_express'),
+               ])]"/>
+    </record>
+
+    <record id="account_payment_method_sampathbank" model="account.payment.method">
+        <field name="name">Sampathbank</field>
+        <field name="code">sampathbank</field>
+        <field name="payment_type">inbound</field>
+    </record>
+</odoo>

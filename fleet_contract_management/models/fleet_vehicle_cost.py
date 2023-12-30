@@ -5,7 +5,7 @@ from odoo import fields, models, _, api
 class FleetVehicleLogContract(models.Model):
     _inherit = 'fleet.vehicle.log.contract'
 
-    partner_id = fields.Many2one('res.partner', string="Billing Contact")
+    partner_id = fields.Many2one('res.partner', string="Billing Contact Name")
     is_activated = fields.Boolean(string="Activated", tracking=True)
     activated_time = fields.Datetime(string='Activated Time')
     driver_company_id = fields.Many2one('res.partner', string="Driver Company", compute='_compute_company', store=False)

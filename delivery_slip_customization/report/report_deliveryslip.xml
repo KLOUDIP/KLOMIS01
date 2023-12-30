@@ -9,9 +9,9 @@
             </t>
         </xpath>
         <xpath expr="//div[@t-if='o.should_print_delivery_address()']" position="replace">
-            <div t-if="o.should_print_delivery_address() or o.move_lines[0].partner_id">
+            <div t-if="o.should_print_delivery_address() or o.move_ids[0].partner_id">
                 <span><strong>Delivery Address:</strong></span>
-                <div t-field="o.move_lines[0].partner_id"
+                <div t-field="o.move_ids[0].partner_id"
                      t-options='{"widget": "contact", "fields": ["address", "name", "phone"], "no_marker": True, "phone_icons": True}'/>
             </div>
         </xpath>

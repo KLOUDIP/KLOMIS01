@@ -20,7 +20,7 @@ class ActiveUnits(models.Model):
     contracts_empty = fields.Boolean(string='Contracts Empty', help='For UI Purposes')
     fleet_vehicle_id = fields.Many2one('fleet.vehicle', string='Fleet Vehicle')
     sync_key = fields.Char(string='Sync-Key', related='fleet_vehicle_id.license_plate', help='FIOS API Sync-Key (Also equal to vehicle plate number)')
-    lot_id = fields.Many2one('stock.production.lot', string='Lot/Serial')
+    lot_id = fields.Many2one('stock.lot', string='Lot/Serial')
 
     def get_eid(self, token):
         """Get EID From API"""
@@ -170,7 +170,7 @@ class ActiveUnits(models.Model):
                 if item['uid'] == '':
                     raise ValidationError(_('FIOS returned data with empty serial number for plate number - %s') % item['nm'])
                 # get the serial for the api serial number
-                lot_serial = self.env['stock.production.lot'].search(['|', ('name', 'ilike', item['uid']), ('fios_lot_no', '=', item['uid'])])
+                lot_serial = self.env['stock.lot'].search(['|', ('name', 'ilike', item['uid']), ('fios_lot_no', '=', item['uid'])])
                 # raise error when multiple lot/serials found
                 if len(lot_serial) > 1:
                     raise ValidationError(_('Multiple Serials found for Serial Number \'%s\'. Either another serial assigned for the FIOS Serial Number - %s') % (lot_serial[0].name, item['uid']))
@@ -207,7 +207,7 @@ class ActiveUnits(models.Model):
                         # unmatch serial if different serial received
                         matching_line_id.unmatch_serial()
                         # check there is a serial created for missing serial, assign to matching line if so
-                        matching_lot_id = self.env['stock.production.lot'].search([('name', '=', missing_serial_id.unit_serial)], limit=1).id
+                        matching_lot_id = self.env['stock.lot'].search([('name', '=', missing_serial_id.unit_serial)], limit=1).id
                     # update data to matching line
                     matching_line_id.update({
                         'fios_plate_no': missing_fleet_id.id,
@@ -230,7 +230,7 @@ class ActiveUnits(models.Model):
                         # unmatch serial if different serial received
                         matching_line_id.unmatch_serial()
                         # check there is a serial created for missing serial, assign to matching line if so
-                        matching_lot_id = self.env['stock.production.lot'].search([('name', '=', missing_serial_id.unit_serial)], limit=1).id
+                        matching_lot_id = self.env['stock.lot'].search([('name', '=', missing_serial_id.unit_serial)], limit=1).id
                     # update data to matching line
                     matching_line_id.update({
                         'fios_plate_no': missing_fleet_id.id,
