@@ -13,13 +13,14 @@ class SubscriptionAdvancePaymentInv(models.TransientModel):
     sale_order_ids = fields.Many2many(
         'sale.order', default=lambda self: self.env.context.get('active_ids'))
     count = fields.Integer(string="Order Count", compute='_compute_count')
+    deduct_down_payments = fields.Boolean(string="Deduct down payments", default=True)
     refunded_amount = fields.Monetary(string='Amount To Be Charged')
     visible_refunded_amount = fields.Boolean(string='Visible Refunded Amount', help='For UI Purposes',
                                              compute="_check_coupon_visibility")
 
     def create_subscription_invoices(self):
         orders = self.sale_order_ids
-        account_move = orders.with_context(refunded_amount=self.refunded_amount)._create_recurring_invoice()
+        account_move = orders.with_context(refunded_amount=self.refunded_amount, deduct_down_payments=self.deduct_down_payments)._create_recurring_invoice()
         if account_move:
             return orders.action_view_invoice()
         else:

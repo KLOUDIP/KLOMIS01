@@ -292,16 +292,16 @@ class SaleOrder(models.Model):
             'sequence': reward_line.sequence,
             'name': (product_line.name or '') + ' - Refunded Amount',
             'product_id': False,
-            'account_id': product_line.product_id.property_account_income_id.id if product_line else False,
             'product_uom_id': reward_line.product_uom.id,
             'quantity': abs(qty),
             'discount': False,
             'price_unit': refunded_amount,
             'tax_ids': [(6, 0, reward_line.tax_id.ids)],
             'analytic_distribution': self.analytic_account_id.id,
-            # 'analytic_tag_ids': [(6, 0, reward_line.analytic_tag_ids.ids)],
             'sale_line_ids': [(4, reward_line.id)],
         }]
+        if self.is_subscription:
+            res[0].update({'account_id': product_line.product_id.property_account_income_id.id if product_line else False})
         return res
 
     def action_open_sale_loyalty_coupon_wizard(self):
