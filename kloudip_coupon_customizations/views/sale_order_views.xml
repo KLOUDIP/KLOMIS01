@@ -13,10 +13,9 @@
                 <attribute name="type">object</attribute>
             </xpath>
 
-            <!--replacing context we had a compute field named visible refunded amount-->
-            <!--<button name="%(sale.action_view_sale_advance_payment_inv)d" position="attributes">-->
-            <!--    <attribute name="context">{'default_visible_refunded_amount': visible_refunded_amount}</attribute>-->
-            <!--</button>-->
+            <xpath expr="//header" position="inside">
+                <button name="create_voucher_deposit" string="Voucher Deposit" type="object" class="btn-primary" attrs="{'invisible': [('is_subscription', '!=', True)]}"/>
+            </xpath>
 
             <!--Replacing context for the button cause some errors so we open wizard from python action-->
             <button name="%(sale.action_view_sale_advance_payment_inv)d" position="attributes">

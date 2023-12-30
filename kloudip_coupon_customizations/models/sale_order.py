@@ -43,6 +43,10 @@ def _create_invoices(self, grouped=False, final=False, date=None):
         invoice_vals = order._prepare_invoice()
         invoiceable_lines = order._get_invoiceable_lines(final)
 
+        voucher_deposit = self.env.context.get('create_voucher_deposit')
+        if voucher_deposit:
+            invoiceable_lines = (reward_line+product_line)
+
         if not any(not line.display_type for line in invoiceable_lines):
             continue
 
@@ -386,6 +390,25 @@ class SaleOrder(models.Model):
             action['view_mode'] = 'tree,form'
             action['domain'] = [('id', 'in', coupon_ids)]
         return action
+
+    def create_voucher_deposit(self):
+        value = bool(self.order_line.filtered(lambda x: x.qty_to_invoice < 0) and self.order_line.filtered(
+            lambda x: x.reward_id))
+        if not value:
+            account_move = self.with_context(refunded_amount=0)._create_recurring_invoice()
+            if account_move:
+                return self.action_view_invoice()
+            else:
+                raise UserError(self._nothing_to_invoice_error_message())
+        return {
+            'name': _('Subscription Invoice'),
+            'view_mode': 'form',
+            'view_id': self.env.ref('kloudip_coupon_customizations.view_subscription_advance_payment_inv').id,
+            'res_model': 'subscription.advance.payment.inv',
+            'target': 'new',
+            'context': {'create_voucher_deposit': True},
+            'type': 'ir.actions.act_window',
+        }
 
     # def action_view_generated_giftcard(self):
     #     """
