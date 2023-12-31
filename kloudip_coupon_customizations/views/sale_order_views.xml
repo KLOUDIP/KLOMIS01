@@ -14,7 +14,8 @@
             </xpath>
 
             <xpath expr="//header" position="inside">
-                <button name="create_voucher_deposit" string="Voucher Deposit" type="object" class="btn-primary" attrs="{'invisible': [('is_subscription', '!=', True)]}"/>
+                <button name="create_voucher_deposit" string="Deposit Advice" type="object" class="btn-primary" attrs="{'invisible': ['|', ('coupon_count', '=', 0), ('invoice_status', '!=', 'to invoice')]}" context="{'create_voucher_deposit': True}"/>
+                <button name="create_voucher_deposit" string="Deposit Advice" type="object" attrs="{'invisible': ['|', ('coupon_count', '>', 0), ('invoice_status', '!=', 'no')]}" context="{'create_voucher_deposit': True}"/>
             </xpath>
 
             <!--Replacing context for the button cause some errors so we open wizard from python action-->

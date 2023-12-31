@@ -392,42 +392,26 @@ class SaleOrder(models.Model):
         return action
 
     def create_voucher_deposit(self):
-        value = bool(self.order_line.filtered(lambda x: x.qty_to_invoice < 0) and self.order_line.filtered(
-            lambda x: x.reward_id))
-        if not value:
-            account_move = self.with_context(refunded_amount=0)._create_recurring_invoice()
-            if account_move:
-                return self.action_view_invoice()
-            else:
-                raise UserError(self._nothing_to_invoice_error_message())
-        return {
-            'name': _('Subscription Invoice'),
-            'view_mode': 'form',
-            'view_id': self.env.ref('kloudip_coupon_customizations.view_subscription_advance_payment_inv').id,
-            'res_model': 'subscription.advance.payment.inv',
-            'target': 'new',
-            'context': {'create_voucher_deposit': True},
-            'type': 'ir.actions.act_window',
-        }
-
-    # def action_view_generated_giftcard(self):
-    #     """
-    #     Action for view assigned coupons for the current sales order
-    #     """
-    #     action = {
-    #         'name': _('Gift Card(s)'),
-    #         'type': 'ir.actions.act_window',
-    #         'res_model': 'loyalty.card',
-    #         'target': 'current',
-    #     }
-    #     coupon_ids = self.env['loyalty.card'].search([('order_id', '=', self.id)]).ids
-    #     if len(coupon_ids) == 1:
-    #         action['res_id'] = coupon_ids[0]
-    #         action['view_mode'] = 'form'
-    #     else:
-    #         action['view_mode'] = 'tree,form'
-    #         action['domain'] = [('id', 'in', coupon_ids)]
-    #     return action
+        if self.is_subscription:
+            value = bool(self.order_line.filtered(lambda x: x.qty_to_invoice < 0) and self.order_line.filtered(
+                lambda x: x.reward_id))
+            if not value:
+                account_move = self.with_context(refunded_amount=0)._create_recurring_invoice()
+                if account_move:
+                    return self.action_view_invoice()
+                else:
+                    raise UserError(self._nothing_to_invoice_error_message())
+            return {
+                'name': _('Subscription Invoice'),
+                'view_mode': 'form',
+                'view_id': self.env.ref('kloudip_coupon_customizations.view_subscription_advance_payment_inv').id,
+                'res_model': 'subscription.advance.payment.inv',
+                'target': 'new',
+                'context': {'create_voucher_deposit': True},
+                'type': 'ir.actions.act_window',
+            }
+        else:
+            return self.with_context(create_voucher_deposit=True).action_open_sale_make_invoice_advance_wizard()
 
     def __try_apply_program(self, program, coupon, status):
         coupons = super(SaleOrder, self).__try_apply_program(program, coupon, status)
