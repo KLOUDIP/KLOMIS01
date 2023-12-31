@@ -411,7 +411,7 @@ class SaleOrder(models.Model):
                 'type': 'ir.actions.act_window',
             }
         else:
-            self.with_context(create_voucher_deposit=True).action_open_sale_make_invoice_advance_wizard()
+            return self.with_context(create_voucher_deposit=True).action_open_sale_make_invoice_advance_wizard()
 
     def __try_apply_program(self, program, coupon, status):
         coupons = super(SaleOrder, self).__try_apply_program(program, coupon, status)
