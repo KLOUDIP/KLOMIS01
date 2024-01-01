@@ -75,7 +75,7 @@ class LoyaltyCard(models.Model):
         journal = self.env['account.move']
         journals = journal.browse(self.invoice_id.ids).journal_id.filtered(lambda x: x.active)
         debit = self.env['account.account'].search([('name', '=', 'Refundable Deposit Revenue - KIP')])
-        credit = self.env['account.account'].search([('name', '=', 'Forfeited Deposit Income - KIP')])
+        credit = self.env['account.account'].search([('name', '=', 'Forfeited Deposit Revenue - KIP')])
         values = {
             'journal_id': journals.id,
             'move_type': 'entry',
