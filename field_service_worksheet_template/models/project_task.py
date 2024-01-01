@@ -78,13 +78,13 @@ class ProjectTaskLine(models.Model):
                     'mark_as_done_rec': True
                 })
                 # determine closed stage for task
-                closed_stage = task.project_id.type_ids.filtered(lambda stage: stage.is_closed)
+                closed_stage = task.project_id.type_ids.filtered(lambda stage: stage.name == 'Done')
                 if not closed_stage and len(task.project_id.type_ids) > 1:  # project without stage (or with only one)
                     closed_stage = task.project_id.type_ids[-1]
 
                 values = {'fsm_done': True}
                 if closed_stage:
-                    values['stage_id'] = closed_stage.id
+                    values['stage_id'] = closed_stage[0].id
 
                 if task.allow_billable:
                     if task.allow_timesheets or task.allow_material:
