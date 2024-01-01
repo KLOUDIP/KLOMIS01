@@ -42,10 +42,11 @@ def _create_invoices(self, grouped=False, final=False, date=None):
 
         invoice_vals = order._prepare_invoice()
         invoiceable_lines = order._get_invoiceable_lines(final)
-
+        connection = invoiceable_lines.filtered(lambda x: x.product_id.categ_id.name == '2-Connections')
         voucher_deposit = self.env.context.get('create_voucher_deposit')
         if voucher_deposit:
-            invoiceable_lines = (reward_line+product_line)
+            new_list = invoiceable_lines.filtered(lambda x: x.id in product_line.ids or x.id in reward_line.ids or x.id in connection.ids)
+            invoiceable_lines = new_list
 
         if not any(not line.display_type for line in invoiceable_lines):
             continue
@@ -182,27 +183,6 @@ def _create_invoices(self, grouped=False, final=False, date=None):
 SaleOrderBase._create_invoices = _create_invoices
 
 
-# def _try_apply_program(self, program, coupon=None):
-#
-#     self.ensure_one()
-#     # Basic checks
-#     if not program.filtered_domain(self._get_program_domain()):
-#         return {'error': _('The program is not available for this order.')}
-#
-#     if not program.allow_redeem_multiple_coupons:
-#         if program in self._get_applied_programs():
-#             return {'error': _('This program is already applied to this order.')}
-#     # Check for applicability from the program's triggers/rules.
-#     # This step should also compute the amount of points to give for that program on that order.
-#     status = self._program_check_compute_points(program)[program]
-#     if 'error' in status:
-#         return status
-#     return self.__try_apply_program(program, coupon, status)
-#
-#
-# SaleOrderLoyalty._try_apply_program = _try_apply_program
-
-
 @api.depends('qty_invoiced', 'qty_delivered', 'product_uom_qty', 'state')
 def _compute_qty_to_invoice(self):
     """
@@ -260,7 +240,7 @@ class SaleOrder(models.Model):
 
     coupon_count = fields.Integer(string='Coupon Count', compute='_compute_coupon_count')
     generated_coupon_count = fields.Integer(string='Generated Coupon Count', compute='_compute_generated_coupon_count')
-    # giftcard_count = fields.Integer(string='Gift Card Count', compute='_compute_giftcard_count')
+    forfeited_coupon_count = fields.Integer(string='Forfeited Coupon Count', compute='_compute_forfeited_coupon_count')
 
     def _check_multiple_coupons_status(self, coupon):
         """
@@ -342,7 +322,7 @@ class SaleOrder(models.Model):
         Get the coupons count for the current sales order
         """
         self.update({
-            'coupon_count': len(self.env['loyalty.card'].search([('sales_order_id', '=', self.id)]).ids)
+            'coupon_count': len(self.env['loyalty.card'].search([('sales_order_id', '=', self.id), ('state', '!=', 'forfeited')]).ids)
         })
 
     def _compute_generated_coupon_count(self):
@@ -351,6 +331,11 @@ class SaleOrder(models.Model):
         """
         self.update({
             'generated_coupon_count': len(self.env['loyalty.card'].search([('order_id', '=', self.id)]).ids)
+        })
+
+    def _compute_forfeited_coupon_count(self):
+        self.update({
+            'forfeited_coupon_count': len(self.env['loyalty.card'].search([('state', '=', 'forfeited')]).ids)
         })
 
     def action_view_assigned_coupons(self):
@@ -383,6 +368,25 @@ class SaleOrder(models.Model):
             'target': 'current',
         }
         coupon_ids = self.env['loyalty.card'].search([('order_id', '=', self.id)]).ids
+        if len(coupon_ids) == 1:
+            action['res_id'] = coupon_ids[0]
+            action['view_mode'] = 'form'
+        else:
+            action['view_mode'] = 'tree,form'
+            action['domain'] = [('id', 'in', coupon_ids)]
+        return action
+
+    def action_view_forfeited_coupons(self):
+        """
+        Action for view forfeited coupons for the current sales order
+        """
+        action = {
+            'name': _('Vouchers(s)'),
+            'type': 'ir.actions.act_window',
+            'res_model': 'loyalty.card',
+            'target': 'current',
+        }
+        coupon_ids = self.env['loyalty.card'].search([('state', '=', 'forfeited')]).ids
         if len(coupon_ids) == 1:
             action['res_id'] = coupon_ids[0]
             action['view_mode'] = 'form'
