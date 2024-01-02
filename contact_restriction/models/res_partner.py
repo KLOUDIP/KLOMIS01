@@ -6,7 +6,7 @@ from odoo import fields, models
 class ResPartner(models.Model):
     _inherit = 'res.partner'
 
-    is_blocked = fields.Boolean(string="Is Blocked", default=False)
+    is_blocked = fields.Boolean(string="Is Blocked", default=False, tracking=True)
 
     def action_block_contact(self):
         self.write({'is_blocked': True})
