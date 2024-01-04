@@ -98,3 +98,13 @@ class ResPartner(models.Model):
         self.env['match.fios.missing'].search([('partner_id', '=', self.id)]).unlink()
         self.env['missing.serial'].search([('partner_id', '=', self.id)]).unlink()
         self.env['missing.fleets'].search([('partner_id', '=', self.id)]).unlink()
+
+    def action_fios_active_units_send(self):
+        return {
+            'name': _('FIOS Active Unit Report'),
+            'type': 'ir.actions.act_window',
+            'res_model': 'fios.active.unit.report.wizard',
+            'view_mode': 'form',
+            'view_id': self.env.ref('fios_connector.fios_active_unit_report_wizard_view').id,
+            'target': 'new'
+        }

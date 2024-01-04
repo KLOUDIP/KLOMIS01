@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <template id="report_fios_active_fleets_document">
+        <t t-call="web.external_layout">
+            <t t-set="doc" t-value="doc.with_context(lang=doc.lang)" />
+            <t t-set="address">
+                <div t-field="doc.parent_id"
+                     t-options='{"widget": "contact", "fields": ["address", "name"], "no_marker": True}' />
+                <p t-if="doc.parent_id.vat"><t t-out="doc.company_id.account_fiscal_country_id.vat_label or 'Tax ID'"/>: <span t-field="doc.parent_id.vat"/></p>
+            </t>
+
+            <div class="page">
+                <div class="oe_structure"/>
+
+                <h2 class="mt-4">
+                    <span>ACTIVE UNITS</span>
+                </h2>
+
+                <div class="row mt-4 mb-4" id="informations">
+                    <div class="col-auto col-3 mw-100 mb-2" name="information_date">
+                        <strong>Date:</strong>
+                        <p class="m-0" t-esc="context_timestamp(datetime.datetime.now()).strftime('%Y-%m-%d')"/>
+                    </div>
+                    <div class="col-auto col-3 mw-100 mb-2" name="information_billing">
+                        <strong>Billing Month:</strong>
+                        <p class="m-0" t-esc="doc._context.get('billing_month')"/>
+                    </div>
+                </div>
+
+                <t t-set="lines_to_report" t-value="doc.active_unit_ids"/>
+
+                <table class="table table-sm o_main_table table-borderless mt-4">
+                    <thead style="display: table-row-group">
+                        <tr>
+                            <th name="th_plate_no" class="text-start">Vehicle Plate Number</th>
+                            <th name="th_serial_no" class="text-start">Serial No:</th>
+                            <th name="th_lot_serial_no" class="text-start">Confirm Yes/No</th>
+                        </tr>
+                    </thead>
+                    <tbody class="active_fleet_tbody">
+                        <t t-foreach="lines_to_report" t-as="line">
+                            <tr>
+                                <t t-if="not line.display_type">
+                                    <td name="td_plate_no"><span t-field="line.plate_no"/></td>
+                                    <td name="td_vehicle_no"><span t-field="line.fleet_vehicle_id.name"/></td>
+                                    <td name="td_serial_no"><span t-field="line.unit_serial"/></td>
+                                    <td name="td_lot_serial_no"><span></span></td>
+                                </t>
+                            </tr>
+                        </t>
+                    </tbody>
+                </table>
+
+                <div class="row mt-5">
+                    <div class='col-5 text-center'>
+                        <span>
+                            ..............................................<br/>
+                            Customer Signature
+                        </span>
+                    </div>
+                    <div class='col-1'/>
+                    <div class='col-1'/>
+                    <div class='col-5 text-center'>
+                        <span>
+                            ..............................................<br/>
+                            Date<br/>
+                        </span>
+                    </div>
+                </div>
+                <br/>
+                <br/>
+                <br/>
+
+                <div>
+                    <p t-if="not is_html_empty(doc.parent_id.property_payment_term_id.name)">
+                        <span t-field="doc.parent_id.property_payment_term_id.name"/>
+                    </p>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <template id="report_fios_active_fleets">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-call="fios_connector.report_fios_active_fleets_document" t-lang="doc.lang"/>
+            </t>
+        </t>
+    </template>
+</odoo>

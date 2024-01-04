@@ -23,8 +23,11 @@
     ],
     'data': [
         'security/ir.model.access.csv',
+        'reports/ir_actions_report.xml',
+        'reports/ir_actions_report_templates.xml',
         'data/data.xml',
         'data/server_actions.xml',
+        'data/mail_template_data.xml',
         'views/active_units_views.xml',
         'views/missing_fleets_views.xml',
         'views/missing_serial_views.xml',
@@ -35,6 +38,7 @@
         'views/stock_production_lot_views.xml',
         'views/odoo_unmatched_serials.xml',
         'views/odoo_unmatched_fleets.xml',
+        'wizard/fios_active_unit_report_wizard.xml'
     ],
     'installable': True,
     'application': True,
