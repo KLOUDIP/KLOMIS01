@@ -34,16 +34,15 @@
                         <tr>
                             <th name="th_plate_no" class="text-start">Vehicle Plate Number</th>
                             <th name="th_serial_no" class="text-start">Serial No:</th>
-                            <th name="th_lot_serial_no" class="text-start">Confirm Yes/No</th>
+                            <th name="th_confirm" class="text-start">Confirm Yes/No</th>
                         </tr>
                     </thead>
                     <tbody class="active_fleet_tbody">
                         <t t-foreach="lines_to_report" t-as="line">
                             <tr>
                                 <td name="td_plate_no"><span t-field="line.plate_no"/></td>
-                                <td name="td_vehicle_no"><span t-field="line.fleet_vehicle_id.name"/></td>
                                 <td name="td_serial_no"><span t-field="line.unit_serial"/></td>
-                                <td name="td_lot_serial_no"><span></span></td>
+                                <td name="td_confirm"><span></span></td>
                             </tr>
                         </t>
                     </tbody>
