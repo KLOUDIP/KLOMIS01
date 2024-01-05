@@ -21,6 +21,8 @@ class FIOSActiveUnitReportWizard(models.TransientModel):
     def send_email(self):
         self.ensure_one()
         partner_id = self.browse(self.env.context.get('active_id'))
+        if partner_id:
+            partner_id.write({'billing_month': self.billing_month})
         mail_template = self.env.ref('fios_connector.mail_template_fios_active_units', raise_if_not_found=False)
         ctx = {
             'default_model': 'res.partner',
@@ -46,8 +48,6 @@ class FIOSActiveUnitReportWizard(models.TransientModel):
     def print_report(self):
         partner_id = self.env['res.partner'].browse(self.env.context.get('active_id'))
         if partner_id:
-            partner = partner_id.with_context(billing_month=self.billing_month)
-            return partner_id.env.ref('fios_connector.action_report_fios_active_unit').report_action(partner)
-
-
-
+            partner_id.write({'billing_month': self.billing_month})
+            report = partner_id.env.ref('fios_connector.action_report_fios_active_unit')
+            return report.report_action(partner_id)

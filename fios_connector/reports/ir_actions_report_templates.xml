@@ -23,12 +23,11 @@
                     </div>
                     <div class="col-auto col-3 mw-100 mb-2" name="information_billing">
                         <strong>Billing Month:</strong>
-                        <p class="m-0" t-esc="doc._context.get('billing_month')"/>
+                        <p class="m-0" t-esc="doc.billing_month"/>
                     </div>
                 </div>
 
                 <t t-set="lines_to_report" t-value="doc.active_unit_ids"/>
-
                 <table class="table table-sm o_main_table table-borderless mt-4">
                     <thead style="display: table-row-group">
                         <tr>

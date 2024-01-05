@@ -11,6 +11,19 @@ class ResPartner(models.Model):
     fios_token = fields.Char(string='FIOS Token', help='Partner token for the FIOS Account')
     fios_fleet_count = fields.Integer(string='FIOS Fleet Count', compute='_compute_fios_fleets')
     active_unit_last_updated = fields.Datetime('Last Updated')
+    billing_month = fields.Selection([('January', 'January'),
+                                      ('February', 'February'),
+                                      ('March', 'March'),
+                                      ('April', 'April'),
+                                      ('May', 'May'),
+                                      ('June', 'June'),
+                                      ('July', 'July'),
+                                      ('August', 'August'),
+                                      ('September', 'September'),
+                                      ('October', 'October'),
+                                      ('November', 'November'),
+                                      ('December', 'December')
+                                      ], string="Billing Month")
 
     def _compute_fios_fleets(self):
         """Compute matching lines that belongs to current partner"""
