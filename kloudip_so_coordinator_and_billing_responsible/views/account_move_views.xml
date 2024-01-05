@@ -13,6 +13,14 @@
                 <field name="billing_by_id"/>
             </field>
 
+            <xpath expr="//label[@for='journal_id']" position="attributes">
+                <field name="groups">account.group_account_readonly,account.group_account_invoice</field>
+            </xpath>
+
+            <xpath expr="//div[@name='journal_div']" position="attributes">
+                <field name="groups">account.group_account_readonly,account.group_account_invoice</field>
+            </xpath>
+
         </field>
     </record>
 
