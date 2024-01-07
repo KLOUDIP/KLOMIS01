@@ -37,11 +37,14 @@
                         </tr>
                     </thead>
                     <tbody class="active_fleet_tbody">
+                        <tr>
+                            <td><input name="confirm_yes" type="checkbox" data-pdf-form-field="true"/></td>
+                        </tr>
                         <t t-foreach="lines_to_report" t-as="line">
                             <tr>
                                 <td name="td_plate_no"><span t-field="line.plate_no"/></td>
                                 <td name="td_serial_no"><span t-field="line.unit_serial"/></td>
-                                <td name="td_confirm"><span></span></td>
+                                <td name="td_confirm"><span><input type="checkbox" name="confirm_yes_no" /></span></td>
                             </tr>
                         </t>
                     </tbody>

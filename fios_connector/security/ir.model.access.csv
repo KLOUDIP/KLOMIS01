@@ -5,4 +5,3 @@ access_missing_fleets,access_missing_fleets,model_missing_fleets,base.group_user
 access_missing_serial,access_missing_serial,model_missing_serial,base.group_user,1,1,1,1
 access_match_fios_missing,access_match_fios_missing,model_match_fios_missing,base.group_user,1,1,1,1
 access_fios_matching_line,access_fios_matching_line,model_fios_matching_line,base.group_user,1,1,1,1
-fios_connector.access_fios_active_unit_report_wizard,access_fios_active_unit_report_wizard,fios_connector.model_fios_active_unit_report_wizard,base.group_user,1,1,1,1
