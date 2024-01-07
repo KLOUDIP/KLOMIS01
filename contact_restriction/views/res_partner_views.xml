@@ -8,7 +8,7 @@
             <sheet position="before">
                 <header>
                     <field name="is_blocked" invisible="1"/>
-                    <button name="action_block_contact" type="object" string="Block" class="btn-primary" attrs="{'invisible': [('is_blocked','=',True)]}"
+                    <button name="action_block_contact" type="object" string="Block" attrs="{'invisible': [('is_blocked','=',True)]}"
                             confirm="Are you sure you need to block this contact?" groups="account.group_account_user,account.group_account_invoice"/>
 
                     <button name="action_unblock_contact" type="object" string="Blocked" class="btn-danger" attrs="{'invisible': [('is_blocked','!=', True)]}"

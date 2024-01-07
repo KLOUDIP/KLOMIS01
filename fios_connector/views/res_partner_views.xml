@@ -5,6 +5,13 @@
         <field name="model">res.partner</field>
         <field name="inherit_id" ref="base.view_partner_form"/>
         <field name="arch" type="xml">
+
+            <sheet position="before">
+                <header>
+                    <button name="action_fios_active_units_send" type="object" class="btn-primary" string="Send FIOS Active Units" attrs="{'invisible': [('type', '!=', 'invoice')]}"/>
+                </header>
+            </sheet>
+
             <xpath expr="//div[@name='button_box']" position="inside">
                 <button class="oe_stat_button" type="object" name="action_view_matching_lines" icon="fa-car" attrs="{'invisible': [('fios_fleet_count', '=', 0)]}">
                     <field string="FIOS Fleets" name="fios_fleet_count" widget="statinfo"/>

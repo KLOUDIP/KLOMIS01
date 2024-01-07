@@ -69,4 +69,24 @@
 
         </field>
     </record>
+
+    <!--quotation tree view customizations-->
+    <record id="sale_subscription_order_view_form_inherit" model="ir.ui.view">
+        <field name="name">sale.subscription.order.view.form.inherit.kloudip_so_coordinator_and_billing_responsible</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale_subscription.sale_subscription_order_view_form"/>
+        <field name="arch" type="xml">
+
+            <xpath expr="//field[@name='next_invoice_date'][1]" position="attributes">
+                <attribute name="groups">!sales_team.group_sale_manager,!account.group_account_invoice</attribute>
+                <attribute name="attrs">{'invisible': [('subscription_management', '!=', 'upsell') , ('recurrence_id', '=', False)]}</attribute>
+            </xpath>
+
+            <xpath expr="//field[@name='next_invoice_date'][2]" position="attributes">
+                <attribute name="groups">sales_team.group_sale_manager,account.group_account_invoice</attribute>
+                <attribute name="attrs">{'invisible': [('subscription_management', '!=', 'upsell') , ('recurrence_id', '=', False)]}</attribute>
+            </xpath>
+
+        </field>
+    </record>
 </odoo>

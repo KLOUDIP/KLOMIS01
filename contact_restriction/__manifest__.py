@@ -4,7 +4,7 @@
     "summary": "This module allow block/unblock contacts",
     "description": "This module allow block/unblock contacts",
     'category': 'Contact',
-    'version': '1.0.1',
+    'version': '1.0.2',
     "author": "BitbrainHub",
     "email": "bitbrainhub@gmail.com",
     'depends': [

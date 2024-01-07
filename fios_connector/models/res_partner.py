@@ -11,6 +11,19 @@ class ResPartner(models.Model):
     fios_token = fields.Char(string='FIOS Token', help='Partner token for the FIOS Account')
     fios_fleet_count = fields.Integer(string='FIOS Fleet Count', compute='_compute_fios_fleets')
     active_unit_last_updated = fields.Datetime('Last Updated')
+    billing_month = fields.Selection([('January', 'January'),
+                                      ('February', 'February'),
+                                      ('March', 'March'),
+                                      ('April', 'April'),
+                                      ('May', 'May'),
+                                      ('June', 'June'),
+                                      ('July', 'July'),
+                                      ('August', 'August'),
+                                      ('September', 'September'),
+                                      ('October', 'October'),
+                                      ('November', 'November'),
+                                      ('December', 'December')
+                                      ], string="Billing Month")
 
     def _compute_fios_fleets(self):
         """Compute matching lines that belongs to current partner"""
@@ -98,3 +111,13 @@ class ResPartner(models.Model):
         self.env['match.fios.missing'].search([('partner_id', '=', self.id)]).unlink()
         self.env['missing.serial'].search([('partner_id', '=', self.id)]).unlink()
         self.env['missing.fleets'].search([('partner_id', '=', self.id)]).unlink()
+
+    def action_fios_active_units_send(self):
+        return {
+            'name': _('FIOS Active Unit Report'),
+            'type': 'ir.actions.act_window',
+            'res_model': 'fios.active.unit.report.wizard',
+            'view_mode': 'form',
+            'view_id': self.env.ref('fios_connector.fios_active_unit_report_wizard_view').id,
+            'target': 'new'
+        }
