@@ -23,7 +23,7 @@ class FIOSUnitReportWizard(models.TransientModel):
         partner_id = self.browse(self.env.context.get('active_id'))
         if partner_id:
             partner_id.write({'billing_month': self.billing_month})
-        mail_template = self.env.ref('fios_connector.mail_template_fios_active_units', raise_if_not_found=False)
+        mail_template = self.env.ref('fios_connector_report.mail_template_fios_active_units', raise_if_not_found=False)
         ctx = {
             'default_model': 'res.partner',
             'default_res_id': partner_id.id,
