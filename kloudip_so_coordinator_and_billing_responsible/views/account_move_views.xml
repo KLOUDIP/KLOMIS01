@@ -21,6 +21,10 @@
                 <attribute name="groups">account.group_account_readonly,account.group_account_invoice</attribute>
             </xpath>
 
+            <xpath expr="//page[@id='aml_tab']" position="attributes">
+                <attribute name="groups">account.group_account_readonly,account.group_account_invoice</attribute>
+            </xpath>
+
         </field>
     </record>
 
