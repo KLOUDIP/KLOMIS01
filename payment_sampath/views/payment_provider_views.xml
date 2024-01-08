@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!--Payment provider form view customizations-->
+    <record id="payment_provider_view_form" model="ir.ui.view">
+        <field name="name">payment.provider.view.form.inherit.payment_sampath</field>
+        <field name="model">payment.provider</field>
+        <field name="inherit_id" ref="payment.payment_provider_form"/>
+        <field name="arch" type="xml">
+            <group name="provider_credentials" position='inside'>
+                <group attrs="{'invisible': [('code', '!=', 'sampath')]}">
+                    <field name="sampath_client_id" string="ClientID" attrs="{'required':[ ('code', '=', 'sampath'), ('state', '!=', 'disabled')]}"/>
+                    <field name="sampath_auth_token" attrs="{'required':[ ('code', '=', 'sampath'), ('state', '!=', 'disabled')]}" password="True"/>
+                </group>
+            </group>
+        </field>
+    </record>
+
+</odoo>

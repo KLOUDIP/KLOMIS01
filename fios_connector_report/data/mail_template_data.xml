@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="mail_template_fios_active_units" model="mail.template">
+            <field name="name">FIOS: Active Units</field>
+            <field name="model_id" ref="base.model_res_partner"/>
+            <field name="subject">FIOS Active Units</field>
+            <field name="partner_to">{{ object.id }}</field>
+            <field name="description">Sent to customers with FIOS active Units</field>
+            <field name="body_html" type="html">
+                <div style="margin: 0px; padding: 0px;">
+                    <p style="margin: 0px; padding: 0px; font-size: 12px;">
+                        Dear Valued Customer,
+                        <br/>
+                        <br/>
+                        We have implemented a new process to verify units for the billing month prior to issuing invoice to
+                        make sure that the tax invoices remain unedited. Therefore, an active list of vehicles will be shared by
+                        the Billing Team with you on the 1st working day of each month. It is required to approve the active list
+                        for the billing month by the 7th working day with any changes that are requested. Tax invoices will be
+                        issued by the 10th working day and it will not be possible to edit invoices once issued.
+                        <br/><br/>
+                        For any clarification, please get in touch with the relevant billing contact at KLOUDIP or write to billing@kloudip.com
+                        <br/><br/>
+                        Billing Team
+                    </p>
+                </div>
+            </field>
+            <field name="report_template" ref="fios_connector_report.action_report_fios_active_unit"/>
+            <field name="report_name">{{ (object.parent_id.name or '').replace('/','_') }}</field>
+            <field name="lang">{{ object.lang }}</field>
+            <field name="auto_delete" eval="True"/>
+        </record>
+
+    </data>
+</odoo>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_partner_view_form" model="ir.ui.view">
+        <field name="name">res.partner.view.form.inherit.fios_connector_report</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <sheet position="before">
+                <header>
+                    <button name="action_fios_active_units_send" type="object" class="btn-primary" string="Send FIOS Active Units" attrs="{'invisible': [('type', '!=', 'invoice')]}"/>
+                </header>
+            </sheet>
+        </field>
+    </record>
+</odoo>
