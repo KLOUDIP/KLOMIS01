@@ -12,6 +12,7 @@
         'security/ir.model.access.csv',
         'reports/ir_actions_report.xml',
         'reports/ir_actions_report_templates.xml',
+        'views/res_partner_views.xml',
         'data/mail_template_data.xml',
         'wizard/fios_unit_report_wizard.xml'
     ],
