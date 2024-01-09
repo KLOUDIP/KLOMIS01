@@ -31,18 +31,22 @@
                 <table class="table table-sm o_main_table table-borderless mt-4">
                     <thead style="display: table-row-group">
                         <tr>
+                            <th name="th_row_no" class="text-start">No#</th>
                             <th name="th_plate_no" class="text-start">Vehicle Plate Number</th>
                             <th name="th_serial_no" class="text-start">Serial No:</th>
                             <th name="th_confirm" class="text-start">Confirm Yes/No</th>
                         </tr>
                     </thead>
                     <tbody class="active_fleet_tbody">
+                        <t t-set="count" t-value="1" />
                         <t t-foreach="lines_to_report" t-as="line">
                             <tr>
+                                <td name="td_row_no"><span t-esc="count"/></td>
                                 <td name="td_plate_no"><span t-field="line.plate_no"/></td>
                                 <td name="td_serial_no"><span t-field="line.unit_serial"/></td>
                                 <td name="td_confirm"><span></span></td>
                             </tr>
+                            <t t-set="count" t-value="count+1"/>
                         </t>
                     </tbody>
                 </table>
