@@ -46,8 +46,8 @@
                                 <td name="td_serial_no"><span t-field="line.unit_serial"/></td>
                                 <td name="td_confirm"><span></span></td>
                             </tr>
+                            <t t-set="count" t-value="count+1"/>
                         </t>
-                        <t t-set="count" t-value="count+1"/>
                     </tbody>
                 </table>
 
