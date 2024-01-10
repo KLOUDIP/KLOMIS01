@@ -17,9 +17,9 @@ A Sri Lankan payment provider powered by Sampath Bank
         'payment'
     ],
     'data': [
-        'data/payment_provider_data.xml',
         'views/payment_provider_views.xml',
         'views/payment_sampath_templates.xml',
+        'data/payment_provider_data.xml',
     ],
     'application': False,
     'post_init_hook': 'post_init_hook',
