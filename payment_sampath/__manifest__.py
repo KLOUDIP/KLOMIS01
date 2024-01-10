@@ -18,15 +18,9 @@ A Sri Lankan payment provider powered by Sampath Bank
     ],
     'data': [
         'views/payment_provider_views.xml',
+        'views/payment_sampath_templates.xml',
         'data/payment_provider_data.xml',
     ],
-    'assets': {
-        'web.assets_frontend': [
-            'https://sampath.paycorp.lk/webinterface/qw/paycorp_payments.js',
-            'payment_sampath/static/src/js/sampath_options.js',
-            'payment_sampath/static/src/js/payment_form.js',
-        ],
-    },
     'application': False,
     'post_init_hook': 'post_init_hook',
     'uninstall_hook': 'uninstall_hook',

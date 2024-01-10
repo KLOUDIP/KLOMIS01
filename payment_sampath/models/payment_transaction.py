@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
-
+import uuid
 import logging
+from urllib.parse import urljoin
+from datetime import datetime
 
-from werkzeug import urls
-
-from odoo import _, api, models, SUPERUSER_ID
+from odoo import _, models
 from odoo.exceptions import ValidationError
 
 from odoo.addons.payment_sampath.const import STATUS_CODES_MAPPING
@@ -16,24 +16,51 @@ _logger = logging.getLogger(__name__)
 class PaymentTransaction(models.Model):
     _inherit = 'payment.transaction'
 
-    def _get_processing_values(self):
-        """
-        @Override - adding necessary values for sampath payment
-        """
-        res = super()._get_processing_values()
+    def _get_specific_rendering_values(self, processing_values):
+        res = super()._get_specific_rendering_values(processing_values)
         if self.provider_code != 'sampath':
             return res
-        return_url = urls.url_join(self.provider_id.get_base_url(), SampathController._return_url)
-        res.update({
-            'sampath_client_id': int(self.provider_id.sampath_client_id),  # This value should be number format, so converted to integer
-            'sampath_client_ref': res.get('reference', ''),
-            'sampath_currency': self.env['res.currency'].with_user(SUPERUSER_ID).browse(res.get('currency_id', False)).name,  # TODO Enable when production
-            # 'sampath_currency': 'LKR',
-            'sampath_return_url': return_url,
-            'sampath_amount': res.get('amount', 0.00) * 100,  # Amount must be in cents  # TODO: Enable when production
-            # 'sampath_amount': 1010,
-        })
-        return res
+
+        base_url = self.provider_id.get_base_url()
+        random_uuid = uuid.uuid4()
+
+        payload = {
+            "version": "1.5",
+            "msgId": str(random_uuid),
+            "operation": "PAYMENT_INIT",
+            "requestDate": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f%z"),
+            "validateOnly": False,
+            "requestData": {
+                "clientId": self.provider_id.sampath_client_id,
+                "clientIdHash": "",
+                "transactionType": "PURCHASE",
+                "transactionAmount": {
+                    "totalAmount": 0,
+                    "paymentAmount": self.amount*100,
+                    "serviceFeeAmount": 0,
+                    'currency': self.currency_id.name if self.currency_id else 'LKR',
+                },
+                "redirect": {
+                    "returnUrl": '%s' % urljoin(base_url, SampathController._return_url),
+                    "cancelUrl": '%s' % urljoin(base_url, SampathController._return_url),
+                    "returnMethod": "GET"
+                },
+                "clientRef": self.reference,
+                "tokenize": False,
+                "useReliability": True,
+            }
+        }
+
+        payment = self.provider_id._sampath_make_request(payload=payload)
+        if payment.get('msgId', False):
+            self.write({'provider_reference': payment.get('msgId', '')})
+
+        rendering_values = {
+            'reqid': payment.get('responseData').get('reqid', ''),
+            'api_url': payment.get('responseData').get('paymentPageUrl')
+        }
+
+        return rendering_values
 
     def _get_tx_from_notification_data(self, provider_code, notification_data):
         """ Override of payment to find the transaction based on Sampath data.
