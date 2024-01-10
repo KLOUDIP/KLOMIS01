@@ -6,10 +6,9 @@
         <field name="name">Sampath</field>
         <field name="code">sampath</field>
         <field name="display_as">Credit Card (powered by Sampath Bank)</field>
-        <field name="image_128"
-               type="base64"
-               file="payment_sampath/static/description/icon.png"/>
+        <field name="image_128" type="base64" file="payment_sampath/static/description/icon.png"/>
         <field name="module_id" ref="base.module_payment_sampath"/>
+        <field name="redirect_form_view_id" ref="redirect_form"/>
         <field name="payment_icon_ids"
                eval="[(6, 0, [
                    ref('payment.payment_icon_cc_mastercard'),

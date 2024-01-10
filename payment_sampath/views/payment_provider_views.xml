@@ -11,6 +11,7 @@
                 <group attrs="{'invisible': [('code', '!=', 'sampath')]}">
                     <field name="sampath_client_id" string="ClientID" attrs="{'required':[ ('code', '=', 'sampath'), ('state', '!=', 'disabled')]}"/>
                     <field name="sampath_auth_token" attrs="{'required':[ ('code', '=', 'sampath'), ('state', '!=', 'disabled')]}" password="True"/>
+                    <field name="sampath_hmac_secret" attrs="{'required':[ ('code', '=', 'sampath'), ('state', '!=', 'disabled')]}" password="True"/>
                 </group>
             </group>
         </field>
