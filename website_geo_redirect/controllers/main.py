@@ -2,8 +2,9 @@
 from urllib.parse import urlparse, parse_qs
 from odoo import http
 from odoo.http import request
-from odoo.addons.web.controllers.home import Home
+from odoo.addons.website.controllers.main import Website
 from werkzeug.utils import redirect
+
 
 def are_urls_same(url1, url2):
     # Parse both URLs
@@ -31,8 +32,9 @@ def are_urls_same(url1, url2):
         return False
     return True
 
-class WebsiteRegionRedirect(Home):
-    @http.route('/', auth='none')
+
+class WebsiteRegionRedirect(Website):
+    @http.route('/', auth='public', website=True)
     def index(self, **kw):
         req = super(WebsiteRegionRedirect, self).index()
         response = request._geoip_resolve()

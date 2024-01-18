@@ -14,7 +14,6 @@
         'views/website_redirect_config_views.xml',
 
     ],
-
     'installable': True,
     'application': False,
     'auto_install': False,
