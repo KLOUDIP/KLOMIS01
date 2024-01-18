@@ -37,12 +37,11 @@ class WebsiteRegionRedirect(Home):
         req = super(WebsiteRegionRedirect, self).index()
         response = request._geoip_resolve()
         host = request.httprequest.host_url
-        # if response:
-        country_code = 'LK'
-        # country_code = response.get('country_code', False)
-        country_id = request.env['res.country'].search([('code', '=', country_code)])
-        redirect_url = request.env['website.redirect.config'].sudo().search([('country_ids', 'in', country_id.ids)], limit=1).website_url
-        if redirect_url:
-            if not are_urls_same(host, redirect_url):
-                return redirect(redirect_url)
+        if response:
+            country_code = response.get('country_code', False)
+            country_id = request.env['res.country'].search([('code', '=', country_code)])
+            redirect_url = request.env['website.redirect.config'].sudo().search([('country_ids', 'in', country_id.ids)], limit=1).website_url
+            if redirect_url:
+                if not are_urls_same(host, redirect_url):
+                    return redirect(redirect_url)
         return req
