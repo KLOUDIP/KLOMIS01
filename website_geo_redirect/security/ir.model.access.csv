@@ -1,0 +1,2 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+website_geo_redirect.access_website_redirect_config,access_website_redirect_config,website_geo_redirect.model_website_redirect_config,base.group_user,1,1,1,1

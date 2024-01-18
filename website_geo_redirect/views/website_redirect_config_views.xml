@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_website_redirect_config_tree" model="ir.ui.view">
+        <field name="name">website.redirect.config.tree</field>
+        <field name="model">website.redirect.config</field>
+        <field name="arch" type="xml">
+            <tree string="Website Redirect Config" editable="bottom">
+                <field name="website_id"/>
+                <field name="country_ids" widget="many2many_tags"/>
+                <field name="website_url"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_website_redirect_config_form" model="ir.ui.view">
+        <field name="name">website.redirect.config.form</field>
+        <field name="model">website.redirect.config</field>
+        <field name="arch" type="xml">
+            <form string="Website Redirect Config">
+                <sheet>
+                    <group>
+                        <field name="website_id"/>
+                        <field name="country_ids" widget="many2many_tags"/>
+                        <field name="website_url"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_website_redirect_config" model="ir.actions.act_window">
+        <field name="name">Website Redirect Configuration</field>
+        <field name="res_model">website.redirect.config</field>
+        <field name="view_mode">tree,form</field>
+        <field name="view_id" ref="view_website_redirect_config_tree"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create and configure your website redirect settings.
+            </p>
+        </field>
+    </record>
+
+    <menuitem id="menu_website_redirect_config"
+              name="Website Redirect"
+              parent="website.menu_website_global_configuration"
+              action="action_website_redirect_config"
+              sequence="10"/>
+
+</odoo>
