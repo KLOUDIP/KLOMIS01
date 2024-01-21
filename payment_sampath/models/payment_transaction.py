@@ -7,7 +7,6 @@ from datetime import datetime
 from odoo import _, models
 from odoo.exceptions import ValidationError
 
-from odoo.addons.payment_sampath.const import STATUS_CODES_MAPPING
 from odoo.addons.payment_sampath.controllers.main import SampathController
 
 _logger = logging.getLogger(__name__)
@@ -52,15 +51,17 @@ class PaymentTransaction(models.Model):
         }
 
         payment = self.provider_id._sampath_make_request(payload=payload)
-        if payment.get('msgId', False):
-            self.write({'provider_reference': payment.get('msgId', '')})
+        if payment.status_code == 200:
+            response = payment.json()
+            if response.get('msgId', False):
+                self.write({'provider_reference': response.get('msgId', '')})
 
-        rendering_values = {
-            'reqid': payment.get('responseData').get('reqid', ''),
-            'api_url': payment.get('responseData').get('paymentPageUrl')
-        }
+            rendering_values = {
+                'reqid': response.get('responseData').get('reqid', ''),
+                'api_url': response.get('responseData').get('paymentPageUrl')
+            }
 
-        return rendering_values
+            return rendering_values
 
     def _get_tx_from_notification_data(self, provider_code, notification_data):
         """ Override of payment to find the transaction based on Sampath data.
@@ -97,27 +98,22 @@ class PaymentTransaction(models.Model):
         :return: None
         :raise: ValidationError if inconsistent data were received
         """
-        super()._process_notification_data(notification_data)
+        json_response = notification_data.json()
+        notification_response = json_response.get('responseData', {})
+        super()._process_notification_data(notification_response)
         if self.provider_code != 'sampath':
             return
 
-        status_code = int(notification_data.get('status_code', False))
-        if status_code in STATUS_CODES_MAPPING['pending']:
-            self._set_pending()
-        elif status_code in STATUS_CODES_MAPPING['done']:
+        status_code = notification_response.get('responseCode', False)
+        if status_code == "00":
             self._set_done()
-        elif status_code in STATUS_CODES_MAPPING['cancel']:
-            self._set_canceled()
-        elif status_code in STATUS_CODES_MAPPING['refused']:
-            self._set_error(_("Your payment was refused (code %s). Please try again.", status_code))
-        elif status_code in STATUS_CODES_MAPPING['error']:
-            self._set_error(_(
-                "An error occurred during processing of your payment (code %s). Please try again.",
-                status_code,
-            ))
+        elif status_code == "01" or status_code == "02":
+            self._set_pending()
+        elif status_code == "VA":
+            self._set_canceled(_("Invalid Card Number"))
         else:
             _logger.warning(
                 "received data with invalid payment status (%s) for transaction with reference %s",
                 status_code, self.reference
             )
-            self._set_error("Sampath: " + _("Unknown status code: %s", status_code))
+            self._set_error("Sampath: " + _("payment Failed: %s", status_code))

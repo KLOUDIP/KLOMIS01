@@ -77,7 +77,7 @@ class PaymentProvider(models.Model):
             raise ValidationError(
                 "Sampath: " + _("Could not establish the connection to the API.")
             )
-        return response.json()
+        return response
 
     def _sampath_generate_hmac(self, payload):
         HMACSecret = self.sampath_hmac_secret
