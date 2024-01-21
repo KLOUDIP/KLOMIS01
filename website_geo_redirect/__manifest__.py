@@ -1,6 +1,6 @@
 {
     'name': 'Website Region Redirect',
-    'version': '1.0.1',
+    'version': '1.0.2',
     'summary': 'Redirects users to region-specific websites based on their IP location',
     'description': """
         This module enables Odoo to redirect users to different websites 
@@ -12,7 +12,6 @@
     'data': [
         'security/ir.model.access.csv',
         'views/website_redirect_config_views.xml',
-
     ],
     'installable': True,
     'application': False,

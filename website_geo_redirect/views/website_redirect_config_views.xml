@@ -6,8 +6,9 @@
         <field name="arch" type="xml">
             <tree string="Website Redirect Config" editable="bottom">
                 <field name="website_id"/>
-                <field name="country_ids" widget="many2many_tags"/>
+                <field name="country_group_ids" widget="many2many_tags"/>
                 <field name="website_url"/>
+                <field name="is_default"/>
             </tree>
         </field>
     </record>
@@ -20,8 +21,9 @@
                 <sheet>
                     <group>
                         <field name="website_id"/>
-                        <field name="country_ids" widget="many2many_tags"/>
+                        <field name="country_group_ids" widget="many2many_tags"/>
                         <field name="website_url"/>
+                        <field name="is_default"/>
                     </group>
                 </sheet>
             </form>

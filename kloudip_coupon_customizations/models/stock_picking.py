@@ -1,8 +1,9 @@
 # -*- encoding: utf-8 -*-
-
+import logging
 from odoo import models, _
 from odoo.exceptions import ValidationError
 
+_logger = logging.getLogger(__name__)
 
 class StockPicking(models.Model):
     _inherit = 'stock.picking'
@@ -23,9 +24,12 @@ class StockPicking(models.Model):
                     raise ValidationError(_('Multiple coupon product lines found.'))
                 elif len(coupon_program_product_lines) == 1:
                     # set coupon to valid state with checking return quantity
-                    coupon = self.sale_id.applied_coupon_ids[0:int(coupon_program_product_lines.quantity_done)]
-                    line = self.sale_id.order_line.filtered(lambda x: x.is_reward_line)
-                    if line:
-                        coupon.update({'state': 'new', 'sales_order_id': False, 'points': 1})
+                    coupons = self.sale_id.applied_coupon_ids.filtered(lambda x: x.state == 'used')
+                    _logger.info(coupons)
+                    if coupons:
+                        coupon = coupons[0:int(coupon_program_product_lines.quantity_done)]
+                        line = self.sale_id.order_line.filtered(lambda x: x.is_reward_line)
+                        if line:
+                            coupon.update({'state': 'new', 'sales_order_id': False, 'points': 1})
 
         return super(StockPicking, self).button_validate()

@@ -14,7 +14,7 @@
 
             <!--adding coupon id to the form view-->
             <field name="coupon_code" position="after">
-                <field name="coupon_id" required="1" domain="[('invoice_partner_id', '=', partner_id), ('points', '>', 0)]" options="{'no_create': True}"/>
+                <field name="coupon_id" required="1" domain="[('invoice_partner_id', '=', partner_id), ('points', '>', 0), ('state', '=', 'new')]" options="{'no_create': True}"/>
                 <field name="partner_id" readonly="1" invisible="1"/>
             </field>
 
