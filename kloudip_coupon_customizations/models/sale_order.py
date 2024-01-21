@@ -568,4 +568,24 @@ class SaleOrder(models.Model):
             'type': 'ir.actions.act_window',
         }
 
+    def _get_real_points_for_coupon(self, coupon, post_confirm=False):
+        """
+        Returns the actual points usable for this coupon for this order. Set pos_confirm to True to include points for future orders.
+
+        This is calculated by taking the points on the coupon, the points the order will give to the coupon (if applicable) and removing the points taken by already applied rewards.
+        """
+        self.ensure_one()
+        points = coupon.points
+        if (coupon.program_id.applies_on != 'future' and self.state not in ('sale', 'done')) or post_confirm:
+            # Points that will be given by the order upon confirming the order
+            points += self.coupon_point_ids.filtered(lambda p: p.coupon_id == coupon).points
+        # Points already used by rewards
+        if self.order_line.filtered(lambda l: l.coupon_id == coupon):
+            points -= sum(self.order_line.filtered(lambda l: l.coupon_id == coupon).mapped('points_cost'))
+        else:
+            if coupon.state == 'used':
+                points -= 1
+        points = coupon.currency_id.round(points)
+        return points
+
 
