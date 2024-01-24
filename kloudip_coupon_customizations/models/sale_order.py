@@ -397,8 +397,7 @@ class SaleOrder(models.Model):
 
     def create_voucher_deposit(self):
         if self.is_subscription:
-            value = bool(self.order_line.filtered(lambda x: x.qty_to_invoice < 0) and self.order_line.filtered(
-                lambda x: x.reward_id))
+            value = bool(self.order_line.filtered(lambda x: x.qty_to_invoice < 0) and self.order_line.filtered(lambda x: x.reward_id))
             if not value:
                 account_move = self.with_context(refunded_amount=0)._create_recurring_invoice()
                 if account_move:
