@@ -41,7 +41,7 @@ class IrHttp(models.AbstractModel):
         """Handle SEO-redirected URLs."""
 
         # if not hasattr(request, "jsonrequest"):
-        if not cls.env.user.has_group('website.group_website_designer'):
+        if not request.env.user.has_group('website.group_website_designer'):
             wsr = get_geo_website()
             if wsr:
                 return redirect(wsr)
