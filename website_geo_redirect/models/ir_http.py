@@ -61,6 +61,8 @@ def get_geo_website():
     if redirect_site.filtered(lambda x: x.country_group_ids.id == False and x.is_default == False):
         website_id = redirect_site.filtered(
             lambda x: x.country_group_ids.id == False and x.is_default == False).website_url
+        if are_urls_same(host, website_id.website_url):
+           return website_config
         return website_id + request.httprequest.full_path[1:]
     if response:
         country_code = response.get('country_code', False)
