@@ -21,6 +21,6 @@ class SaleLoyaltyCouponWizard(models.TransientModel):
             reward = reward.search([('discount_product_ids', 'in', rec.order_id.order_line.product_id.ids)])
             line = reward.discount_line_product_id.filtered(lambda x: x.lst_price in rec.order_id.order_line.mapped('price_unit'))
             if line:
-                rec.reward_product_ids = [(6, 0, line.discount_line_product_id.ids)]
+                rec.reward_product_ids = [(6, 0, line.ids)]
             else:
                 rec.reward_product_ids = False
