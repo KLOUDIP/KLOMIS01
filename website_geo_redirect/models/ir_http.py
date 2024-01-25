@@ -67,7 +67,7 @@ def get_geo_website():
     if not records:
         return website_config
 
-    if host.endswith('.odoo.com'):
+    if '.odoo.com' in host:
         return website_config
 
     if redirect_site.filtered(lambda x: x.country_group_ids.id == False and x.is_default == False):
