@@ -33,12 +33,12 @@ class SampathIntController(http.Controller):
             "requestDate": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f%z"),
             "validateOnly": False,
             "requestData": {
-                "clientId": provider_id.sampath_client_id,
+                "clientId": provider_id.sampath_int_client_id,
                 "reqid": payment_response.get('reqid')
             }
         }
 
-        confirm_response = provider_id._sampath_make_request(values)
+        confirm_response = provider_id._sampath_make_int_request(values)
         return confirm_response
 
     @http.route(_return_url, type='http', auth='public', methods=['POST', 'GET'], csrf=False, save_session=False)
