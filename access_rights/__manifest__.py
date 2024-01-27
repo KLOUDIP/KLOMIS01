@@ -8,7 +8,7 @@
         """,
     'website': 'https://www.nisus.lk',
     'depends': [
-        'base', 'mail', 'contacts', 'stock', 'sale', 'project'
+        'base', 'mail', 'contacts', 'stock', 'sale', 'project', 'account', 'account_reports'
     ],
 
     'data': [
@@ -16,7 +16,7 @@
         'views/menu_items.xml',
         'views/res_users.xml',
         'views/stock_picking_views.xml',
-        # 'views/sale_views.xml'
+        'views/account_report_menuitems.xml'
     ],
 
     'installable': True,
