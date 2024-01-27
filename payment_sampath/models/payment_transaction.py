@@ -37,8 +37,7 @@ class PaymentTransaction(models.Model):
                     "totalAmount": 0,
                     "paymentAmount": self.amount*100,
                     "serviceFeeAmount": 0,
-                    # 'currency': self.currency_id.name if self.currency_id else 'LKR',
-                    'currency': 'LKR',
+                    'currency': self.currency_id.name if self.currency_id else 'LKR',
                 },
                 "redirect": {
                     "returnUrl": '%s' % urljoin(base_url, SampathController._return_url),
