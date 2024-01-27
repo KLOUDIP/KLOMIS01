@@ -37,7 +37,8 @@ class PaymentTransaction(models.Model):
                     "totalAmount": 0,
                     "paymentAmount": self.amount*100,
                     "serviceFeeAmount": 0,
-                    'currency': self.currency_id.name if self.currency_id else 'LKR',
+                    # 'currency': self.currency_id.name if self.currency_id else 'LKR',
+                    'currency': 'LKR',
                 },
                 "redirect": {
                     "returnUrl": '%s' % urljoin(base_url, SampathController._return_url),
@@ -98,10 +99,12 @@ class PaymentTransaction(models.Model):
         :return: None
         :raise: ValidationError if inconsistent data were received
         """
-        notification_response = notification_data.get('responseData', {})
-        super()._process_notification_data(notification_response)
+        super()._process_notification_data(notification_data)
         if self.provider_code != 'sampath':
             return
+
+        json_response = notification_data.json()
+        notification_response = json_response.get('responseData', {})
 
         status_code = notification_response.get('responseCode', False)
         if status_code == "00":
