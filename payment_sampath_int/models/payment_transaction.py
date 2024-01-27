@@ -98,8 +98,7 @@ class PaymentTransaction(models.Model):
         :return: None
         :raise: ValidationError if inconsistent data were received
         """
-        json_response = notification_data.json()
-        notification_response = json_response.get('responseData', {})
+        notification_response = notification_data.get('responseData', {})
         super()._process_notification_data(notification_response)
         if self.provider_code != 'sampath_int':
             return
