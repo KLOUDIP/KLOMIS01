@@ -50,7 +50,7 @@ class PaymentTransaction(models.Model):
             }
         }
 
-        payment = self.provider_id._sampath_make_request(payload=payload)
+        payment = self.provider_id._sampath_make_int_request(payload=payload)
         if payment.status_code == 200:
             response = payment.json()
             if response.get('msgId', False):
