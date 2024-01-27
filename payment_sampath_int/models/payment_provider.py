@@ -33,7 +33,7 @@ class PaymentProvider(models.Model):
         else:
             return 'https://sampath.paycorp.lk/rest/service/proxy'
 
-    def _sampath_make_request(self, payload=None):
+    def _sampath_make_int_request(self, payload=None):
         """ Make a request to Sampath API at the specified endpoint.
 
         Note: self.ensure_one()
@@ -49,7 +49,7 @@ class PaymentProvider(models.Model):
 
         url = self._sampath_int_get_api_url()
 
-        hmac_secret = self._sampath_generate_hmac(payload)
+        hmac_secret = self._sampath_int_generate_hmac(payload)
 
         headers = {
             'AUTHTOKEN': f'{self.sampath_int_auth_token}',
@@ -79,7 +79,7 @@ class PaymentProvider(models.Model):
             )
         return response
 
-    def _sampath_generate_hmac(self, payload):
+    def _sampath_int_generate_hmac(self, payload):
         HMACSecret = self.sampath_int_hmac_secret
         raw_payload = json.dumps(payload)
         hmac_object = hmac.new(key=HMACSecret.encode(), msg=raw_payload.encode(), digestmod=hashlib.sha256)
