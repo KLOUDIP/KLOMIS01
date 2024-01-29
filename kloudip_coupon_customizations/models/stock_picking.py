@@ -24,7 +24,7 @@ class StockPicking(models.Model):
                     raise ValidationError(_('Multiple coupon product lines found.'))
                 elif len(coupon_program_product_lines) == 1:
                     # set coupon to valid state with checking return quantity
-                    coupons = self.sale_id.applied_coupon_ids.filtered(lambda x: x.state == 'used')
+                    coupons = self.sale_id.applied_coupon_ids.filtered(lambda x: x.state == 'used' and x.sale_id == self.sale_id.id)
                     _logger.info(coupons)
                     if coupons:
                         coupon = coupons[0:int(coupon_program_product_lines.quantity_done)]
