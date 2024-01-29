@@ -15,6 +15,7 @@ class StockPicking(models.Model):
         if self.sale_id and self.picking_type_id.code in ['incoming'] and self.sale_id.applied_coupon_ids:
             program_id = self.sale_id.applied_coupon_ids.filtered(lambda x: x.state == 'used' and x.sales_order_id == self.sale_id.id).mapped('program_id')
             # check there are multiple programs assigned to sale order
+            _logger.info(program_id)
             if len(program_id) > 1:
                 raise ValidationError(_('Multiple coupon programs found for sale order'))
             else:
