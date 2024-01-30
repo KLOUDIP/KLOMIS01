@@ -9,6 +9,20 @@ class FleetVehicleLogContract(models.Model):
     is_activated = fields.Boolean(string="Activated", tracking=True)
     activated_time = fields.Datetime(string='Activated Time')
     driver_company_id = fields.Many2one('res.partner', string="Driver Company", compute='_compute_company', store=False)
+    # invoice_id = fields.Many2one('account.move', string="Invoice", compute='_get_related_invoice')
+    sale_id = fields.Many2one('sale.order', string="Sale Order", compute='_get_related_so')
+
+    # @api.depends('x_lot_id')
+    # def _get_related_invoice(self):
+    #     for rec in self:
+    #         so = rec.x_lot_id.sale_order_ids[0] if rec.x_lot_id.sale_order_ids else False
+    #         invoice_ids = so.invoice_ids.ids
+    #         rec.invoice_id = rec.invoice_id
+
+    @api.depends()
+    def _get_related_so(self):
+        for rec in self:
+            rec.sale_id = rec.x_lot_id.sale_order_ids[0].id if rec.x_lot_id.sale_order_ids else False
 
     @api.depends('purchaser_id')
     def _compute_company(self):

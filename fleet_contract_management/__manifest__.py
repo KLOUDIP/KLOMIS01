@@ -13,7 +13,9 @@
     ],
     'depends': [
         'fleet',
-        'sale_subscription'
+        'sale_subscription',
+        'account',
+        'sale'
     ],
     'license': 'LGPL-3',
 }
