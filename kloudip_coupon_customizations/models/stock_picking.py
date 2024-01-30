@@ -13,8 +13,9 @@ class StockPicking(models.Model):
             @override - Set sale order assigned coupon state to new, when returning the delivery
         """
         if self.sale_id and self.picking_type_id.code in ['incoming'] and self.sale_id.applied_coupon_ids:
-            program_id = self.sale_id.applied_coupon_ids.mapped('program_id')
+            program_id = self.sale_id.applied_coupon_ids.filtered(lambda x: x.state == 'used' and x.sales_order_id.id == self.sale_id.id).mapped('program_id')
             # check there are multiple programs assigned to sale order
+            _logger.info(program_id)
             if len(program_id) > 1:
                 raise ValidationError(_('Multiple coupon programs found for sale order'))
             else:
@@ -24,7 +25,7 @@ class StockPicking(models.Model):
                     raise ValidationError(_('Multiple coupon product lines found.'))
                 elif len(coupon_program_product_lines) == 1:
                     # set coupon to valid state with checking return quantity
-                    coupons = self.sale_id.applied_coupon_ids.filtered(lambda x: x.state == 'used')
+                    coupons = self.sale_id.applied_coupon_ids.filtered(lambda x: x.state == 'used' and x.sales_order_id.id == self.sale_id.id)
                     _logger.info(coupons)
                     if coupons:
                         coupon = coupons[0:int(coupon_program_product_lines.quantity_done)]

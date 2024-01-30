@@ -8,6 +8,8 @@
             <xpath expr="(//field[@name='date'])[1]" position="before">
                 <field name="driver_company_id" invisible="1"/>
                 <field name="partner_id" domain="[('parent_id', '=', driver_company_id), ('subscription_count_boolean_field', '=', True)]"/>
+<!--                <field name="invoice_id"/>-->
+                <field name="sale_id"/>
                 <label for="is_activated"/>
                 <div>
                     <field name="is_activated" class="oe_inline"/>
@@ -17,6 +19,7 @@
                     </span>
                     <field name="activated_time" class="oe_inline" readonly="1"/>
                 </div>
+
             </xpath>
         </field>
     </record>
