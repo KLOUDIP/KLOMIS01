@@ -33,6 +33,7 @@ class CalendarEventFsm(models.Model):
             'project_id': self.appointment_type_id.project_id.id,
             'planned_date_begin': self.start,
             'planned_date_end': self.stop,
+            'user_ids': [(6, 0, self.appointment_type_id.staff_user_ids.ids)],
             'date_deadline': self.stop_date,
             'is_fsm': True,
             'description': self.description,
