@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<odoo>
+    <data>
+        <record id="view_task_form2_inherit" model="ir.ui.view">
+            <field name='name'>task.task.inherit.fsm_website_appointment</field>
+            <field name="model">project.task</field>
+            <field name="inherit_id" ref="industry_fsm.view_task_form2_inherit"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='project_id']" position="after">
+                    <field name="is_appointment" invisible="1"/>
+                </xpath>
+                <xpath expr="//div[@name='button_box']" position="inside">
+                    <button class="oe_stat_button"
+                            name="action_view_appointment"
+                            string="Appointment"
+                            type="object"
+                            icon="fa-calendar-o"
+                            help="Appointment on this task"
+                            attrs="{'invisible': [('is_appointment', '=', False)]}"/>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>
