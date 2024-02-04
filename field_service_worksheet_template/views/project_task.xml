@@ -138,7 +138,7 @@
                 <!--                <xpath expr="//field[@name='allow_billable']" position="after">-->
                 <!--                    <field name="accessible" invisible="1"/>-->
                 <!--                </xpath>-->
-                <xpath expr="//group//field[@name='partner_id']" position="replace">
+                <xpath expr="//group//field[@name='partner_id']" position="attributes">
                     <attribute name="options">{'no_open': 'True'}</attribute>
                 </xpath>
 
