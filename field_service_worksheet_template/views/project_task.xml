@@ -138,6 +138,9 @@
                 <!--                <xpath expr="//field[@name='allow_billable']" position="after">-->
                 <!--                    <field name="accessible" invisible="1"/>-->
                 <!--                </xpath>-->
+                <xpath expr="//group//field[@name='partner_id']" position="attributes">
+                    <attribute name="attrs">{'readonly': [('is_technician', '=', True)]}</attribute>
+                </xpath>
                 <xpath expr="//div[@name='button_box']" position="inside">
                     <field string="Tickets" name="helpdesk_ticket_id" invisible="1" />
                     <button
