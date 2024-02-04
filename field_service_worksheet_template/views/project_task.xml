@@ -139,7 +139,10 @@
                 <!--                    <field name="accessible" invisible="1"/>-->
                 <!--                </xpath>-->
                 <xpath expr="//group//field[@name='partner_id']" position="attributes">
-                    <attribute name="attrs">{'readonly': [('is_technician', '=', True)]}</attribute>
+                    <attribute name="attrs">{'invisible': [('is_technician', '=', True)]}</attribute>
+                </xpath>
+                <xpath expr="//group//field[@name='partner_id']" position="after">
+                    <field name="partner_id" widget="res_partner_many2one" class="o_task_customer_field" attrs="{'invisible': [('is_technician', '=', False)]}" options="{'no_open': 'True'}"/>
                 </xpath>
                 <xpath expr="//div[@name='button_box']" position="inside">
                     <field string="Tickets" name="helpdesk_ticket_id" invisible="1" />
