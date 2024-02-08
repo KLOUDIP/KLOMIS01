@@ -13,6 +13,7 @@
 
     'data': [
         'security/security.xml',
+        'security/ir.model.access.csv',
         'views/menu_items.xml',
         'views/res_users.xml',
         'views/stock_picking_views.xml',

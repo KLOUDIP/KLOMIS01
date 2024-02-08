@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="doc_sign" inherit_id="sign.doc_sign">
+        <xpath expr="//div[@class='o_odoo']" position="replace">
+            <div class="o_odoo">
+            </div>
+        </xpath>
+    </template>
+</odoo>
