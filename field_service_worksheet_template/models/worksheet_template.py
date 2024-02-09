@@ -31,7 +31,7 @@ class ProjectWorksheetTemplateCustom(models.Model):
                 (0, 0, {  # needed for proper model creation from demo data
                     'name': 'x_technician_name',
                     'field_description': 'Technician Name',
-                    'ttype': 'many2one',
+                    'ttype': 'many2many',
                     'relation': 'res.users',
                     'required': True,
                     'on_delete': 'cascade',
