@@ -1,26 +1,19 @@
 # -*- coding: utf-8 -*-
-# Part of Odoo. See LICENSE file for full copyright and licensing details.
-from ast import literal_eval
-from lxml import etree
-import time
-
-from odoo import api, fields, models, _
-from odoo.exceptions import ValidationError
-from odoo.addons.base.models.ir_model import MODULE_UNINSTALL_FLAG
+from odoo import models
 
 
 class ProjectWorksheetTemplateCustom(models.Model):
     _inherit = 'worksheet.template'
 
-    def _generate_worksheet_model(self, template):
-        name = 'x_project_worksheet_template_' + str(template.id)
+    def _generate_worksheet_model(self):
+        name = 'x_project_worksheet_template_' + str(self.id)
         # while creating model it will initialize the init_models method from create of ir.model
         # and there is related field of model_id in mail template so it's going to recusrive loop while recompute so used flush
         self.flush()
 
         # generate the ir.model (and so the SQL table)
         model = self.env['ir.model'].sudo().create({
-            'name': template.name,
+            'name': self.name,
             'model': name,
             'field_id': [
                 (0, 0, {  # needed for proper model creation from demo data
@@ -158,17 +151,16 @@ class ProjectWorksheetTemplateCustom(models.Model):
         # create the view to extend by 'studio' and add the user custom fields
         form_view = self.env['ir.ui.view'].sudo().create({
             'type': 'form',
-            'name': 'template_view_' + "_".join(template.name.split(' ')),
+            'name': 'template_view_' + "_".join(self.name.split(' ')),
             'model': model.model,
             'arch': """
             <form>
                 <sheet>
-              
                     <h1 invisible="context.get('studio') or context.get('default_x_project_task_id')">
-                            <field name="x_project_task_id" domain="[('is_fsm', '=', True)]"/>
+                        <field name="x_project_task_id" domain="[('is_fsm', '=', True)]"/>
                     </h1>
                     <h1 invisible="context.get('studio') or context.get('default_x_studio_line_id')">
-                            <field name="x_studio_line_id"/>
+                        <field name="x_studio_line_id"/>
                     </h1>
                     <group class="o_fsm_worksheet_form">
                         <group>
@@ -204,7 +196,7 @@ class ProjectWorksheetTemplateCustom(models.Model):
         # NOTE: this is not needed for ir.model.fields, ir.model.access and ir.rule, as they are in delete 'cascade' mode, so their databse entries will removed
         # (no need their xml id).
         action_xmlid_values = {
-            'name': 'template_action_' + "_".join(template.name.split(' ')),
+            'name': 'template_action_' + "_".join(self.name.split(' ')),
             'model': 'ir.actions.act_window',
             'module': 'industry_fsm_report',
             'res_id': action.id,
@@ -227,10 +219,10 @@ class ProjectWorksheetTemplateCustom(models.Model):
         self.env['ir.model.data'].sudo().create([action_xmlid_values, model_xmlid_values, view_xmlid_values])
 
         # link the worksheet template to its generated model and action
-        template.write({
+        self.write({
             'action_id': action.id,
             'model_id': model.id,
         })
         # this must be done after form view creation and filling the 'model_id' field
-        template.sudo()._generate_qweb_report_template()
-        return template
+        self.sudo()._generate_qweb_report_template()
+        return self
