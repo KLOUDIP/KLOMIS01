@@ -4,7 +4,7 @@
     "summary": "This module allow integrate the Odoo with EPORT",
     "description": "This module allow integrate the Odoo with EPORT",
     'category': 'Contact',
-    'version': '16.0.1.0.5',
+    'version': '16.0.1.0.6',
     "author": "BitbrainHub",
     "email": "bitbrainhub@gmail.com",
     'depends': [
