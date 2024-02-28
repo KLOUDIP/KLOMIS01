@@ -45,7 +45,7 @@ class ResPartner(models.Model):
     @api.model
     def _cron_update_epc_transactions(self):
         url = "https://api.eport.kloudip.com/v1/organizations/epc"
-        partners = self.search([('type', '=', 'invoice')])
+        partners = self.search([('type', '=', 'invoice'), ('uuid', '!=', False)])
         for partner in partners:
             data = {
                 'odooContact': partner.uuid,
