@@ -37,7 +37,6 @@ class LoyaltyCard(models.Model):
         # raise ValidationError(journals[0])
         """create credit note for assigned invoice id"""
         move_action = self.env['account.move.reversal'].with_context(active_id=self.invoice_id.id, active_ids=self.invoice_id.ids).create({
-            'refund_method': 'refund',
             'move_ids': self.env['account.move'].browse(self.invoice_id.ids),
             'journal_id': journals[0].id if journals else None
         })
@@ -74,7 +73,7 @@ class LoyaltyCard(models.Model):
     def action_forfeited_coupon(self):
         journal = self.env['account.move']
         journals = journal.browse(self.invoice_id.ids).journal_id.filtered(lambda x: x.active)
-        debit = self.env['account.account'].search([('name', '=', 'Refundable Deposit Revenue - KIP')])
+        debit = self.env['account.account'].search([('name', '=', 'Refundable Deposit Liability - KIP')])
         credit = self.env['account.account'].search([('name', '=', 'Forfeited Deposit Revenue - KIP')])
         values = {
             'journal_id': journals.id,

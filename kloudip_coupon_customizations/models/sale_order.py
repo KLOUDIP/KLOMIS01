@@ -8,176 +8,239 @@ from odoo.addons.sale.models.sale_order import SaleOrder as SaleOrderBase
 from odoo.addons.sale.models.sale_order_line import SaleOrderLine as SaleOrderLineBase
 from collections import defaultdict
 
+
 def _create_invoices(self, grouped=False, final=False, date=None):
-    """
-    @overload - Create the invoice associated to the SO
-    """
-    if not self.env['account.move'].check_access_rights('create', False):
-        try:
-            self.check_access_rights('write')
-            self.check_access_rule('write')
-        except AccessError:
-            return self.env['account.move']
+        """ Create invoice(s) for the given Sales Order(s).
 
-    deduct_down_payments = self.env.context.get('deduct_down_payments')
-    if deduct_down_payments:
-        final = True
+        :param bool grouped: if True, invoices are grouped by SO id.
+            If False, invoices are grouped by keys returned by :meth:`_get_invoice_grouping_keys`
+        :param bool final: if True, refunds will be generated if necessary
+        :param date: unused parameter
+        :returns: created invoices
+        :rtype: `account.move` recordset
+        :raises: UserError if one of the orders has no invoiceable lines.
+        """
+        if not self.env['account.move'].check_access_rights('create', False):
+            try:
+                self.check_access_rights('write')
+                self.check_access_rule('write')
+            except AccessError:
+                return self.env['account.move']
 
-    # 1) Create invoices.
-    invoice_vals_list = []
-    # Extended content
-    refunded_amount = self.env.context.get('refunded_amount')
-    refund_moves = []
-    credit_note_with_coupon = False
-    # ====
-    invoice_item_sequence = 0  # Incremental sequencing to keep the lines order on the invoice.
-    for order in self:
-        order = order.with_company(order.company_id).with_context(lang=order.partner_invoice_id.lang)
-        # find product line for the coupon
-        reward_line = self.order_line.filtered(lambda x: x.is_reward_line)  # Extended line
-        product_line = self.order_line.filtered(lambda x: x.product_id.id in reward_line.reward_id.discount_product_ids.ids)  # Extended line
+        deduct_down_payments = self.env.context.get('deduct_down_payments')
+        if deduct_down_payments:
+            final = True
 
-        # find current order create credit note with coupon
-        credit_note_with_coupon = True if product_line.qty_to_invoice < 0 else False  # Extended line
+        # 1) Create invoices.
+        invoice_vals_list = []
+        # Extended content
+        refunded_amount = self.env.context.get('refunded_amount')
+        refund_moves = []
+        credit_note_with_coupon = False
+        # ====
+        invoice_item_sequence = 0 # Incremental sequencing to keep the lines order on the invoice.
+        for order in self:
+            order = order.with_company(order.company_id).with_context(lang=order.partner_invoice_id.lang)
+            # find product line for the coupon
+            reward_line = self.order_line.filtered(lambda x: x.is_reward_line)  # Extended line
+            product_line = self.order_line.filtered(
+                lambda x: x.product_id.id in reward_line.reward_id.discount_product_ids.ids)  # Extended line
 
-        invoice_vals = order._prepare_invoice()
-        invoiceable_lines = order._get_invoiceable_lines(final)
-        connection = invoiceable_lines.filtered(lambda x: x.product_id.categ_id.name == '2-Connections')
-        voucher_deposit = self.env.context.get('create_voucher_deposit')
-        if voucher_deposit:
-            new_list = invoiceable_lines.filtered(lambda x: x.id in product_line.ids or x.id in reward_line.ids or x.id in connection.ids)
-            invoiceable_lines = new_list
+            # find current order create credit note with coupon
+            credit_note_with_coupon = True if product_line.qty_to_invoice < 0 else False  # Extended line
 
-        if not any(not line.display_type for line in invoiceable_lines):
-            continue
+            invoice_vals = order._prepare_invoice()
+            invoiceable_lines = order._get_invoiceable_lines(final)
 
-        invoice_line_vals = []
-        down_payment_section_added = False
-        for line in invoiceable_lines:
-            if not down_payment_section_added and line.is_downpayment:
-                # Create a dedicated section for the down payments
-                # (put at the end of the invoiceable_lines)
+            connection = invoiceable_lines.filtered(lambda x: x.product_id.categ_id.name == '2-Connections')
+            voucher_deposit = self.env.context.get('create_voucher_deposit')
+            if voucher_deposit:
+                new_list = invoiceable_lines.filtered(
+                    lambda x: x.id in product_line.ids or x.id in reward_line.ids or x.id in connection.ids)
+                invoiceable_lines = new_list
+
+            if not any(not line.display_type for line in invoiceable_lines):
+                continue
+
+            invoice_line_vals = []
+            down_payment_section_added = False
+            for line in invoiceable_lines:
+                if not down_payment_section_added and line.is_downpayment:
+                    # Create a dedicated section for the down payments
+                    # (put at the end of the invoiceable_lines)
+                    invoice_line_vals.append(
+                        Command.create(
+                            order._prepare_down_payment_section_line(sequence=invoice_item_sequence)
+                        ),
+                    )
+                    down_payment_section_added = True
+                    invoice_item_sequence += 1
                 invoice_line_vals.append(
                     Command.create(
-                        order._prepare_down_payment_section_line(sequence=invoice_item_sequence)
+                        line._prepare_invoice_line(sequence=invoice_item_sequence)
                     ),
                 )
-                down_payment_section_added = True
                 invoice_item_sequence += 1
-            invoice_line_vals.append(
-                Command.create(
-                    line._prepare_invoice_line(sequence=invoice_item_sequence)
-                ),
+
+            invoice_vals['invoice_line_ids'] += invoice_line_vals
+            invoice_vals_list.append(invoice_vals)
+
+            # Extended content start
+            # we needed to create an invoice with total value of refunded amount
+            if refunded_amount > 0:
+                refund_move_vals = order._prepare_invoice()
+                refund_move_vals.update({'refund_move': True})
+                refund_line_vals = order.prepare_refunded_amount_line(product_line.qty_to_invoice, refunded_amount,
+                                                                      reward_line, product_line)
+                refund_move_vals['invoice_line_ids'] = [(0, 0, invoice_line_id) for invoice_line_id in refund_line_vals]
+                refund_moves.append(refund_move_vals)
+            # Extended content end
+
+        if not invoice_vals_list and self._context.get('raise_if_nothing_to_invoice', True):
+            raise UserError(self._nothing_to_invoice_error_message())
+
+        # 2) Manage 'grouped' parameter: group by (partner_id, currency_id).
+        if not grouped:
+            new_invoice_vals_list = []
+            invoice_grouping_keys = self._get_invoice_grouping_keys()
+            invoice_vals_list = sorted(
+                invoice_vals_list,
+                key=lambda x: [
+                    x.get(grouping_key) for grouping_key in invoice_grouping_keys
+                ]
             )
-            invoice_item_sequence += 1
+            for _grouping_keys, invoices in groupby(invoice_vals_list, key=lambda x: [x.get(grouping_key) for grouping_key in invoice_grouping_keys]):
+                origins = set()
+                payment_refs = set()
+                refs = set()
+                ref_invoice_vals = None
+                for invoice_vals in invoices:
+                    if not ref_invoice_vals:
+                        ref_invoice_vals = invoice_vals
+                    else:
+                        ref_invoice_vals['invoice_line_ids'] += invoice_vals['invoice_line_ids']
+                    origins.add(invoice_vals['invoice_origin'])
+                    payment_refs.add(invoice_vals['payment_reference'])
+                    refs.add(invoice_vals['ref'])
+                ref_invoice_vals.update({
+                    'ref': ', '.join(refs)[:2000],
+                    'invoice_origin': ', '.join(origins),
+                    'payment_reference': len(payment_refs) == 1 and payment_refs.pop() or False,
+                })
+                new_invoice_vals_list.append(ref_invoice_vals)
+            invoice_vals_list = new_invoice_vals_list
 
-        invoice_vals['invoice_line_ids'] += invoice_line_vals
-        invoice_vals_list.append(invoice_vals)
+        # 3) Create invoices.
 
-        # Extended content start
-        # we needed to create an invoice with total value of refunded amount
-        if refunded_amount > 0:
-            refund_move_vals = order._prepare_invoice()
-            refund_move_vals.update({'refund_move': True})
-            refund_line_vals = order.prepare_refunded_amount_line(product_line.qty_to_invoice, refunded_amount, reward_line, product_line)
-            refund_move_vals['invoice_line_ids'] = [(0, 0, invoice_line_id) for invoice_line_id in refund_line_vals]
-            refund_moves.append(refund_move_vals)
-        # Extended content end
+        # As part of the invoice creation, we make sure the sequence of multiple SO do not interfere
+        # in a single invoice. Example:
+        # SO 1:
+        # - Section A (sequence: 10)
+        # - Product A (sequence: 11)
+        # SO 2:
+        # - Section B (sequence: 10)
+        # - Product B (sequence: 11)
+        #
+        # If SO 1 & 2 are grouped in the same invoice, the result will be:
+        # - Section A (sequence: 10)
+        # - Section B (sequence: 10)
+        # - Product A (sequence: 11)
+        # - Product B (sequence: 11)
+        #
+        # Resequencing should be safe, however we resequence only if there are less invoices than
+        # orders, meaning a grouping might have been done. This could also mean that only a part
+        # of the selected SO are invoiceable, but resequencing in this case shouldn't be an issue.
+        if len(invoice_vals_list) < len(self):
+            SaleOrderLine = self.env['sale.order.line']
+            for invoice in invoice_vals_list:
+                sequence = 1
+                for line in invoice['invoice_line_ids']:
+                    line[2]['sequence'] = SaleOrderLine._get_invoice_line_sequence(new=sequence, old=line[2]['sequence'])
+                    sequence += 1
 
-    if not invoice_vals_list and self._context.get('raise_if_nothing_to_invoice', True):
-        raise UserError(self._nothing_to_invoice_error_message())
+        # Manage the creation of invoices in sudo because a salesperson must be able to generate an invoice from a
+        # sale order without "billing" access rights. However, he should not be able to create an invoice from scratch.
+        moves = self.env['account.move'].sudo().with_context(default_move_type='out_invoice').create(invoice_vals_list)
 
-    # 2) Manage 'grouped' parameter: group by (partner_id, currency_id).
-    if not grouped:
-        new_invoice_vals_list = []
-        invoice_grouping_keys = self._get_invoice_grouping_keys()
-        invoice_vals_list = sorted(
-            invoice_vals_list,
-            key=lambda x: [
-                x.get(grouping_key) for grouping_key in invoice_grouping_keys
-            ]
-        )
-        for _grouping_keys, invoices in groupby(invoice_vals_list,
-                                                key=lambda x: [x.get(grouping_key) for grouping_key in
-                                                               invoice_grouping_keys]):
-            origins = set()
-            payment_refs = set()
-            refs = set()
-            ref_invoice_vals = None
-            for invoice_vals in invoices:
-                if not ref_invoice_vals:
-                    ref_invoice_vals = invoice_vals
-                else:
-                    ref_invoice_vals['invoice_line_ids'] += invoice_vals['invoice_line_ids']
-                origins.add(invoice_vals['invoice_origin'])
-                payment_refs.add(invoice_vals['payment_reference'])
-                refs.add(invoice_vals['ref'])
-            ref_invoice_vals.update({
-                'ref': ', '.join(refs)[:2000],
-                'invoice_origin': ', '.join(origins),
-                'payment_reference': len(payment_refs) == 1 and payment_refs.pop() or False,
-            })
-            new_invoice_vals_list.append(ref_invoice_vals)
-        invoice_vals_list = new_invoice_vals_list
+        # 4) Some moves might actually be refunds: convert them if the total amount is negative
+        # We do this after the moves have been created since we need taxes, etc. to know if the total
+        # is actually negative or not
+        if final:
+            if credit_note_with_coupon:
+                moves.with_context(credit_note_with_coupon=True).sudo().filtered(lambda m: m.amount_total <= 0).action_switch_move_type()
+            else:  # End extended content
+                moves.sudo().filtered(lambda m: m.amount_total < 0).action_switch_move_type()
+        for move in moves:
+            if final:
+                # Downpayment might have been determined by a fixed amount set by the user.
+                # This amount is tax included. This can lead to rounding issues.
+                # E.g. a user wants a 100€ DP on a product with 21% tax.
+                # 100 / 1.21 = 82.64, 82.64 * 1,21 = 99.99
+                # This is already corrected by adding/removing the missing cents on the DP invoice,
+                # but must also be accounted for on the final invoice.
 
-    # 3) Create invoices.
+                delta_amount = 0
+                for order_line in self.order_line:
+                    if not order_line.is_downpayment:
+                        continue
+                    inv_amt = order_amt = 0
+                    for invoice_line in order_line.invoice_lines:
+                        if invoice_line.move_id == move:
+                            inv_amt += invoice_line.price_total
+                        elif invoice_line.move_id.state != 'cancel':  # filter out canceled dp lines
+                            order_amt += invoice_line.price_total
+                    if inv_amt and order_amt:
+                        # if not inv_amt, this order line is not related to current move
+                        # if no order_amt, dp order line was not invoiced
+                        delta_amount += (inv_amt * (1 if move.is_inbound() else -1)) + order_amt
 
-    # As part of the invoice creation, we make sure the sequence of multiple SO do not interfere
-    # in a single invoice. Example:
-    # SO 1:
-    # - Section A (sequence: 10)
-    # - Product A (sequence: 11)
-    # SO 2:
-    # - Section B (sequence: 10)
-    # - Product B (sequence: 11)
-    #
-    # If SO 1 & 2 are grouped in the same invoice, the result will be:
-    # - Section A (sequence: 10)
-    # - Section B (sequence: 10)
-    # - Product A (sequence: 11)
-    # - Product B (sequence: 11)
-    #
-    # Resequencing should be safe, however we resequence only if there are less invoices than
-    # orders, meaning a grouping might have been done. This could also mean that only a part
-    # of the selected SO are invoiceable, but resequencing in this case shouldn't be an issue.
-    if len(invoice_vals_list) < len(self):
-        SaleOrderLine = self.env['sale.order.line']
-        for invoice in invoice_vals_list:
-            sequence = 1
-            for line in invoice['invoice_line_ids']:
-                line[2]['sequence'] = SaleOrderLine._get_invoice_line_sequence(new=sequence, old=line[2]['sequence'])
-                sequence += 1
+                if not move.currency_id.is_zero(delta_amount):
+                    receivable_line = move.line_ids.filtered(
+                        lambda aml: aml.account_id.account_type == 'asset_receivable')[:1]
+                    product_lines = move.line_ids.filtered(
+                        lambda aml: aml.display_type == 'product' and aml.is_downpayment)
+                    tax_lines = move.line_ids.filtered(
+                        lambda aml: aml.tax_line_id.amount_type not in (False, 'fixed'))
+                    if tax_lines and product_lines and receivable_line:
+                        line_commands = [Command.update(receivable_line.id, {
+                            'amount_currency': receivable_line.amount_currency + delta_amount,
+                        })]
+                        delta_sign = 1 if delta_amount > 0 else -1
+                        for lines, attr, sign in (
+                            (product_lines, 'price_total', -1 if move.is_inbound() else 1),
+                            (tax_lines, 'amount_currency', 1),
+                        ):
+                            remaining = delta_amount
+                            lines_len = len(lines)
+                            for line in lines:
+                                if move.currency_id.compare_amounts(remaining, 0) != delta_sign:
+                                    break
+                                amt = delta_sign * max(
+                                    move.currency_id.rounding,
+                                    abs(move.currency_id.round(remaining / lines_len)),
+                                )
+                                remaining -= amt
+                                line_commands.append(Command.update(line.id, {attr: line[attr] + amt * sign}))
+                        move.line_ids = line_commands
 
-    # Manage the creation of invoices in sudo because a salesperson must be able to generate an invoice from a
-    # sale order without "billing" access rights. However, he should not be able to create an invoice from scratch.
-    moves = self.env['account.move'].sudo().with_context(default_move_type='out_invoice').create(invoice_vals_list)
-
-    # 4) Some moves might actually be refunds: convert them if the total amount is negative
-    # We do this after the moves have been created since we need taxes, etc. to know if the total
-    # is actually negative or not
-    if final:  # Start extended content
-        if credit_note_with_coupon:
-            moves.with_context(credit_note_with_coupon=True).sudo().filtered(lambda m: m.amount_total <= 0).action_switch_invoice_into_refund_credit_note()
-        else:  # End extended content
-            moves.sudo().filtered(lambda m: m.amount_total < 0).action_switch_invoice_into_refund_credit_note()
-    for move in moves:
-        move.message_post_with_view(
-            'mail.message_origin_link',
-            values={'self': move, 'origin': move.line_ids.sale_line_ids.order_id},
-            subtype_id=self.env['ir.model.data']._xmlid_to_res_id('mail.mt_note'))
-
-    # Extended content start
-    # generate move for refunded amount
-    if refunded_amount > 0:
-        refund_move = self.env['account.move'].sudo().with_context(default_move_type='out_invoice').create(refund_moves)
-        # post message with origin
-        for rmove in refund_move:
-            rmove.message_post_with_view('mail.message_origin_link', values={
-                'self': rmove,
-                'origin': rmove.line_ids.mapped('sale_line_ids.order_id')
-            }, subtype_id=self.env.ref('mail.mt_note').id)
-    # Extended content end
-    return moves
+            move.message_post_with_source(
+                'mail.message_origin_link',
+                render_values={'self': move, 'origin': move.line_ids.sale_line_ids.order_id},
+                subtype_xmlid='mail.mt_note',
+            )
+            # Extended content start
+            # generate move for refunded amount
+            if refunded_amount > 0:
+                refund_move = self.env['account.move'].sudo().with_context(default_move_type='out_invoice').create(
+                    refund_moves)
+                # post message with origin
+                for rmove in refund_move:
+                    rmove.message_post_with_source(
+                        'mail.message_origin_link',
+                        render_values={'self': rmove, 'origin': rmove.line_ids.mapped('sale_line_ids.order_id')},
+                        subtype_xmlid='mail.mt_note'
+                    )
+        return moves
 
 
 SaleOrderBase._create_invoices = _create_invoices
@@ -191,7 +254,7 @@ def _compute_qty_to_invoice(self):
     calculated from the ordered quantity. Otherwise, the quantity delivered is used.
     """
     for line in self:
-        if line.state in ['sale', 'done'] and not line.display_type:
+        if line.state == 'sale' and not line.display_type:
             if line.product_id.invoice_policy == 'order':
                 line.qty_to_invoice = line.product_uom_qty - line.qty_invoiced
             else:
@@ -223,12 +286,14 @@ def _compute_qty_invoiced(self):
         # Extend start
         invoice_lines = line._get_invoice_lines()
         invoice_lines = invoice_lines.filtered(lambda x: not x.move_id.refund_move)
-        for invoice_line in invoice_lines:  # Extend end
+        for invoice_line in invoice_lines:
             if invoice_line.move_id.state != 'cancel' or invoice_line.move_id.payment_state == 'invoicing_legacy':
                 if invoice_line.move_id.move_type == 'out_invoice':
-                    qty_invoiced += invoice_line.product_uom_id._compute_quantity(invoice_line.quantity, line.product_uom)
+                    qty_invoiced += invoice_line.product_uom_id._compute_quantity(invoice_line.quantity,
+                                                                                  line.product_uom)
                 elif invoice_line.move_id.move_type == 'out_refund':
-                    qty_invoiced -= invoice_line.product_uom_id._compute_quantity(invoice_line.quantity, line.product_uom)
+                    qty_invoiced -= invoice_line.product_uom_id._compute_quantity(invoice_line.quantity,
+                                                                                  line.product_uom)
         line.qty_invoiced = qty_invoiced
 
 

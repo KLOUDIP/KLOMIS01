@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <template id="portal_layout_customize" inherit_id="portal.portal_layout">
+    <template id="portal_layout_customize" inherit_id="portal.side_content">
         <xpath expr="//div[@class='o_portal_my_details']" position="after">
             <div class="my-custom-section">
                 <br/>

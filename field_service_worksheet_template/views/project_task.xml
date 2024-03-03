@@ -14,53 +14,53 @@
                             <field name="template_id" string="Worksheet Template"/>
                             <field name="fleet_id" context="{'get_license':True}"/>
                             <field name="select_user"/>
-                            <field name="expense_id" invisible="1"/>
-                            <field name="is_telematics_technicians" invisible="1"/>
-                            <field name="done_mark" attrs="{'readonly': [('is_telematics_technicians', '=', True)]}"/>
-                            <field name="food" invisible="1"/>
-                            <field name="extra" invisible="1"/>
-                            <field name="transport" invisible="1"/>
-                            <field name="beverage" invisible="1"/>
+                            <field name="expense_id" column_invisible="1"/>
+                            <field name="is_telematics_technicians" column_invisible="1"/>
+                            <field name="done_mark" readonly="is_telematics_technicians == True"/>
+                            <field name="food" column_invisible="1"/>
+                            <field name="extra" column_invisible="1"/>
+                            <field name="transport" column_invisible="1"/>
+                            <field name="beverage" column_invisible="1"/>
 
-                            <field name="other" invisible="1"/>
-                            <field name="other_2" invisible="1"/>
-                            <field name="other_3" invisible="1"/>
+                            <field name="other" column_invisible="1"/>
+                            <field name="other_2" column_invisible="1"/>
+                            <field name="other_3" column_invisible="1"/>
 
                             <button type="object" class="btn btn-primary" string='UPDATE' name="action_fsm_worksheet_template"
-                                    attrs="{'invisible': ['|', ('template_id', '=', False), ('done_mark', '=', True)]}"/>
+                                    invisible="template_id == False or done_mark==True"/>
 
                             <button type="object" class="btn btn-primary" string='OPEN' name="action_form_worksheet_template"
-                                        attrs="{'invisible': ['|', ('template_id', '=', False), ('done_mark', '!=', True)]}"/>
+                                    invisible="template_id == False or done_mark!=True"/>
 
                             <button type="object" class="btn btn-primary" string='EX' name="action_open_worksheet_line_view"
-                                        attrs="{'invisible': [('template_id', '=', False)]}"/>
+                                    invisible="template_id == False"/>
 
                             <button type="object" class="btn btn-primary" string='SIG' name="action_preview_worksheet"
-                                    attrs="{'invisible': [('template_id', '=', False)]}"/>
+                                    invisible="template_id == False"/>
 
                             <button type="object" class="btn btn-primary" string='SND' name="action_worksheet_send"
-                                    attrs="{'invisible': [('template_id', '=', False)]}"/>
+                                    invisible="template_id == False"/>
 
                             <button type="object" class="btn btn-primary" string='FD' name="action_to_create_expense_food"
-                                    attrs="{'invisible': ['|', ('template_id', '=', False), ('food', '!=', False)]}" groups="field_service_worksheet_template.group_coordinator_fsm,industry_fsm.group_fsm_manager"/>
+                                    invisible="template_id == False or food != False" groups="field_service_worksheet_template.group_coordinator_fsm,industry_fsm.group_fsm_manager"/>
 
                             <button type="object" class="btn btn-primary" string='LD' name="action_to_create_expense_beverage"
-                                    attrs="{'invisible': ['|', ('template_id', '=', False), ('beverage', '!=', False)]}" groups="field_service_worksheet_template.group_coordinator_fsm,industry_fsm.group_fsm_manager"/>
+                                    invisible="template_id == False or beverage != False" groups="field_service_worksheet_template.group_coordinator_fsm,industry_fsm.group_fsm_manager"/>
 
                             <button type="object" class="btn btn-primary" string='KM' name="action_to_create_expense_transport"
-                                    attrs="{'invisible': ['|', ('template_id', '=', False), ('transport', '!=', False)]}" groups="field_service_worksheet_template.group_coordinator_fsm,industry_fsm.group_fsm_manager"/>
+                                    invisible="template_id == False or transport != False" groups="field_service_worksheet_template.group_coordinator_fsm,industry_fsm.group_fsm_manager"/>
 
                             <button type="object" class="btn btn-primary" string='EM' name="action_to_create_expense_extra_minutes"
-                                    attrs="{'invisible': ['|', ('template_id', '=', False), ('extra', '!=', False)]}" groups="field_service_worksheet_template.group_coordinator_fsm,industry_fsm.group_fsm_manager"/>
+                                    invisible="template_id == False or extra != False" groups="field_service_worksheet_template.group_coordinator_fsm,industry_fsm.group_fsm_manager"/>
 
                             <button type="object" class="btn btn-primary" string='OP1' name="action_to_create_expense_other" context="{'product_val': 'other'}"
-                                    attrs="{'invisible': ['|', ('template_id', '=', False), ('other', '!=', False)]}" groups="field_service_worksheet_template.group_coordinator_fsm,industry_fsm.group_fsm_manager"/>
+                                    invisible="template_id == False or other != False" groups="field_service_worksheet_template.group_coordinator_fsm,industry_fsm.group_fsm_manager"/>
 
                             <button type="object" class="btn btn-primary" string='OP2' name="action_to_create_expense_other" context="{'product_val': 'other_2'}"
-                                    attrs="{'invisible': ['|', ('template_id', '=', False), ('other_2', '!=', False)]}" groups="field_service_worksheet_template.group_coordinator_fsm,industry_fsm.group_fsm_manager"/>
+                                    invisible="template_id == False or other_2 != False" groups="field_service_worksheet_template.group_coordinator_fsm,industry_fsm.group_fsm_manager"/>
 
                             <button type="object" class="btn btn-primary" string='OP3' name="action_to_create_expense_other" context="{'product_val': 'other_3'}"
-                                    attrs="{'invisible': ['|', ('template_id', '=', False), ('other_3', '!=', False)]}" groups="field_service_worksheet_template.group_coordinator_fsm,industry_fsm.group_fsm_manager"/>
+                                    invisible="template_id == False or other_3 != False" groups="field_service_worksheet_template.group_coordinator_fsm,industry_fsm.group_fsm_manager"/>
 
                         </tree>
                     </field>
@@ -72,15 +72,14 @@
 
                 <xpath expr="//div[@name='button_box']" position="after">
                     <field name="mark_as_done_rec" invisible="1"/>
-                    <div role="alert" class="alert-success p-3 text-center"
-                         attrs="{'invisible': [('mark_as_done_rec', '=', False),]}">
+                    <div role="alert" class="alert-success p-3 text-center" invisible="mark_as_done_rec == False">
                         <span class="align-middle">This Task has Done</span>
                     </div>
                 </xpath>
 
                 <div name="button_box" position="inside">
                     <field name="count" class="o_stat_value" invisible="1"/>
-                    <button class="oe_stat_button" type="object" attrs="{'invisible': [('count', '=', False)]}"
+                    <button class="oe_stat_button" type="object" invisible="count == False"
                             name="action_for_helpdesk_ticket" icon="fa-life-ring">
                         <div class="o_stat_info">
                             <field name="helpdesk_ticket_ids_cou" class="o_stat_value"/>
@@ -113,13 +112,8 @@
             <field name="model">project.task</field>
             <field name="inherit_id" ref="industry_fsm_sale.view_task_form2_inherit"/>
             <field name="arch" type="xml">
-                <!--                <field name="is_fsm" position="after">-->
-                <!--                    <field name="allow_material" invisible="1"/>-->
-                <!--                </field>-->
-
-
                 <xpath expr="//button[@name='action_fsm_create_quotation']" position="replace">
-                    <button class="btn-secondary" name="action_fsm_create_quotation" type="object" string="New Quotation" attrs="{'invisible': [('allow_quotations', '=', False)]}" groups="sales_team.group_sale_salesman"/>
+                    <button class="btn-secondary" name="action_fsm_create_quotation" type="object" string="New Quotation" invisible="allow_quotations == False" groups="sales_team.group_sale_salesman"/>
                 </xpath>
             </field>
         </record>
@@ -129,18 +123,9 @@
             <field name="model">project.task</field>
             <field name="inherit_id" ref="project.view_task_form2"/>
             <field name="arch" type="xml">
-                <!--                <xpath expr="(//field[@name='company_id'])[2]" position="after">-->
-                <!--                    <field name="tech_team_member_id"/>-->
-                <!--                </xpath>-->
-                <!--                <xpath expr="//field[@name='project_id']" position="replace">-->
-                <!--                    <field name="project_id" domain="[('is_fsm', '=', True)]" required="True" options="{'no_create': True, 'no_edit': True, 'no_open': 'True'}" />-->
-                <!--                </xpath>-->
-                <!--                <xpath expr="//field[@name='allow_billable']" position="after">-->
-                <!--                    <field name="accessible" invisible="1"/>-->
-                <!--                </xpath>-->
-                <!-- <xpath expr="//group//field[@name='partner_id']" position="attributes">
+                <xpath expr="//group//field[@name='partner_id']" position="attributes">
                     <attribute name="options">{'no_open': 'True'}</attribute>
-                </xpath> -->
+                </xpath>
 
                 <xpath expr="//div[@name='button_box']" position="inside">
                     <field string="Tickets" name="helpdesk_ticket_id" invisible="1" />
@@ -150,7 +135,7 @@
                             name="action_view_ticket"
                             type="object"
                             icon="fa-life-ring"
-                            attrs="{'invisible': [('helpdesk_ticket_id', '=', False)]}"
+                            invisible="helpdesk_ticket_id == False"
                             groups="helpdesk.group_helpdesk_user"
                             help="Ticket from this task"/>
                 </xpath>
@@ -169,9 +154,8 @@
                             name="action_fsm_validate"
                             type="object"
                             string="Mark as done"
-                            attrs="{'invisible': [('mark_as_done_rec', '=', True),]}"
-                            groups="field_service_worksheet_template.group_coordinator_fsm,industry_fsm.group_fsm_manager"
-                    />
+                            invisible="mark_as_done_rec == False"
+                            groups="field_service_worksheet_template.group_coordinator_fsm,industry_fsm.group_fsm_manager"/>
                 </xpath>
                 <xpath expr="(//button[@name='action_fsm_validate'])[1]" position="replace">
                     <button
@@ -179,16 +163,16 @@
                             name="action_fsm_validate"
                             type="object"
                             string="Mark as done"
-                            attrs="{'invisible': [('mark_as_done_rec', '=', False),]}"
+                            invisible="mark_as_done_rec == False"
                             groups="field_service_worksheet_template.group_coordinator_fsm,industry_fsm.group_fsm_manager"
                     />
                 </xpath>
                 <xpath expr="(//button[@name='action_fsm_validate'])[2]" position="after">
                     <button class="btn btn-primary" name="action_task_temp" type="object" string="HelpDesk Ticket"
-                            attrs="{'invisible': [('fsm_done', '=', True)]}" groups="field_service_worksheet_template.group_coordinator_fsm,industry_fsm.group_fsm_manager"/>
+                            invisible="fsm_done == True" groups="field_service_worksheet_template.group_coordinator_fsm,industry_fsm.group_fsm_manager"/>
 
                     <button class="btn btn-primary" name="action_create_new_task" type="object" string="Create New Task"
-                            attrs="{'invisible': [('fsm_done', '=', True)]}" groups="field_service_worksheet_template.group_coordinator_fsm,industry_fsm.group_fsm_manager"/>
+                            invisible="fsm_done == True" groups="field_service_worksheet_template.group_coordinator_fsm,industry_fsm.group_fsm_manager"/>
                 </xpath>
             </field>
         </record>
@@ -209,28 +193,20 @@
             <field name="model">project.task</field>
             <field name="inherit_id" ref="project.view_task_form2"/>
             <field name="arch" type="xml">
-                <xpath expr="//field[@name='display_project_id']" position="after">
+                <xpath expr="(//field[@name='project_id'])[2]" position="after">
                     <field name="extra_minutes" invisible="1"/>
                     <field name="tech_team_member_id"/>
                     <field name="is_technician" invisible="1"/>
                     <field name="accessible" invisible="1"/>
                     <label for="get_extra_minutes_expenses"/>
-                    <button type="object" class="btn btn-primary" string="EM" name="get_extra_minutes_expenses" attrs="{'invisible': ['|', ('tech_team_member_id', '=', False), ('extra_minutes', '!=', False)]}" groups="field_service_worksheet_template.group_coordinator_fsm,industry_fsm.group_fsm_manager"/>
+                    <button type="object" class="btn btn-primary" string="EM" name="get_extra_minutes_expenses" invisible="tech_team_member_id == False or extra_minutes != False" groups="field_service_worksheet_template.group_coordinator_fsm,industry_fsm.group_fsm_manager"/>
                 </xpath>
-
-                <xpath expr="//field[@name='partner_phone']" position="replace">
-                    <field name="partner_phone" widget="phone" attrs="{'readonly': [('is_technician', '=', True)]}"/>
-                </xpath>
-<!--                <xpath expr="//field[@name='partner_email']" position="replace">-->
-<!--                    <field name="partner_email" widget="email" attrs="{'invisible': [('partner_id', '=', False)], 'readonly': [('is_technician', '=', True)]}"/>-->
-<!--                </xpath>-->
 
                 <xpath expr="//field[@name='name']" position="replace">
-                    <field name="name" class="o_task_name text-truncate" placeholder="Task Title..." default_focus="1" attrs="{'readonly': [('is_technician', '=', True)]}" />
+                    <field name="name" class="o_task_name text-truncate" placeholder="Task Title..." default_focus="1" invisible="is_technician == True"/>
                 </xpath>
 
             </field>
         </record>
-
     </data>
 </odoo>

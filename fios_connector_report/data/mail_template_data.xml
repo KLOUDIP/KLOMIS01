@@ -25,8 +25,7 @@
                     </p>
                 </div>
             </field>
-            <field name="report_template" ref="fios_connector_report.action_report_fios_active_unit"/>
-            <field name="report_name">{{ (object.parent_id.name or '').replace('/','_') }}</field>
+            <field name="report_template_ids" eval="[(4, ref('fios_connector_report.action_report_fios_active_unit'))]"/>
             <field name="lang">{{ object.lang }}</field>
             <field name="auto_delete" eval="True"/>
         </record>

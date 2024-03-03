@@ -7,13 +7,6 @@ class SaleOrder(models.Model):
 
     partner_installation_id = fields.Many2one('res.partner',
                                               string='Installation Address',
-                                              readonly=True,
-                                              states={'draft': [
-                                                  ('readonly', False)],
-                                                      'sent': [
-                                                          ('readonly', False)],
-                                                      'sale': [
-                                                          ('readonly', False)]},
                                               domain="['|', ('company_id', '=', False), ('company_id', '=', company_id)]", )
 
     @api.onchange('partner_id')

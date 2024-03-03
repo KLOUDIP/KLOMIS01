@@ -4,7 +4,7 @@ from odoo.exceptions import UserError
 
 class WorksheetTemplateLine(models.Model):
     _name = 'worksheet.template.line'
-    _inherit = ['portal.mixin']
+    _inherit = ['portal.mixin', 'mail.thread']
 
     name = fields.Char('Name')
     template_id = fields.Many2one('worksheet.template', string='Template')
@@ -301,7 +301,7 @@ class WorksheetTemplateLine(models.Model):
         if self.project_task_id.allow_billable:
             self.project_task_id._fsm_ensure_sale_order()
 
-        template_id = self.env.ref('field_service_worksheet_template.mail_template_data_send_report_custom').id
+        template_id = self.env.ref('field_service_worksheet_template.mail_template_data_send_report_custom1').id
         return {
             'type': 'ir.actions.act_window',
             'view_mode': 'form',
@@ -322,13 +322,9 @@ class WorksheetTemplateLine(models.Model):
     def action_worksheet_send(self):
         self.ensure_one()
         template_id = self.env.ref('field_service_worksheet_template.mail_template_data_send_report_custom1').id
-        lang = self.env.context.get('lang')
-        template = self.env['mail.template'].browse(template_id)
-        #if template.lang:
-            #lang = template._render_template(template.lang, 'worksheet.template.line', self.ids[0])
         ctx = {
             'default_model': 'worksheet.template.line',
-            'default_res_id': self.id,
+            'default_res_ids': self.ids,
             'default_use_template': bool(template_id),
             'default_template_id': template_id,
             'force_email': True,
@@ -342,6 +338,24 @@ class WorksheetTemplateLine(models.Model):
             'view_id': False,
             'target': 'new',
             'context': ctx,
+        }
+
+    def action_send_report(self):
+        template_id = self.env.ref('field_service_worksheet_template.mail_template_data_send_report_custom1').id
+        return {
+            'name': _("Send report"),
+            'type': 'ir.actions.act_window',
+            'res_model': 'mail.compose.message',
+            'views': [(False, 'form')],
+            'target': 'new',
+            'context': {
+                'default_composition_mode': 'mass_mail',
+                'default_model': 'worksheet.template.line',
+                'default_res_ids': self.ids,
+                'default_template_id': template_id,
+                'fsm_mark_as_sent': True,
+                'mailing_document_based': True,
+            },
         }
 
     def action_preview_worksheet(self):

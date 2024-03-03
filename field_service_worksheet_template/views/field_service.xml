@@ -13,7 +13,7 @@
                             <field name="select_user"/>
                             <field name="expense_id" invisible="1"/>
                             <field name="is_telematics_technicians" invisible="1"/>
-                            <field name="done_mark" attrs="{'readonly': [('is_telematics_technicians', '=', True)]}"/>
+                            <field name="done_mark" readonly="is_telematics_technicians == True"/>
                             <field name="food" invisible="1"/>
                             <field name="transport" invisible="1"/>
                             <field name="beverage" invisible="1"/>
@@ -26,7 +26,7 @@
                                     attrs="{'invisible': [('template_id', '=', False)]}"/>
 
                             <button type="object" class="btn btn-primary" string='SND' name="action_worksheet_send"
-                                    attrs="{'invisible': [('template_id', '=', False)]}"/>
+                                    attrs="{'invisible': [('template_id', '=', False)]}" context="{'default_composition_mode':'mass_mail'}"/>
 
                             <button type="object" class="btn btn-primary" string='FD' name="action_to_create_expense_food"
                                     attrs="{'invisible': ['|', ('template_id', '=', False), ('food', '!=', False)]}"/>

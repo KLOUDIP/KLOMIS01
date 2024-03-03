@@ -1,12 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <template id="report_delivery_document_inherit_vehicle_no" inherit_id="stock.report_delivery_document">
-        <xpath expr="//t[@name='lot_serial']" position="after">
-            <t name="vehicle_no" t-if="has_serial_number">
-                <th>
-                    Vehicle No
-                </th>
-            </t>
+        <xpath expr="//th[@name='lot_serial']" position="after">
+            <th t-if="has_serial_number" name="vehicle_no">
+                Vehicle No
+            </th>
         </xpath>
         <xpath expr="//div[@t-if='o.should_print_delivery_address()']" position="replace">
             <div t-if="o.should_print_delivery_address() or o.move_ids[0].partner_id">

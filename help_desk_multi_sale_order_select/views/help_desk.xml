@@ -28,7 +28,7 @@
                             </span>
                         </div>
                     </button>
-                    <button class="oe_stat_button" type="object" name="action_open_helpdesk_pending_ticket" icon="fa-life-ring" attrs="{'invisible': ['|', ('partner_id', '=', False), ('partner_open_ticket_count', '=', 0)]}">
+                    <button class="oe_stat_button" type="object" name="action_open_helpdesk_pending_ticket" icon="fa-life-ring" invisibl="partner_id == False or partner_open_ticket_count == 0">
                         <div class="o_field_widget o_stat_info">
                             <span class="o_stat_value">
                                 <field name="partner_open_ticket_count" nolabel="1"/>

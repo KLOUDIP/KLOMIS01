@@ -3,32 +3,37 @@
     <record id="project_task_form_inherit_extension" model="ir.ui.view">
         <field name="name">project.task.form.inherit.extension</field>
         <field name="model">project.task</field>
-        <field name="inherit_id" ref="project.view_task_form2"/>
+        <field name="inherit_id" ref="industry_fsm.view_task_form2_inherit"/>
         <field name="arch" type="xml">
-            <xpath expr="//field[@name='partner_phone']" position="before">
-                <field name="partner_mobile" widget="phone"/>
-            </xpath>
-        </field>
-    </record>
-
-    <record id="view_task_form2_field_service_extension" model="ir.ui.view">
-        <field name="name">project.task.view.form.holidays</field>
-        <field name="model">project.task</field>
-        <field name="inherit_id" ref="project_enterprise.project_task_view_form"/>
-        <field name="arch" type="xml">
-            <xpath expr="//label[@for='planned_date_begin']" position="replace">
-                <label for="planned_date_begin" string="Planned Date"/>
-            </xpath>
-            <xpath expr="//div[@class='w-100']" position="replace">
-                <div class="w-100">
-                    <div class="o_row">
-                        <field name="planned_date_begin" widget="daterange" options="{'related_end_date': 'planned_date_end'}"/>
-                        <i class="fa fa-long-arrow-right mx-2 oe_edit_only" aria-label="Arrow icon" title="Arrow"/>
-                        <i class="fa fa-long-arrow-right mx-2 oe_read_only" aria-label="Arrow icon" title="Arrow"/>
-                        <field name="planned_date_end" widget="daterange" options="{'related_start_date': 'planned_date_begin'}"/>
-                    </div>
+            <xpath expr="//field[@name='is_task_phone_update']" position="after">
+                <label for="partner_mobile" invisible="not is_fsm"/>
+                <div class="o_row o_row_readonly" invisible="not is_fsm">
+                    <field name="is_task_phone_update" invisible="1"/>
+                    <field name="partner_mobile" widget="phone" readonly="is_technician == True"/>
+                    <span class="fa fa-exclamation-triangle text-warning oe_edit_only" title="By saving this change, the customer mobile number will also be updated." invisible="not partner_id or not is_task_phone_update"/>
                 </div>
             </xpath>
         </field>
     </record>
+
+<!--    <record id="view_task_form2_field_service_extension" model="ir.ui.view">-->
+<!--        <field name="name">project.task.view.form.holidays</field>-->
+<!--        <field name="model">project.task</field>-->
+<!--        <field name="inherit_id" ref="project_enterprise.project_task_view_form"/>-->
+<!--        <field name="arch" type="xml">-->
+<!--            <xpath expr="//label[@for='planned_date_begin']" position="replace">-->
+<!--                <label for="planned_date_begin" string="Planned Date"/>-->
+<!--            </xpath>-->
+<!--            <xpath expr="//div[@class='w-100']" position="replace">-->
+<!--                <div class="w-100">-->
+<!--                    <div class="o_row">-->
+<!--                        <field name="planned_date_begin" widget="daterange" options="{'related_end_date': 'planned_date_end'}"/>-->
+<!--                        <i class="fa fa-long-arrow-right mx-2 oe_edit_only" aria-label="Arrow icon" title="Arrow"/>-->
+<!--                        <i class="fa fa-long-arrow-right mx-2 oe_read_only" aria-label="Arrow icon" title="Arrow"/>-->
+<!--                        <field name="planned_date_end" widget="daterange" options="{'related_start_date': 'planned_date_begin'}"/>-->
+<!--                    </div>-->
+<!--                </div>-->
+<!--            </xpath>-->
+<!--        </field>-->
+<!--    </record>-->
 </odoo>

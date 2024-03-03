@@ -1,16 +1,14 @@
 # -*- coding: utf-8 -*-
-# Part of Odoo. See LICENSE file for full copyright and licensing details.
 
 from odoo import http, _
 from odoo.exceptions import AccessError, MissingError
 from odoo.http import request
 from odoo.addons.portal.controllers.portal import CustomerPortal
-from odoo.addons.portal.controllers.mail import _message_post_helper
 
 import binascii
 
 
-class CustomerPortalW(CustomerPortal):
+class CustomerPortalWorksheet(CustomerPortal):
     @http.route(['/my/sheet/<int:sheet_id>/worksheet/',
                  '/my/sheet/<int:sheet_id>/worksheet/<string:source>'], type='http', auth="public", website=True)
     def portal_my_worksheet_id(self, sheet_id, access_token=None, source=False, report_type=None, download=False, message=False, **kw):
@@ -41,8 +39,6 @@ class CustomerPortalW(CustomerPortal):
         except (AccessError, MissingError):
             return {'error': _('Invalid Task.')}
 
-        # if not task_sudo.has_to_be_signed():
-        #     return {'error': _('The worksheet is not in a state requiring customer signature.')}
         if not signature:
             return {'error': _('Signature is missing.')}
 
@@ -54,19 +50,6 @@ class CustomerPortalW(CustomerPortal):
 
         except (TypeError, binascii.Error):
             return {'error': _('Invalid signature data.')}
-
-        # try:
-        #     task_sudo.write({
-        #         'technician_signature': signature,
-        #         'technician_signed_by': name,
-        #     })
-        #
-        # except (TypeError, binascii.Error):
-        #     return {'error': _('Invalid signature data.')}
-
-        # _message_post_helper(
-        #     'project.task', task_sudo.id, _('Task signed by %s') % (name,),
-        #     **({'token': access_token} if access_token else {}))
 
         query_string = '&message=sign_ok'
         return {
@@ -84,19 +67,8 @@ class CustomerPortalW(CustomerPortal):
         except (AccessError, MissingError):
             return {'error': _('Invalid Task.')}
 
-        # if not task_sudo.has_to_be_signed():
-        #     return {'error': _('The worksheet is not in a state requiring customer signature.')}
         if not signature:
             return {'error': _('Signature is missing.')}
-
-        # try:
-        #     task_sudo.write({
-        #         'customer_signature': signature,
-        #         'customer_signed_by': name,
-        #     })
-        #
-        # except (TypeError, binascii.Error):
-        #     return {'error': _('Invalid signature data.')}
 
         try:
             task_sudo.write({
@@ -106,10 +78,6 @@ class CustomerPortalW(CustomerPortal):
 
         except (TypeError, binascii.Error):
             return {'error': _('Invalid signature data.')}
-
-        # _message_post_helper(
-        #     'project.task', task_sudo.id, _('Task signed by %s') % (name,),
-        #     **({'token': access_token} if access_token else {}))
 
         query_string = '&message=sign_ok'
         return {

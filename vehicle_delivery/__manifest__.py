@@ -21,7 +21,7 @@
 
 {
     'name': 'Kloudip link vehicle with delivery',
-    'version': '16.0.2.0.0',
+    'version': '2.0.0',
     'summary': 'Odoo Kloudip Custom module',
     'sequence': '19',
     'category': 'Tools',
@@ -34,7 +34,7 @@ Kloudip link vehicle with delivery
         """,
     'data': [
         'models/stock.xml',
-        'views/stock.xml',
+        # 'views/stock.xml',
         'models/fleet.xml',
         'views/fleet.xml',
         'actions/server_actions.xml',

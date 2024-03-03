@@ -4,7 +4,7 @@
     'description': '',
     'category': 'helpdesk',
     'summary': '',
-    'version': '16.0.2.0.3',
+    'version': '2.0.3',
     'author': 'Nisus Solutions(pvt) Ltd.',
     'website': 'https://www.nisus.lk',
     'data': [

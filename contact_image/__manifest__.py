@@ -4,7 +4,7 @@
     "summary": "This module allow add image field to res partner contact address form",
     "description": "This module allow add image field to res partner contact address form",
     'category': 'Contact',
-    'version': '16.0.1.0.1',
+    'version': '1.0.1',
     "author": "BitbrainHub",
     "email": "bitbrainhub@gmail.com",
     'depends': [

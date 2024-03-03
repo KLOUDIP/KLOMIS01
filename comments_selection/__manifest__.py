@@ -4,7 +4,7 @@
     "summary": "This module allow to pre-defined comments",
     "description": "This module allow to pre-defined comments",
     'category': 'Operations/Field Service',
-    'version': '16.0.1.0.0',
+    'version': '1.0.0',
     "author": "Nisus Solutions (Pvt) Ltd",
     "website": "https://nisus.lk/",
     'data': [

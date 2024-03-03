@@ -14,8 +14,8 @@
             </xpath>
 
             <xpath expr="//header" position="inside">
-                <button name="create_voucher_deposit" string="Deposit Advice" type="object" class="btn-primary" attrs="{'invisible': ['|', ('coupon_count', '=', 0), ('invoice_status', '!=', 'to invoice')]}" context="{'create_voucher_deposit': True}"/>
-                <button name="create_voucher_deposit" string="Deposit Advice" type="object" attrs="{'invisible': ['|', ('coupon_count', '>', 0), ('invoice_status', '=', 'no')]}" context="{'create_voucher_deposit': True}"/>
+                <button name="create_voucher_deposit" string="Deposit Advice" type="object" class="btn-primary" invisible="coupon_count == 0 or invoice_status != 'to invoice'" context="{'create_voucher_deposit': True}"/>
+                <button name="create_voucher_deposit" string="Deposit Advice" type="object" invisible="coupon_count > 0 or invoice_status == 'no'" context="{'create_voucher_deposit': True}"/>
             </xpath>
 
             <!--Replacing context for the button cause some errors so we open wizard from python action-->
@@ -26,18 +26,18 @@
 
             <!--Adding custom statinfo buttons-->
             <div name="button_box" position="inside">
-                <button name="action_view_assigned_coupons" type="object" class="oe_stat_button" icon="fa-ticket" attrs="{'invisible': [('coupon_count', '=', 0)]}">
+                <button name="action_view_assigned_coupons" type="object" class="oe_stat_button" icon="fa-ticket" invisible="coupon_count == 0">
                     <field name="coupon_count" widget="statinfo" string="Vouchers"/>
                 </button>
             </div>
 
             <div name="button_box" position="inside">
                 <field name="generated_coupon_count" invisible="1"/>
-                <button name="action_view_generated_coupons" type="object" class="oe_stat_button" icon="fa-ticket" attrs="{'invisible': [('generated_coupon_count', '=', 0)]}">
+                <button name="action_view_generated_coupons" type="object" class="oe_stat_button" icon="fa-ticket" invisible="generated_coupon_count == 0">
                     <field name="generated_coupon_count" widget="statinfo" string="Vouchers"/>
                 </button>
                 <field name="forfeited_coupon_count" invisible="1"/>
-                <button name="action_view_forfeited_coupons" type="object" class="oe_stat_button" icon="fa-ticket" attrs="{'invisible': [('forfeited_coupon_count', '=', 0)]}">
+                <button name="action_view_forfeited_coupons" type="object" class="oe_stat_button" icon="fa-ticket" invisible="forfeited_coupon_count == 0">
                     <field name="forfeited_coupon_count" widget="statinfo" string="Forfeited Vouchers"/>
                 </button>
             </div>

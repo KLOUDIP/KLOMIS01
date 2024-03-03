@@ -16,10 +16,10 @@
             <!--adding refund coupon button-->
             <sheet position="before">
                 <header>
-                    <button name="action_refund_coupon" type="object" string="REFUND" class="btn-danger" attrs="{'invisible': ['|', ('invoice_id','=',False),'|', ('refunded_coupon','=',True), ('state', 'in', ['used','forfeited','cancel'])]}"
+                    <button name="action_refund_coupon" type="object" string="REFUND" class="btn-danger" invisible="invoice_id == False or refunded_coupon == True or state in ['used','forfeited','cancel']"
                             help="Only coupons created from invoices can be refunded." confirm="Are you sure you need to refund the coupon ?"/>
 
-                    <button name="action_forfeited_coupon" type="object" string="FORFEIT" class="btn-primary" attrs="{'invisible': [('state','!=','used')]}"
+                    <button name="action_forfeited_coupon" type="object" string="FORFEIT" class="btn-primary" invisible="state != 'used'"
                             confirm="Are you sure you need to forfeited the coupon ?"/>
 
                     <field name="state" widget="statusbar" statusbar_visible="new,sent,used,expired,forfeited" context="{'state': state}"/>
@@ -28,18 +28,18 @@
 
             <!--invisible partner_id if invoice partner id exist-->
             <field name="partner_id" position="attributes">
-                <attribute name="attrs">{'invisible': [('invoice_partner_id','!=',False)]}</attribute>
+                <attribute name="invisible">invoice_partner_id != False</attribute>
             </field>
 
             <!--adding invoice id field to view-->
             <field name="partner_id" position="after">
                 <field name="refunded_coupon" readonly='1'/>
-                <field name="invoice_partner_id" readonly='1' attrs="{'invisible': [('invoice_partner_id','=',False)]}"/>
-                <field name="coupon_product_id" readonly='1' attrs="{'invisible': [('coupon_product_id','=',False)]}"/>
-                <field name="invoice_id" readonly='1' attrs="{'invisible': [('invoice_id','=',False)]}"/>
-                <field name="credit_note_id" readonly='1' attrs="{'invisible': [('credit_note_id','=',False)]}"/>
-                <field name="sales_order_id" readonly='1' attrs="{'invisible': [('sales_order_id','=',False)]}"/>
-                <field name="entry_id" readonly='1' attrs="{'invisible': [('entry_id','=',False)]}"/>
+                <field name="invoice_partner_id" readonly='1' invisible="invoice_partner_id == False"/>
+                <field name="coupon_product_id" readonly='1' invisible="coupon_product_id == False"/>
+                <field name="invoice_id" readonly='1' invisible="invoice_id == False"/>
+                <field name="credit_note_id" readonly='1' invisible="credit_note_id == False"/>
+                <field name="sales_order_id" readonly='1' invisible="sales_order_id == False"/>
+                <field name="entry_id" readonly='1' invisible="entry_id == False"/>
             </field>
 
         </field>

@@ -9,7 +9,7 @@
                 <field name="is_manager" invisible="1"/>
             </xpath>
             <xpath expr="//field[@name='name']" position="attributes">
-                <attribute name="attrs">{'readonly': [('is_manager', '!=', True)]}</attribute>
+                <attribute name="readonly">is_manager != True</attribute>
             </xpath>
         </field>
     </record>

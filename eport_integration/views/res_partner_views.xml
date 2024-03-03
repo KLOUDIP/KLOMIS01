@@ -8,7 +8,7 @@
         <field name="inherit_id" ref="base.view_partner_form"/>
         <field name="arch" type="xml">
             <xpath expr="//page[@name='internal_notes']" position="after">
-                <page name="eport" string="EPORT" attrs="{'invisible': [('type', '!=', 'invoice')]}">
+                <page name="eport" string="EPORT" invisible="type != 'invoice'">
                     <group>
                         <group>
                             <field name="last_updated_epc_amount" readonly="1"/>
@@ -31,7 +31,7 @@
                             <label for="uuid"/>
                             <div class="o_row">
                                 <field name="uuid" readonly="1"/>
-                                <button name="generate_uuid" type="object" string="Get UUID" attrs="{'invisible': [('uuid', '!=', False)]}"/>
+                                <button name="generate_uuid" type="object" string="Get UUID" invisible="uuid != False"/>
                             </div>
                         </group>
                     </group>

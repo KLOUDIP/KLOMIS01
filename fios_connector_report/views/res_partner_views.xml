@@ -7,7 +7,7 @@
         <field name="arch" type="xml">
             <sheet position="before">
                 <header>
-                    <button name="action_fios_active_units_send" type="object" class="btn-primary" string="Send FIOS Active Units" attrs="{'invisible': [('type', '!=', 'invoice')]}"/>
+                    <button name="action_fios_active_units_send" type="object" class="btn-primary" string="Send FIOS Active Units" invisible="type != 'invoice'"/>
                 </header>
             </sheet>
         </field>

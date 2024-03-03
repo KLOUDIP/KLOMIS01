@@ -8,10 +8,10 @@
         <field name="inherit_id" ref="payment.payment_provider_form"/>
         <field name="arch" type="xml">
             <group name="provider_credentials" position='inside'>
-                <group attrs="{'invisible': [('code', '!=', 'sampath')]}">
-                    <field name="sampath_client_id" string="ClientID" attrs="{'required':[ ('code', '=', 'sampath'), ('state', '!=', 'disabled')]}"/>
-                    <field name="sampath_auth_token" attrs="{'required':[ ('code', '=', 'sampath'), ('state', '!=', 'disabled')]}" password="True"/>
-                    <field name="sampath_hmac_secret" attrs="{'required':[ ('code', '=', 'sampath'), ('state', '!=', 'disabled')]}" password="True"/>
+                <group required="code != 'sampath'" password="True">
+                    <field name="sampath_client_id" string="ClientID" required="code == 'sampath' and state != 'disabled'"/>
+                    <field name="sampath_auth_token" required="code == 'sampath' and state != 'disabled'" password="True"/>
+                    <field name="sampath_hmac_secret" required="code == 'sampath' and state != 'disabled'" password="True"/>
                 </group>
             </group>
         </field>

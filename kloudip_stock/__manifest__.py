@@ -1,6 +1,6 @@
 {
     'name': 'KloudIP - Stock Extend ',
-    'version': '16.0.1.0.2',
+    'version': '1.0.2',
     'summary': 'KloudIP Inventory (Stock) Customizations',
     'sequence': '20',
     'category': 'Inventory',

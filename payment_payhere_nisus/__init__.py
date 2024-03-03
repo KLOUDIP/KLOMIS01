@@ -1,6 +1,13 @@
  # -*- coding: utf-8 -*-
-
-""" Import models and controllers """
-
 from . import models
 from . import controllers
+
+from odoo.addons.payment import setup_provider, reset_payment_provider
+
+
+def post_init_hook(env):
+    setup_provider(env, 'payhere_nisus')
+
+
+def uninstall_hook(env):
+    reset_payment_provider(env, 'payhere_nisus')

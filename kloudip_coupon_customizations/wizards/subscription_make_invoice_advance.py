@@ -20,7 +20,10 @@ class SubscriptionAdvancePaymentInv(models.TransientModel):
 
     def create_subscription_invoices(self):
         orders = self.sale_order_ids
-        account_move = orders.with_context(refunded_amount=self.refunded_amount, deduct_down_payments=self.deduct_down_payments)._create_recurring_invoice()
+        if orders.subscription_state == '7_upsell':
+            account_move = orders.with_context(refunded_amount=self.refunded_amount, deduct_down_payments=self.deduct_down_payments)._create_recurring_invoice()
+        else:
+            account_move = orders.with_context(refunded_amount=self.refunded_amount, deduct_down_payments=self.deduct_down_payments)._create_invoices(orders)
         if account_move:
             return orders.action_view_invoice()
         else:

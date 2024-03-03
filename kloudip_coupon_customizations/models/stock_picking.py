@@ -28,7 +28,7 @@ class StockPicking(models.Model):
                     coupons = self.sale_id.applied_coupon_ids.filtered(lambda x: x.state == 'used' and x.sales_order_id.id == self.sale_id.id)
                     _logger.info(coupons)
                     if coupons:
-                        coupon = coupons[0:int(coupon_program_product_lines.quantity_done)]
+                        coupon = coupons[0:int(coupon_program_product_lines.quantity)]
                         line = self.sale_id.order_line.filtered(lambda x: x.is_reward_line)
                         if line:
                             coupon.update({'state': 'new', 'sales_order_id': False, 'points': 1})

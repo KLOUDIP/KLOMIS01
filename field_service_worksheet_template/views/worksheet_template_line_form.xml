@@ -17,11 +17,11 @@
                                 <field name="template_id"/>
                                 <field name="fleet_id"/>
                                 <field name="is_telematics_technicians" invisible="1"/>
-                                <field name="done_mark" attrs="{'readonly': [('is_telematics_technicians', '=', True)]}"/>
+                                <field name="done_mark" readonly="is_telematics_technicians == True"/>
                                 <field name="expense_id"/>
                                 <button type="object" class="btn btn-primary" string='Show Worksheet'
                                         name="action_form_worksheet_template"
-                                        attrs="{'invisible': [('template_id', '=', False)]}"/>
+                                        invisible="template_id == False"/>
                             </group>
                         </group>
                     </sheet>
@@ -40,7 +40,7 @@
                     <field name="fleet_id"/>
                     <field name="expense_id"/>
                     <field name="is_telematics_technicians" invisible="1"/>
-                    <field name="done_mark" attrs="{'readonly': [('is_telematics_technicians', '=', True)]}"/>
+                    <field name="done_mark" invisible="is_telematics_technicians == True"/>
                 </tree>
             </field>
         </record>

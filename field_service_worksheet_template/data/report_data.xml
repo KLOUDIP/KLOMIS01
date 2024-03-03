@@ -8,8 +8,8 @@
             <field name="email_to">{{(object.project_task_id.partner_id.email_formatted)}}</field>
             <field name="partner_to">{{object.project_task_id.partner_id.id}}</field>
             <field name="lang">{{object.project_task_id.partner_id.lang}}</field>
-            <field name="report_template" ref="task_custom_report_template"/>
-            <field name="report_name">Worksheet {{object.project_task_id.name}} {{(' - ' + object.project_task_id.partner_id.name) if object.project_task_id.partner_id else ''}}.pdf</field>
+            <field name="report_template_ids" eval="[(4, ref('field_service_worksheet_template.task_custom_report_template'))]"/>
+            <field name="description">Worksheet {{object.project_task_id.name}} {{(' - ' + object.project_task_id.partner_id.name) if object.project_task_id.partner_id else ''}}.pdf</field>
             <field name="body_html" type="html">
                 <p>
                     Dear <t t-out="object.project_task_id.partner_id.name or 'Customer'"/>,<br/><br/>
@@ -19,6 +19,5 @@
                 </p>
             </field>
         </record>
-
     </data>
 </odoo>

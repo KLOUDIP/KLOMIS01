@@ -8,14 +8,13 @@
         <field name="arch" type="xml">
 
             <group position="after">
-                <group attrs="{'invisible': [('visible_refunded_amount', '=', False)]}">
+                <group invisible="visible_refunded_amount == False">
                     <group string="Coupon Refunds">
                         <field name="visible_refunded_amount" invisible="1"/>
                         <field name="refunded_amount"/>
                     </group>
                 </group>
             </group>
-
         </field>
     </record>
 

@@ -6,7 +6,7 @@
         <field name="model">subscription.advance.payment.inv</field>
         <field name="arch" type="xml">
             <form string="Invoice Subscriptions">
-                <group attrs="{'invisible': [('visible_refunded_amount', '=', False)]}">
+                <group invisible="visible_refunded_amount == False">
                     <group string="Coupon Refunds">
                         <field name="visible_refunded_amount" invisible="1"/>
                         <field name="refunded_amount"/>

@@ -16,7 +16,7 @@
                             type="object"
                             icon="fa-calendar-o"
                             help="Appointment on this task"
-                            attrs="{'invisible': [('is_appointment', '=', False)]}"/>
+                            invisible="is_appointment == False"/>
                 </xpath>
             </field>
         </record>

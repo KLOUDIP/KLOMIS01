@@ -22,15 +22,7 @@ class FleetVehicleLogContract(models.Model):
     @api.depends()
     def _get_related_so(self):
         for rec in self:
-            if rec.partner_id:
-                parent = rec.partner_id.parent_id.id if rec.partner_id.parent_id else rec.partner_id.ids
-                orders = rec.x_lot_id.sale_order_ids.filtered(lambda x: x.partner_id.parent_id.id if x.partner_id.parent_id else x.partner_id.id == parent)
-                if orders:
-                    rec.sale_id = orders[0].id
-                else:
-                    rec.sale_id = False
-            else:
-                rec.sale_id = False
+            rec.sale_id = rec.x_lot_id.sale_order_ids[0].id if rec.x_lot_id.sale_order_ids else False
 
     @api.depends('purchaser_id')
     def _compute_company(self):

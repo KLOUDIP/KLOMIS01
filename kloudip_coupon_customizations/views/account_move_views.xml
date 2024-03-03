@@ -10,13 +10,13 @@
 
             <!--Adding Email Voucher button to header-->
             <header position="inside">
-                <button string="Send Voucher" type="object" name="send_coupon_email" class="oe_highlight" icon="fa-envelope" attrs="{'invisible': ['|', ('visible_coupon_group', '=', False), ('coupons_email_sent', '=', True)]}"/>
-                <button string="Send Voucher" type="object" name="send_coupon_email" icon="fa-envelope" attrs="{'invisible': ['|', ('visible_coupon_group', '=', False), ('coupons_email_sent', '=', False)]}"/>
+                <button string="Send Voucher" type="object" name="send_coupon_email" class="oe_highlight" icon="fa-envelope" invisible="visible_coupon_group == False or coupons_email_sent == True"/>
+                <button string="Send Voucher" type="object" name="send_coupon_email" icon="fa-envelope" invisible="visible_coupon_group == False or coupons_email_sent == False"/>
             </header>
 
             <!--adding assigned coupons tab-->
             <group id="other_tab_group" position="inside">
-                <group string="Coupons" name="coupons" attrs="{'invisible': [('visible_coupon_group', '=', False)]}">
+                <group string="Coupons" name="coupons" invisible="visible_coupon_group == False">
                     <field name="coupon_ids" widget="many2many_tags" readonly="1"/>
                     <field name="visible_coupon_group" invisible="1"/>
                     <field name="coupons_email_sent" invisible="1"/>

@@ -1,6 +1,6 @@
 {
     'name': 'KLOUDIP Access Rights',
-    'version': '16.0.1.0.3',
+    'version': '1.0.3',
     'author': 'Nisus Solutions (Pvt) Ltd',
     'category': '',
     'description': """

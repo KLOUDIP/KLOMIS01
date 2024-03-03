@@ -96,13 +96,6 @@ class ActiveUnits(models.Model):
                        (z.license_plate == sync_key)) if sync_key != 'False'
             else ((z.license_plate in fios_item['nm']) or (fios_item['nm'] in z.license_plate)))
 
-        # available_fleet_vehicles = self.env['fleet.vehicle'].search([('license_plate', '!=', False)])
-        # fleet_vehicle = available_fleet_vehicles.filtered(
-        #     lambda z: ((z.license_plate in fios_item['nm']) or (fios_item['nm'] in z.license_plate)))
-        # # when search with the ilike(here 'in') conditions there will be multiple vehicles.
-        # # So we return [0] vehicle as fleet
-        # fleet_vehicle = fleet_vehicle[0]
-        # raise error when multiple fleet vehicles found
         if len(fleet_vehicle) > 1:
             # raise ValidationError(_('Multiple vehicles found with same plate number: \'%s\' \n\n FIOS \'nm\': \'%s\'') % (', '.join(fleet_vehicle.mapped('name')), str(fios_item['nm'])))
             # FIXME: remove indexing and get similar vehicle for the vehicle number

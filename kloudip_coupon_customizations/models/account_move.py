@@ -4,16 +4,21 @@ from odoo.exceptions import ValidationError
 from odoo.addons.account.models.account_move import AccountMove as AccountMoveBase
 
 
-def action_switch_invoice_into_refund_credit_note(self):
+def action_switch_move_type(self):
     """
     @overload - change line values when move amount total == 0
     """
-    if any(move.move_type not in ('in_invoice', 'out_invoice') for move in self):
+    if any(move.posted_before for move in self):
+        raise ValidationError(_("You cannot switch the type of a posted document."))
+    if any(move.move_type == "entry" for move in self):
         raise ValidationError(_("This action isn't available for this document."))
 
     for move in self:
+        in_out, old_move_type = move.move_type.split('_')
+        new_move_type = f"{in_out}_{'invoice' if old_move_type == 'refund' else 'refund'}"
+        move.name = False
         move.write({
-            'move_type': move.move_type.replace('invoice', 'refund'),
+            'move_type': new_move_type,
             'partner_bank_id': False,
             'currency_id': move.currency_id.id,
         })
@@ -27,7 +32,7 @@ def action_switch_invoice_into_refund_credit_note(self):
             })
 
 
-AccountMoveBase.action_switch_invoice_into_refund_credit_note = action_switch_invoice_into_refund_credit_note
+AccountMoveBase.action_switch_move_type = action_switch_move_type
 
 
 class AccountMove(models.Model):
@@ -51,7 +56,7 @@ class AccountMove(models.Model):
         """Send email for the customer notifying generated coupons"""
         for coupon in self.coupon_ids:
             subject = '%s, a coupon has been generated for you' % (self.partner_id.name,)
-            template = self.env.ref('coupon.mail_template_sale_coupon', raise_if_not_found=False)
+            template = self.env.ref('loyalty.mail_template_loyalty_card', raise_if_not_found=False)
             if template:
                 email_values = {'email_to': self.partner_id.email, 'email_from': self.env.user.email or '',
                                 'subject': subject}
@@ -86,30 +91,13 @@ class AccountMove(models.Model):
                 coupons.append(coupon)
                 # writing values to coupon_ids field
                 self.update({'coupon_ids': [(4, coupon.id)]})
-                # feature removed
-                # send specific email to customer FIXME: Performance when sending multiple emails for each quantity
-                # if self.partner_id.generate_email_for_coupons:  # checking generate email for coupons setting enabled for invoice partner
-                #     subject = '%s, a coupon has been generated for you' % (self.partner_id.name,)
-                #     template = self.env.ref('coupon.mail_template_sale_coupon', raise_if_not_found=False)
-                #     if template:
-                #         email_values = {'email_to': self.partner_id.email, 'email_from': self.env.user.email or '',
-                #                         'subject': subject}
-                #         template.send_mail(coupon.id, email_values=email_values,
-                #                            notif_layout='mail.mail_notification_light')
             # sort data for the post message
             all_coupons.append({'product': line.product_id, 'coupons': coupons})
         # post message to chatter with linked coupon
         if all_coupons:
-            self.message_post_with_view('kloudip_coupon_customizations.coupon_created_message',
-                                        values={
-                                            'data': all_coupons,
-                                            'partner_generate_email_for_coupons': False
-                                        },
-                                        subtype_id=self.env.ref('mail.mt_note').id)
-            # see data> mail_data.xml file (partner_generate_email_for_coupons)
-            # self.message_post_with_view('kloudip_coupon_customizations.coupon_created_message',
-            #                             values={'data': all_coupons, 'partner_generate_email_for_coupons': self.partner_id.generate_email_for_coupons},
-            #                             subtype_id=self.env.ref('mail.mt_note').id)
+            self.message_post_with_source('kloudip_coupon_customizations.coupon_created_message',
+                                        render_values={'data': all_coupons,'partner_generate_email_for_coupons': False},
+                                        subtype_xmlid='mail.mt_note')
         return res
 
     def unlink(self):

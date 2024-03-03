@@ -6,7 +6,7 @@
     'description': """
         FIOS Integration with Odoo
     """,
-    'version': '16.0.2.0.1',
+    'version': '2.0.1',
     'category': 'Fleet',
     'author': 'Nisus Solutions (Pvt) Ltd',
     'website': 'http://www.nisus.lk',

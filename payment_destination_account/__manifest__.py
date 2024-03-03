@@ -4,7 +4,7 @@
     "summary": "This module allow to select destination account on payment screen",
     "description": "This module allow to select destination account on payment screen",
     'category': 'Account',
-    'version': '16.0.1.0.2',
+    'version': '1.0.2',
     "author": "BitbrainHub",
     "email": "bitbrainhub@gmail.com",
     'depends': [

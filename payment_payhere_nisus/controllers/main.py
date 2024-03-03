@@ -1,13 +1,15 @@
 # -*- coding: utf-8 -*-
-
-
 """ File to manage the functions used while redirection"""
 
 import logging
 import pprint
-import werkzeug
-from odoo import http, SUPERUSER_ID
+
+from werkzeug.exceptions import Forbidden
+
+from odoo import http
 from odoo.http import request
+from odoo.exceptions import ValidationError
+from odoo.tools import consteq
 
 _logger = logging.getLogger(__name__)
 
@@ -16,55 +18,77 @@ class PayHereController(http.Controller):
 
     """ Handles the redirection back from payment gateway to merchant site """
 
-    AcceptUrl = '/payment/payhere/accept/'
-    NotifyUrl = '/payment/payhere/notify/'
-    CancelUrl = '/payment/payhere/cancel/'
+    _return_url = '/payment/payhere/return'
+    _notify_url = '/payment/payhere/notify'
+    _cancel_url = '/payment/payhere/cancel'
+    _webhook_url = '/payment/payhere/webhook'
 
-    def _get_return_url(self, **post):
-        """ Extract the return URL from the data coming from payhere. """
-        return_url = post.pop('return_url', '')
-        if not return_url:
-            website_sale_mod = request.env['ir.module.module'].sudo().search([('name', '=', 'website_sale')])
-            if website_sale_mod.state == 'installed':
-                return_url = '/shop/payment/validate/'
-            else:
-                return_url = '/payment/process'
-        return return_url
+    @http.route([_notify_url, _cancel_url],  type='http', auth='public', csrf=False)
+    def payhere_notify_from_checkout(self, **data):
+        """ Process the notification data sent by Payhere after redirection from checkout.
+        :param dict data: The notification data
+        """
+        _logger.info("handling redirection from Payhere with data:\n%s", pprint.pformat(data))
 
-    def payhere_validate_data(self, **post):
-        """ Validate the data coming from payhere. """
-        res = False
-        reference = post['order_id']
-        if reference:
-            _logger.info('payhere: validated data')
-            res = request.env['payment.transaction'].sudo().form_feedback(
-                post, 'payhere_nisus')
-            return res
+        # Check the integrity of the notification
+        tx_sudo = request.env['payment.transaction'].sudo()._get_tx_from_notification_data('payhere_nisus', data)
+        self._verify_notification_signature(data, tx_sudo)
 
-    @http.route('/payment/payhere/notify', type='http', auth='public',
-                methods=['POST'], csrf=False)
-    def payhere_notify(self, **post):
-        """ Gets the Post data from payhere after making payment """
-        _logger.info('Beginning payhere Notify Return form_feedback with post data %s',
-                     pprint.pformat(post))  # debug
-        return_url = self._get_return_url(**post)
-        _logger.info('Beginning payhere Notify Return form_feedback with post data %s',
-                    pprint.pformat(post))
-        self.payhere_validate_data(**post)
-        return werkzeug.utils.redirect(return_url)
+        # Handle the notification data
+        tx_sudo._handle_notification_data('payhere_nisus', data)
+        return request.redirect('/payment/status')
 
-    @http.route('/payment/payhere/accept', type='http', auth="none", methods=['GET', 'POST'], csrf=False)
-    def payhere_accept(self, **post):
-        """ When acc accept its payhere payment: GET on this route """
-        _logger.info('Beginning payhere accept with post data %s',
-                     pprint.pformat(post))  # debug
-        return_url = self._get_return_url(**post)
-        return werkzeug.utils.redirect(return_url)
+    @http.route(_return_url, type='http', auth='public', csrf=False)
+    def payhere_return_from_checkout(self, **data):
+        """ Process the notification data sent by Payhere after redirection from checkout.
+        :param dict data: The notification data
+        """
+        _logger.info("handling redirection from Payhere with data:\n%s", pprint.pformat(data))
 
-    @http.route('/payment/payhere/cancel', type='http', auth="none", csrf=False)
-    def payhere_cancel(self, **post):
-        """ When the user cancels its payhere payment: GET on this route """
-        _logger.info('Beginning payhere cancel with post data %s',
-                     pprint.pformat(post))  # debug
-        return_url = self._get_return_url(**post)
-        return werkzeug.utils.redirect(return_url)
+        # Check the integrity of the notification
+        # tx_sudo = request.env['payment.transaction'].sudo()._get_tx_from_notification_data('payhere_nisus', data)
+
+        # Handle the notification data
+        # tx_sudo._handle_notification_data('payhere_nisus', data)
+        return request.redirect('/payment/status')
+
+    @http.route(_webhook_url, type='http', methods=['POST'], auth='public', csrf=False)
+    def payhere_webhook(self, **data):
+        """ Process the notification data sent by Payhere to the webhook."""
+
+        _logger.info("notification received from Payhere with data:\n%s", pprint.pformat(data))
+        try:
+            # Check the origin and integrity of the notification
+            tx_sudo = request.env['payment.transaction'].sudo()._get_tx_from_notification_data(
+                'payhere_nisus', data
+            )
+            self._verify_notification_signature(data, tx_sudo)
+
+            # Handle the notification data
+            tx_sudo._handle_notification_data('payhere_nisus', data)
+        except ValidationError:  # Acknowledge the notification to avoid getting spammed
+            _logger.exception("unable to handle the notification data; skipping to acknowledge")
+
+        return 'SUCCESS'  # Acknowledge the notification
+
+    @staticmethod
+    def _verify_notification_signature(notification_data, tx_sudo):
+        """ Check that the received signature matches the expected one.
+
+        :param dict notification_data: The notification data
+        :param recordset tx_sudo: The sudoed transaction referenced by the notification data, as a
+                                  `payment.transaction` record
+        :return: None
+        :raise: :class:`werkzeug.exceptions.Forbidden` if the signatures don't match
+        """
+        # Retrieve the received signature from the data
+        received_signature = notification_data.get('md5sig')
+        if not received_signature:
+            _logger.warning("received notification with missing signature")
+            raise Forbidden()
+
+        # Compare the received signature with the expected signature computed from the data
+        expected_signature = tx_sudo.provider_id._payhere_generate_sign('out', notification_data)
+        if not (consteq(received_signature, expected_signature) and notification_data.get('status_code') == '2'):
+            _logger.warning("received notification with invalid signature")
+            raise Forbidden()

@@ -63,17 +63,17 @@
         <field name="name">fios.matching.line.view.tree</field>
         <field name="model">fios.matching.line</field>
         <field name="arch" type="xml">
-            <tree editable="bottom" create="false" delete="0" string="FIOS Matching Lines" decoration-warning="different_serial_received_from_fios==True" default_order="fios_plate_no">
-                <field name="plate_matched" invisible="1"/>
-                <field name="removed_from_fios" invisible="1"/>
-                <field name="different_serial_received_from_fios" invisible="1"/>
-                <field name="serial_matched" invisible="1"/>
+            <tree create="false" delete="0" string="FIOS Matching Lines" decoration-warning="different_serial_received_from_fios==True" default_order="fios_plate_no">
+                <field name="plate_matched" column_invisible="1"/>
+                <field name="removed_from_fios" column_invisible="1"/>
+                <field name="different_serial_received_from_fios" column_invisible="1"/>
+                <field name="serial_matched" column_invisible="1"/>
                 <field name="fios_plate_no" required="1" options="{'no_create': True, 'no_open': True}" readonly="1"/>
-                <field name="fleet_vehicle_id" context="{'view_license_plate': '1'}" attrs="{'readonly': [('plate_matched', '=', True)]}"/>
-                <button name="match_vehicle" type='object' string="Match Plate" class="btn-outline-primary" attrs="{'invisible': ['|', ('plate_matched', '=', True), ('removed_from_fios', '=', True)]}"/>
+                <field name="fleet_vehicle_id" context="{'view_license_plate': '1'}" readonly="plate_matched == True" />
+                <button name="match_vehicle" type='object' string="Match Plate" class="btn-outline-primary" invisible="plate_matched == True or removed_from_fios == True"/>
                 <field name="fios_serial_no" required="1" options="{'no_create': True, 'no_open': True}" readonly="1"/>
-                <field name="lot_id" attrs="{'readonly': [('serial_matched', '=', True)]}"/>
-                <button name="match_serial" type='object' string="Match Serial" class="btn-outline-primary" attrs="{'invisible': ['|', ('serial_matched', '=', True), ('removed_from_fios', '=', True)]}"/>
+                <field name="lot_id" column_invisible="'serial_matched' == True"/>
+                <button name="match_serial" type='object' string="Match Serial" class="btn-outline-primary" invisible="serial_matched == True or removed_from_fios == True"/>
 <!--                <button name="form_pop_up" type="object" class="btn-primary" icon="fa-share"/>-->
             </tree>
         </field>
@@ -92,7 +92,7 @@
                         <label for="plate_matched"/>
                         <div class="o_raw">
                             <field name="plate_matched" readonly="1"/>
-                            <button name="unmatch_vehicle" type='object' string="UnMatch Plate" attrs="{'invisible': [('plate_matched', '=', False)]}" icon='fa-times'/>
+                            <button name="unmatch_vehicle" type='object' string="UnMatch Plate" invisible="plate_matched == False" icon='fa-times'/>
                         </div>
                     </group>
                     <group string="Serial">
@@ -101,14 +101,14 @@
                         <label for="serial_matched"/>
                         <div class="o_raw">
                             <field name="serial_matched" readonly="1"/>
-                            <button name="unmatch_serial" type='object' string="UnMatch Serial" attrs="{'invisible': [('serial_matched', '=', False)]}" icon='fa-times'/>
+                            <button name="unmatch_serial" type='object' string="UnMatch Serial" invisible="serial_matched == False" icon='fa-times'/>
                         </div>
                     </group>
                     <group string="FIOS Status">
                         <label for="removed_from_fios"/>
                         <div class="o_raw">
                             <field name="removed_from_fios" readonly="1"/>
-                            <button name="remove_matching_line" type='object' string="Remove Line" attrs="{'invisible': [('removed_from_fios', '=', False)]}" icon='fa-times' confirm="Are you sure, you need to remove the matching line?"/>
+                            <button name="remove_matching_line" type='object' string="Remove Line" invisible="removed_from_fios == False" icon='fa-times' confirm="Are you sure, you need to remove the matching line?"/>
                         </div>
                     </group>
                 </group>

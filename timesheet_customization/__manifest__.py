@@ -2,7 +2,7 @@
     'name': 'Timesheet customization',
     'summary': "Modifications for employee timesheets",
     'description': """Modifications for employee timesheets""",
-    'version': '16.0.1.0.0',
+    'version': '1.0.1',
     'category': '',
     'author': 'Nisus Solutions (Pvt) Ltd',
     'website': 'http://www.nisus.lk',

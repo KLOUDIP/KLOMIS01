@@ -1,5 +1,3 @@
-# See LICENSE file for full copyright and licensing details.
-
 from . import field_service
 from . import hr_expense
 from . import worksheet_template

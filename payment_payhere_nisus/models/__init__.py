@@ -1,8 +1,3 @@
 # -*- coding: utf-8 -*-
-
-
-
-
-""" Import the related py files in the directory """
-
-from . import payhere
+from . import payment_provider
+from . import payment_transaction

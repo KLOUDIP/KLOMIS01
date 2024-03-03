@@ -42,9 +42,8 @@ class ResPartner(models.Model):
         else:
             return {'status_code': 404, "message": "Contact Not Found"}
 
-    @api.model
     def _cron_update_epc_transactions(self):
-        url = "https://api.eport.kloudip.com/v1/organizations/epc"
+        url = "https://eport.kloudip.com/v1/organizations/epc"
         partners = self.search([('type', '=', 'invoice'), ('uuid', '!=', False)])
         for partner in partners:
             data = {

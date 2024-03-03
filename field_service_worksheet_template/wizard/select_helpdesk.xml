@@ -8,11 +8,11 @@
                 <form string="Fill this details">
                     <group>
                         <field name="select_created_helpdesk_ticket"/>
-                        <field name="help_desk_ticket_id" attrs="{'invisible':[('select_created_helpdesk_ticket', '=', False)], 'required': [('select_created_helpdesk_ticket', '=', True)]}"/>
+                        <field name="help_desk_ticket_id" invisible="select_created_helpdesk_ticket == True" required="select_created_helpdesk_ticket == True" />
                     </group>
                     <footer>
-                        <button type="object" name="action_ticket_view" string="Create a new HelpDesk Ticket" class="oe_highlight" attrs="{'invisible':[('select_created_helpdesk_ticket', '!=', False)]}"/>
-                        <button type="object" name="action_for_created_ticket" string="Click to add task Data to HelpDesk Ticket" class="oe_highlight"  attrs="{'invisible':[('select_created_helpdesk_ticket', '=', False)]}"/>
+                        <button type="object" name="action_ticket_view" string="Create a new HelpDesk Ticket" class="oe_highlight" invisible="select_created_helpdesk_ticket != False"/>
+                        <button type="object" name="action_for_created_ticket" string="Click to add task Data to HelpDesk Ticket" class="oe_highlight" invisible="select_created_helpdesk_ticket == False"/>
                         <button special="cancel" string="Cancel"/>
                     </footer>
                 </form>

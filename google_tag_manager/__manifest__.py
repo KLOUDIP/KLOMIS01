@@ -1,6 +1,6 @@
 {
     'name': "Google tag Manager",
-    'version': "16.0.3.0.2",
+    'version': "3.0.2",
     'author': "Nisus Solutions (Pvt) Ltd",
     'category': "Web",
     'summary': "Add google tag to Website",

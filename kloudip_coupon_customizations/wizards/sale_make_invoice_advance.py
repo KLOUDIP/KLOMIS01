@@ -38,10 +38,11 @@ def _create_invoices(self, sale_orders):
             self._prepare_invoice_values(order, down_payment_so_line)
         ).with_user(self.env.uid)  # Unsudo the invoice after creation
 
-        invoice.message_post_with_view(
+        invoice.message_post_with_source(
             'mail.message_origin_link',
-            values={'self': invoice, 'origin': order},
-            subtype_id=self.env.ref('mail.mt_note').id)
+            render_values={'self': invoice, 'origin': order},
+            subtype_xmlid='mail.mt_note'
+        )
 
         return invoice
 

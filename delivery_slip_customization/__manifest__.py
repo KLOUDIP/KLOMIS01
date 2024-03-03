@@ -4,7 +4,7 @@
     "summary": "This module allow to add vehicle no to delivery slip",
     "description": "This module allow to add vehicle no to delivery slip",
     'category': 'stock',
-    'version': '16.0.1.0.2',
+    'version': '1.0.2',
     "author": "Nisus Solutions (Pvt) Ltd",
     "website": "https://nisus.lk/",
     'data': [

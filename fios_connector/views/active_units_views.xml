@@ -17,14 +17,14 @@
                         <group>
                             <field name="contract_ids">
                                 <tree>
-                                    <field name="active" invisible="1"/>
-                                    <field name="color_index" invisible="1"/>
+                                    <field name="active" column_invisible="1"/>
+                                    <field name="color_index" column_invisible="1"/>
                                     <field name="name"/>
-                                    <field name="days_left" invisible="1"/>
+                                    <field name="days_left" column_invisible="1"/>
                                     <field name="vehicle_id" widget="many2one_avatar"/>
                                     <field name="insurer_id"/>
                                     <field name="cost_generated" widget="monetary"/>
-                                    <field name="currency_id" invisible="1"/>
+                                    <field name="currency_id" column_invisible="1"/>
                                     <field name="state" widget="badge" decoration-info="state == 'open'" decoration-danger="state == 'expired'"/>
                                     <field name="activity_exception_decoration" widget="activity_exception"/>
                                 </tree>
