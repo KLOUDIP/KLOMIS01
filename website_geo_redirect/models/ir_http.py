@@ -59,7 +59,7 @@ class IrHttp(models.AbstractModel):
 
 def get_geo_website():
     website_config = request.env['website.redirect.config'].sudo()
-    response = http.request._geoip_resolve()
+    response = request.geoip
     host = http.request.httprequest.host_url
     redirect_site = website_config.search([('website_url', '=', host)], limit=1)
 
@@ -77,7 +77,8 @@ def get_geo_website():
            return website_config
         return website_id + request.httprequest.full_path[1:]
     if response:
-        country_code = response.get('country_code', False)
+        # country_code = response.get('country_code', False)
+        country_code = response.country_code
         country_group_ids = request.env['res.country'].search([('code', '=', country_code)]).country_group_ids
         redirect_website = website_config.search([('country_group_ids', 'in', country_group_ids.ids)], limit=1)
         if redirect_website:
