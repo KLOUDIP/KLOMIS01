@@ -22,11 +22,11 @@
                     <t t-set="entries">
                         <ul class="list-group list-group-flush flex-wrap flex-row flex-lg-column">
                             <li class="list-group-item flex-grow-1">
-                                <a t-if="sheet.customer_has_to_be_signed()" role="button" class="btn btn-primary m-3" data-bs-toggle="modal" data-bs-target="#modalaccept" href="#">
-                                    <i class="fa fa-check mr-2"/>Customer Sign
+                                <a t-if="sheet.customer_has_to_be_signed()" role="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalaccept" href="#">
+                                    <i class="fa fa-check me-1"/>Customer Sign
                                 </a>
-                                <a t-if="sheet.technician_has_to_be_signed()" role="button" class="btn btn-primary m-3" data-bs-toggle="modal" data-bs-target="#tmodalaccept" href="#">
-                                    <i class="fa fa-check mr-2"/>TECH Team Signed
+                                <a t-if="sheet.technician_has_to_be_signed()" role="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#tmodalaccept" href="#">
+                                    <i class="fa fa-check me-1"/>TECH Team Signed
                                 </a>
                                 <div class="o_download_pdf btn-toolbar flex-sm-nowrap">
                                     <div class="btn-group flex-grow-1 mr-1 mb-1">
@@ -54,7 +54,7 @@
                 <div class="col-12 col-lg justify-content-end">
 
                     <!-- modal relative to the sign action -->
-                    <div role="dialog" class="modal fade" id="modalaccept">
+                    <div role="dialog" class="modal fade mt-5 pt-5" id="modalaccept">
                         <div class="modal-dialog" t-if="sheet.customer_has_to_be_signed()">
                             <form id="accept" method="POST" t-att-sheet-task-id="sheet.id" t-att-data-token="sheet.access_token" class="js_accept_json modal-content js_website_submit_form">
                                 <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
@@ -79,7 +79,7 @@
                         </div>
                     </div>
 
-                    <div role="dialog" class="modal fade" id="tmodalaccept">
+                    <div role="dialog" class="modal fade mt-5 pt-5" id="tmodalaccept">
                         <div class="modal-dialog" t-if="sheet.technician_has_to_be_signed()">
                             <form id="accept" method="POST" t-att-sheet-task-id="sheet.id" t-att-data-token="sheet.access_token" class="js_accept_json modal-content js_website_submit_form">
                                 <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
