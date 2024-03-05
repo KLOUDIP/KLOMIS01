@@ -8,12 +8,10 @@
     "website": "https://nisus.lk/",
     'license': 'OPL-1',
     "depends": ['base', 'mail'],
-    "data": [
-    ],
-    # 'assets': {
-    #     'web.assets_backend': [
-    #         'chatter_edit_delete_disable/static/src/xml/message.xml',
-    #     ],
-    # },
+    'assets': {
+        'web.assets_backend': [
+            'chatter_edit_delete_disable/static/src/embed/common/**/*',
+        ],
+    },
     "installable": True,
 }
