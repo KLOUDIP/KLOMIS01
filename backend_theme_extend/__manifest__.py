@@ -1,6 +1,6 @@
 {
     "name": "Backend Theme Extend",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "author": "BitbrainHub",
     "email": "bitbrainhub@gmail.com",
     'summary': """This module allow to change the form view button colours""",

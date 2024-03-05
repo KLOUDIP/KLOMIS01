@@ -3,6 +3,12 @@ button.btn.btn-primary {
 }
 
 button.btn-outline-primary {
-    color: #363f88;
-    border-color: #363f88;
+  color: #363f88;
+  border-color: #363f88;
+}
+
+.btn-primary.active {
+  color: #fff;
+  background-color: #363f88;
+  border-color: #363f88;
 }
