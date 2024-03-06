@@ -26,7 +26,7 @@ class FIOSUnitReportWizard(models.TransientModel):
         mail_template = self.env.ref('fios_connector_report.mail_template_fios_active_units', raise_if_not_found=False)
         ctx = {
             'default_model': 'res.partner',
-            'default_res_id': partner_id.id,
+            'default_res_ids': partner_id.ids,
             'default_use_template': bool(mail_template),
             'default_template_id': mail_template.id if mail_template else None,
             'default_composition_mode': 'comment',
