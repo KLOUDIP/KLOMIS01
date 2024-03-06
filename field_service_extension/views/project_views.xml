@@ -6,6 +6,7 @@
         <field name="inherit_id" ref="industry_fsm.view_task_form2_inherit"/>
         <field name="arch" type="xml">
             <xpath expr="//field[@name='is_task_phone_update']" position="after">
+                <field name="is_technician" invisible="1"/>
                 <label for="partner_mobile" invisible="not is_fsm"/>
                 <div class="o_row o_row_readonly" invisible="not is_fsm">
                     <field name="is_task_phone_update" invisible="1"/>

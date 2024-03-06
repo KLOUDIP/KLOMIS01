@@ -122,9 +122,9 @@
             <field name="model">project.task</field>
             <field name="inherit_id" ref="project.view_task_form2"/>
             <field name="arch" type="xml">
-                <xpath expr="//group//field[@name='partner_id']" position="attributes">
-                    <attribute name="options">{'no_open': 'True'}</attribute>
-                </xpath>
+<!--                <xpath expr="//group//field[@name='partner_id']" position="attributes">-->
+<!--                    <attribute name="options">{'no_open': 'True'}</attribute>-->
+<!--                </xpath>-->
 
                 <xpath expr="//div[@name='button_box']" position="inside">
                     <field string="Tickets" name="helpdesk_ticket_id" invisible="1" />
