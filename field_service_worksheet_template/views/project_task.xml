@@ -122,12 +122,13 @@
             <field name="model">project.task</field>
             <field name="inherit_id" ref="project.view_task_form2"/>
             <field name="arch" type="xml">
-<!--                <xpath expr="//group//field[@name='partner_id']" position="attributes">-->
-<!--                    <attribute name="options">{'no_open': 'True'}</attribute>-->
-<!--                </xpath>-->
+                <!--                <xpath expr="//group//field[@name='partner_id']" position="attributes">-->
+                <!--                    <attribute name="options">{'no_open': 'True'}</attribute>-->
+                <!--                </xpath>-->
 
                 <xpath expr="//div[@name='button_box']" position="inside">
                     <field string="Tickets" name="helpdesk_ticket_id" invisible="1" />
+                    <field name="is_tech_team_user" invisible="1" />
                     <button
                             string="Intervention ticket"
                             class="oe_stat_button"
@@ -137,6 +138,14 @@
                             invisible="helpdesk_ticket_id == False"
                             groups="helpdesk.group_helpdesk_user"
                             help="Ticket from this task"/>
+                </xpath>
+
+                <xpath expr="(//div[hasclass('o_task_state_widget')])[1]" position="attributes">
+                    <attribute name="readonly">tech_team_member_id != True</attribute>
+                </xpath>
+
+                <xpath expr="(//div[hasclass('o_task_state_widget')])[2]" position="attributes">
+                    <attribute name="readonly">tech_team_member_id != True</attribute>
                 </xpath>
 
             </field>
@@ -187,7 +196,7 @@
             </field>
         </record>
 
-	  <record id="project_task_view_form_service_inherit" model="ir.ui.view">
+        <record id="project_task_view_form_service_inherit" model="ir.ui.view">
             <field name='name'>task.view</field>
             <field name="model">project.task</field>
             <field name="inherit_id" ref="project.view_task_form2"/>
