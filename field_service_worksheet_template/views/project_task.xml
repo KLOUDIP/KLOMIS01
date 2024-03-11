@@ -140,11 +140,11 @@
                             help="Ticket from this task"/>
                 </xpath>
 
-                <xpath expr="(//div[hasclass('o_task_state_widget')])[1]" position="attributes">
+                <xpath expr="(//field[hasclass('o_task_state_widget')])[1]" position="attributes">
                     <attribute name="readonly">tech_team_member_id != True</attribute>
                 </xpath>
 
-                <xpath expr="(//div[hasclass('o_task_state_widget')])[2]" position="attributes">
+                <xpath expr="(//field[hasclass('o_task_state_widget')])[2]" position="attributes">
                     <attribute name="readonly">tech_team_member_id != True</attribute>
                 </xpath>
 
