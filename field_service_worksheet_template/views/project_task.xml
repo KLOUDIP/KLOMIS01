@@ -140,12 +140,18 @@
                             help="Ticket from this task"/>
                 </xpath>
 
-                <xpath expr="(//field[hasclass('o_task_state_widget')])[1]" position="attributes">
-                    <attribute name="readonly">tech_team_member_id != True</attribute>
+                <xpath expr="//div[@class='d-flex justify-content-end o_state_container']" position="replace">
+                    <div class="d-flex justify-content-end o_state_container" invisible="not active or not is_tech_team_user">
+                        <field name="state" widget="project_task_state_selection" class="o_task_state_widget"/>
+                    </div>
+                    <field name="state" widget="badge" invisible="not active or is_tech_team_user"/>
                 </xpath>
 
-                <xpath expr="(//field[hasclass('o_task_state_widget')])[2]" position="attributes">
-                    <attribute name="readonly">tech_team_member_id != True</attribute>
+                <xpath expr="//div[@class='d-flex justify-content-start o_state_container w-100 w-md-50 w-lg-25']" position="replace">
+                    <div class="d-flex justify-content-start o_state_container w-100 w-md-50 w-lg-25" invisible="active or not is_tech_team_user">
+                        <field name="state" widget="project_task_state_selection" class="o_task_state_widget"/>
+                    </div>
+                    <field name="state" widget="badge" invisible="active or is_tech_team_user"/>
                 </xpath>
 
             </field>
