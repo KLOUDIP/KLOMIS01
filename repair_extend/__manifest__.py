@@ -4,7 +4,7 @@
     "summary": "This module allow add new feature to repair module",
     "description": "This module allow add new feature to repair module",
     'category': 'Inventory/Inventory',
-    'version': '1.0.1',
+    'version': '1.0.2',
     "author": "BitbrainHub",
     "email": "bitbrainhub@gmail.com",
     'depends': [
@@ -12,6 +12,7 @@
     ],
     'data': [
         'views/sale_order_views.xml',
+        'views/repair_views.xml',
     ],
     'installable': True,
     'application': True,
