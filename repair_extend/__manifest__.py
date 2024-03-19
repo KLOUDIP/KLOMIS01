@@ -9,7 +9,7 @@
     "email": "bitbrainhub@gmail.com",
     'depends': [
         'repair',
-        'stock'
+        'helpdesk_repair'
     ],
     'data': [
         'views/sale_order_views.xml',

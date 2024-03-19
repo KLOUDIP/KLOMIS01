@@ -64,3 +64,12 @@ class RepairOrder(models.Model):
             "views": [[False, "form"]],
             "res_id": self.device_sale_id.id,
         }
+
+    def action_show_helpdesk_ticket(self):
+        self.ensure_one()
+        return {
+            "type": "ir.actions.act_window",
+            "res_model": "helpdesk.ticket",
+            "views": [[False, "form"]],
+            "res_id": self.ticket_id.id,
+        }

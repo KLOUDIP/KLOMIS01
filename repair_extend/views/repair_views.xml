@@ -8,6 +8,7 @@
             <field name="arch" type="xml">
                 <xpath expr="//header" position="inside">
                     <field name="device_sale_id" invisible="1"/>
+                    <field name="ticket_id" invisible="1"/>
                     <button name="action_create_device_order" type="object" string="Create Device Order" class="oe_highlight" invisible="device_sale_id"/>
                 </xpath>
                 <xpath expr="//div[@name='button_box']" position="inside">
@@ -18,6 +19,15 @@
                             icon="fa-cog"
                             string="Device Order"
                             invisible="not device_sale_id"
+                            groups="stock.group_stock_user,sales_team.group_sale_salesman">
+                    </button>
+                    <button
+                            name="action_show_helpdesk_ticket"
+                            type="object"
+                            class="oe_stat_button"
+                            icon="fa-life-ring"
+                            string="Helpdesk Ticket"
+                            invisible="not ticket_id"
                             groups="stock.group_stock_user,sales_team.group_sale_salesman">
                     </button>
                 </xpath>
