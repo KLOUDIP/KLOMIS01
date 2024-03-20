@@ -14,7 +14,8 @@
     'data': [
         'views/sale_order_views.xml',
         'views/repair_views.xml',
-        'views/stock_picking_views.xml'
+        'views/stock_picking_views.xml',
+        'views/helpdesk_ticket_views.xml'
     ],
     'installable': True,
     'application': True,
