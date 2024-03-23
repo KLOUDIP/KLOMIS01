@@ -19,7 +19,7 @@ class HideMenuUser(models.Model):
         res = super(HideMenuUser, self).write(vals)
         for menu in self.hide_menu_ids:
             menu.write({
-                'restrict_user_ids': [(4, self.id)]
+                'restrict_user_ids': [(4, self.ids)]
             })
         self.clear_caches()
         return res
