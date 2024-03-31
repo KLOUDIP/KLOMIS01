@@ -103,7 +103,7 @@ class WorksheetTemplateLine(models.Model):
         worksheet_id = self.worksheet_id
         action = template_id.action_id.read()[0]
         if get_line_id:
-            worksheet = self.env[template_id.model_id.model].sudo().search([('x_studio_line_id', '=', get_line_id)])
+            worksheet = self.env[template_id.model_id.model].sudo().search([('x_studio_line_id', '=', get_line_id)], limit=1)
 
             if worksheet:
                 action = template_id.action_id.read()[0]
