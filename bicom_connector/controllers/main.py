@@ -81,7 +81,7 @@ class UserExtensionController(http.Controller):
             response = Response(json.dumps({"error": "Invalid or missing authorization token"}), status=401, content_type='application/json')
             return response
 
-    @http.route(['/calllog/<str:id>'], type='http', auth='none', methods=['GET'], csrf=False)
+    @http.route(['/calllog/<string:id>'], type='http', auth='none', methods=['GET'], csrf=False)
     def get_calllog(self, id, **kwargs):
         _logger.info(kwargs)
         uuid_token = request.httprequest.headers.get('X-CrmIService-Token')
