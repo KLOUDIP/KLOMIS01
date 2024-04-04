@@ -71,7 +71,7 @@ class UserExtensionController(http.Controller):
         user = request.env['res.users'].sudo().search([('uuid_token', '=', uuid_token)])
         if user:
             if user.company_id:
-                data = {'name': user.company_id.name, 'url': user.company_id.name, 'version': '1.0.1'}
+                data = {'name': user.company_id[0].name, 'url': user.company_id[0].website, 'version': '1.0.1'}
                 response = Response(json.dumps(data), status=200, content_type='application/json')
                 return response
             else:
