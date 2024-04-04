@@ -42,7 +42,7 @@ class UserExtensionController(http.Controller):
         uuid_token = request.httprequest.headers.get('X-CrmIService-Token')
         domain = []
         user = request.env['res.users'].sudo().search([('uuid_token', '=', uuid_token)])
-        phonenumber = kwargs.get('phonenumber', '')
+        phonenumber = kwargs.get('phonenumber', '').strip()
         if phonenumber != '':
             domain.append(('phone_sanitized', '=', '+'+phonenumber))
         if user:
@@ -81,7 +81,7 @@ class UserExtensionController(http.Controller):
             response = Response(json.dumps({"error": "Invalid or missing authorization token"}), status=401, content_type='application/json')
             return response
 
-    @http.route(['/calllog/<int:id>'], type='http', auth='none', methods=['GET'], csrf=False)
+    @http.route(['calllog', '/calllog/<int:id>'], type='http', auth='none', methods=['GET'], csrf=False)
     def get_calllog(self, id):
         uuid_token = request.httprequest.headers.get('X-CrmIService-Token')
         domain = []
