@@ -81,7 +81,7 @@ class UserExtensionController(http.Controller):
             response = Response(json.dumps({"error": "Invalid or missing authorization token"}), status=401, content_type='application/json')
             return response
 
-    @http.route(['/calllog', '/calllog/<int:id>'], type='http', auth='none', methods=['GET', 'POST'], csrf=False)
+    @http.route(['/calllog/<str:id>'], type='http', auth='none', methods=['GET'], csrf=False)
     def get_calllog(self, id, **kwargs):
         _logger.info(kwargs)
         uuid_token = request.httprequest.headers.get('X-CrmIService-Token')
@@ -91,6 +91,37 @@ class UserExtensionController(http.Controller):
             domain.append(('log_id', '=', id))
         if user:
             log = request.env['voip.call'].with_user(user).search(domain)
+            log_list = [{
+                "id": rec.log_id,
+                "userid": None,
+                "customerid": "0032000001DrFDSAA3",
+                "customertype": rec.partner_id.type if rec.partner_id else '',
+                "subject": "PBXware call",
+                "phonenumber": rec.phone_number,
+                "direction": rec.direction,
+                "duration": 0,
+                "starttime": rec.start_date,
+                "status": rec.state,
+                "description": "",
+                "asteriskcallid1": "",
+                "asteriskcallid2": "",
+                "recordname": "",
+                "recorddesc": ""
+            } for rec in log]
+            response = Response(json.dumps(log_list), status=200, content_type='application/json')
+            return response
+        else:
+            response = Response(json.dumps({"error": "Invalid or missing authorization token"}), status=401,
+                                content_type='application/json')
+            return response
+
+    @http.route(['/calllog'], type='http', auth='none', methods=['POST'], csrf=False)
+    def create_calllog(self, **kwargs):
+        _logger.info(kwargs)
+        uuid_token = request.httprequest.headers.get('X-CrmIService-Token')
+        user = request.env['res.users'].sudo().search([('uuid_token', '=', uuid_token)])
+        if user:
+            log = request.env['voip.call'].with_user(user).search([])
             log_list = [{
                 "id": rec.log_id,
                 "userid": None,
