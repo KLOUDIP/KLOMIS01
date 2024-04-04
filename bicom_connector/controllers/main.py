@@ -44,7 +44,7 @@ class UserExtensionController(http.Controller):
         user = request.env['res.users'].sudo().search([('uuid_token', '=', uuid_token)])
         phonenumber = kwargs.get('phonenumber', '')
         if phonenumber != '':
-            domain.append(('phone', '=', '+'+phonenumber))
+            domain.append(('phone_sanitized', '=', '+'+phonenumber))
         if user:
             customers = request.env['res.partner'].with_user(user).search(domain)
             customer_list = [{
