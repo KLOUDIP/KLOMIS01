@@ -100,7 +100,7 @@ class UserExtensionController(http.Controller):
                 "phonenumber": rec.phone_number,
                 "direction": rec.direction,
                 "duration": 0,
-                "starttime": rec.start_date,
+                "starttime": int(rec.start_date.timestamp()) if rec.start_date else '',
                 "status": rec.state,
                 "description": "",
                 "asteriskcallid1": "",
