@@ -1,12 +1,11 @@
 # -*- coding: utf-8 -*-
-
+import datetime
+import uuid
 import json
 import logging
-import requests
 
-import xmlrpc.client
 
-from odoo import http, SUPERUSER_ID
+from odoo import http
 from odoo.http import request, Response
 
 _logger = logging.getLogger(__name__)
@@ -118,28 +117,39 @@ class UserExtensionController(http.Controller):
     @http.route(['/calllog'], type='http', auth='none', methods=['POST'], csrf=False)
     def create_calllog(self, **kwargs):
         _logger.info(kwargs)
+        data = next(iter(kwargs))
         uuid_token = request.httprequest.headers.get('X-CrmIService-Token')
         user = request.env['res.users'].sudo().search([('uuid_token', '=', uuid_token)])
         if user:
-            log = request.env['voip.call'].with_user(user).search([])
-            log_list = [{
-                "id": rec.log_id,
-                "userid": None,
-                "customerid": "0032000001DrFDSAA3",
-                "customertype": rec.partner_id.type if rec.partner_id else '',
-                "subject": "PBXware call",
-                "phonenumber": rec.phone_number,
-                "direction": rec.direction,
-                "duration": 0,
-                "starttime": rec.start_date,
-                "status": rec.state,
-                "description": "",
-                "asteriskcallid1": "",
-                "asteriskcallid2": "",
-                "recordname": "",
-                "recorddesc": ""
-            } for rec in log]
-            response = Response(json.dumps(log_list), status=200, content_type='application/json')
+            # log = request.env['voip.call'].with_user(user).search([])
+            # log_list = [{
+            #     "id": rec.log_id,
+            #     "userid": None,
+            #     "customerid": "0032000001DrFDSAA3",
+            #     "customertype": rec.partner_id.type if rec.partner_id else '',
+            #     "subject": "PBXware call",
+            #     "phonenumber": rec.phone_number,
+            #     "direction": rec.direction,
+            #     "duration": 0,
+            #     "starttime": rec.start_date,
+            #     "status": rec.state,
+            #     "description": "",
+            #     "asteriskcallid1": "",
+            #     "asteriskcallid2": "",
+            #     "recordname": "",
+            #     "recorddesc": ""
+            # } for rec in log]
+            now = datetime.datetime.now()
+            id = uuid.uuid1()
+            data = {
+                "id": id.hex,
+                "status": "PENDING",
+                "timestamp": int(now.timestamp()),
+                "timetolive": 86400,
+                "resourcetype": None,
+                "resourceid": None
+            }
+            response = Response(json.dumps(data), status=200, content_type='application/json')
             return response
         else:
             response = Response(json.dumps({"error": "Invalid or missing authorization token"}), status=401,
