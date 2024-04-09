@@ -91,9 +91,9 @@ class UserExtensionController(http.Controller):
         if user:
             log = request.env['voip.call'].with_user(user).search(domain)
             log_list = [{
-                "id": rec.log_id,
+                "id": rec.id,
                 "userid": None,
-                "customerid": "0032000001DrFDSAA3",
+                "customerid": rec.partner_id.id if rec.partner_id else "",
                 "customertype": rec.partner_id.type if rec.partner_id else '',
                 "subject": "PBXware call",
                 "phonenumber": rec.phone_number,
@@ -116,69 +116,49 @@ class UserExtensionController(http.Controller):
 
     @http.route(['/calllog'], type='http', auth='none', methods=['POST'], csrf=False)
     def create_calllog(self, **kwargs):
-        _logger.info(kwargs)
-        _logger.info(request.httprequest.data)
-        if bool(kwargs):
-            data = next(iter(kwargs))
-            json_data = json.loads(data.replace("\\", ""))
-            uuid_token = request.httprequest.headers.get('X-CrmIService-Token')
-            user = request.env['res.users'].sudo().search([('uuid_token', '=', uuid_token)])
-            Call = request.env['voip.call']
-            if user:
-                call_rec = Call.sudo().create({
-                    'display_name': 'Testing',
-                    'phone_number': json_data.get('phone_number', ''),
-                    'direction': 'incoming' if json_data.get('direction', '') == 'INBOUND' else 'outgoing',
-                    'state': 'calling',
-                    'start_date': datetime.datetime.now(),
+        json_data = json.loads(request.httprequest.data)
+        uuid_token = request.httprequest.headers.get('X-CrmIService-Token')
+        user = request.env['res.users'].sudo().search([('uuid_token', '=', uuid_token)])
+        Call = request.env['voip.call']
+        if user:
+            if bool(json_data) == False:
+                data = {
+                    "id": 0000,
+                    "status": "READY",
+                    "timestamp": "",
+                    "timetolive": 86400,
+                    "resourcetype": None,
+                    "resourceid": None
+                }
+                response = Response(json.dumps(data), status=200, content_type='application/json')
+                return response
+            call_rec = Call.sudo().create({
+                'display_name': 'Testing',
+                'phone_number': json_data.get('phonenumber', ''),
+                'direction': 'incoming' if json_data.get('direction', '') == 'INBOUND' else 'outgoing',
+                'state': 'calling',
+                'activity_name': json_data.get('subject', ''),
+                'user_id': user.id,
+                'start_date': datetime.datetime.now(),
 
-                })
-                if call_rec:
-                    now = datetime.datetime.now()
-                    id = uuid.uuid1()
-                    data = {
-                        "id": id.hex,
-                        "status": "PENDING",
-                        "timestamp": int(now.timestamp()),
-                        "timetolive": 86400,
-                        "resourcetype": None,
-                        "resourceid": None
-                    }
-                    response = Response(json.dumps(data), status=200, content_type='application/json')
-                    return response
-                else:
-                    response = Response(json.dumps({"error": "Invalid parameters/json in body or query"}), status=400,
-                                        content_type='application/json')
-                    return response
-            # log = request.env['voip.call'].with_user(user).search([])
-            # log_list = [{
-            #     "id": rec.log_id,
-            #     "userid": None,
-            #     "customerid": "0032000001DrFDSAA3",
-            #     "customertype": rec.partner_id.type if rec.partner_id else '',
-            #     "subject": "PBXware call",
-            #     "phonenumber": rec.phone_number,
-            #     "direction": rec.direction,
-            #     "duration": 0,
-            #     "starttime": rec.start_date,
-            #     "status": rec.state,
-            #     "description": "",
-            #     "asteriskcallid1": "",
-            #     "asteriskcallid2": "",
-            #     "recordname": "",
-            #     "recorddesc": ""
-            # } for rec in log]
+            })
+            if call_rec:
+                data = {
+                    "id": call_rec.id,
+                    "status": "READY",
+                    "timestamp": int(call_rec.start_date.timestamp()),
+                    "timetolive": 86400,
+                    "resourcetype": None,
+                    "resourceid": None
+                }
+                response = Response(json.dumps(data), status=200, content_type='application/json')
+                return response
+            else:
+                response = Response(json.dumps({"error": "Invalid parameters/json in body or query"}), status=400,
+                                    content_type='application/json')
+                return response
         else:
-            now = datetime.datetime.now()
-            id = uuid.uuid1()
-            data = {
-                "id": id.hex,
-                "status": "PENDING",
-                "timestamp": int(now.timestamp()),
-                "timetolive": 86400,
-                "resourcetype": None,
-                "resourceid": None
-            }
-            response = Response(json.dumps(data), status=200, content_type='application/json')
+            response = Response(json.dumps({"error": "Invalid or missing authorization token"}), status=401,
+                                content_type='application/json')
             return response
 
