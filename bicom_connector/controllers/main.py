@@ -167,11 +167,17 @@ class UserExtensionController(http.Controller):
             #     "recordname": "",
             #     "recorddesc": ""
             # } for rec in log]
-
-            response = Response(json.dumps(data), status=200, content_type='application/json')
-            return response
         else:
-            response = Response(json.dumps({"error": "Invalid or missing authorization token"}), status=401,
-                                content_type='application/json')
+            now = datetime.datetime.now()
+            id = uuid.uuid1()
+            data = {
+                "id": id.hex,
+                "status": "PENDING",
+                "timestamp": int(now.timestamp()),
+                "timetolive": 86400,
+                "resourcetype": None,
+                "resourceid": None
+            }
+            response = Response(json.dumps(data), status=200, content_type='application/json')
             return response
 
