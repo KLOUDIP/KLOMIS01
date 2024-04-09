@@ -117,7 +117,7 @@ class UserExtensionController(http.Controller):
     @http.route(['/calllog'], type='http', auth='none', methods=['POST'], csrf=False)
     def create_calllog(self, **kwargs):
         _logger.info(kwargs)
-        data = next(iter(kwargs))
+        # data = next(iter(kwargs))
         uuid_token = request.httprequest.headers.get('X-CrmIService-Token')
         user = request.env['res.users'].sudo().search([('uuid_token', '=', uuid_token)])
         if user:
