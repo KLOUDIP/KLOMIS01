@@ -117,6 +117,7 @@ class UserExtensionController(http.Controller):
     @http.route(['/calllog'], type='http', auth='none', methods=['POST'], csrf=False)
     def create_calllog(self, **kwargs):
         _logger.info(kwargs)
+        _logger.info(request.httprequest.data)
         if bool(kwargs):
             data = next(iter(kwargs))
             json_data = json.loads(data.replace("\\", ""))
