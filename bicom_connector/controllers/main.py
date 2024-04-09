@@ -117,10 +117,38 @@ class UserExtensionController(http.Controller):
     @http.route(['/calllog'], type='http', auth='none', methods=['POST'], csrf=False)
     def create_calllog(self, **kwargs):
         _logger.info(kwargs)
-        # data = next(iter(kwargs))
-        uuid_token = request.httprequest.headers.get('X-CrmIService-Token')
-        user = request.env['res.users'].sudo().search([('uuid_token', '=', uuid_token)])
-        if user:
+        if bool(kwargs):
+            data = next(iter(kwargs))
+            json_data = json.loads(data.replace("\\", ""))
+            uuid_token = request.httprequest.headers.get('X-CrmIService-Token')
+            user = request.env['res.users'].sudo().search([('uuid_token', '=', uuid_token)])
+            Call = request.env['voip.call']
+            if user:
+                call_rec = Call.sudo().create({
+                    'display_name': 'Testing',
+                    'phone_number': json_data.get('phone_number', ''),
+                    'direction': 'incoming' if json_data.get('direction', '') == 'INBOUND' else 'outgoing',
+                    'state': 'calling',
+                    'start_date': datetime.datetime.now(),
+
+                })
+                if call_rec:
+                    now = datetime.datetime.now()
+                    id = uuid.uuid1()
+                    data = {
+                        "id": id.hex,
+                        "status": "PENDING",
+                        "timestamp": int(now.timestamp()),
+                        "timetolive": 86400,
+                        "resourcetype": None,
+                        "resourceid": None
+                    }
+                    response = Response(json.dumps(data), status=200, content_type='application/json')
+                    return response
+                else:
+                    response = Response(json.dumps({"error": "Invalid parameters/json in body or query"}), status=400,
+                                        content_type='application/json')
+                    return response
             # log = request.env['voip.call'].with_user(user).search([])
             # log_list = [{
             #     "id": rec.log_id,
@@ -139,16 +167,7 @@ class UserExtensionController(http.Controller):
             #     "recordname": "",
             #     "recorddesc": ""
             # } for rec in log]
-            now = datetime.datetime.now()
-            id = uuid.uuid1()
-            data = {
-                "id": id.hex,
-                "status": "PENDING",
-                "timestamp": int(now.timestamp()),
-                "timetolive": 86400,
-                "resourcetype": None,
-                "resourceid": None
-            }
+
             response = Response(json.dumps(data), status=200, content_type='application/json')
             return response
         else:
