@@ -45,7 +45,7 @@ class UserExtensionController(http.Controller):
         if phonenumber != '':
             domain.append(('phone_sanitized', '=', '+'+phonenumber))
         if user:
-            customers = request.env['res.partner'].with_user(user).search(domain)
+            customers = request.env['res.partner'].sudo().with_user(user).search(domain)
             customer_list = [{
                 "id": rec.id,
                 "type": rec.type,
