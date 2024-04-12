@@ -118,6 +118,8 @@ class UserExtensionController(http.Controller):
         """
             Create calllog with bicom request data
         """
+        _logger.info(kwargs)
+        _logger.info(request.httprequest.data)
         json_data = json.loads(request.httprequest.data)
         uuid_token = request.httprequest.headers.get('X-CrmIService-Token')
         user = request.env['res.users'].sudo().search([('uuid_token', '=', uuid_token)])
@@ -174,6 +176,8 @@ class UserExtensionController(http.Controller):
 
     @http.route(['/recording'], type='http', auth='none', methods=['POST'], csrf=False)
     def create_recording_log(self, **kwargs):
+        _logger.info(kwargs)
+        _logger.info(request.httprequest.data)
         json_data = json.loads(request.httprequest.data)
         uuid_token = request.httprequest.headers.get('X-CrmIService-Token')
         user = request.env['res.users'].sudo().search([('uuid_token', '=', uuid_token)])
