@@ -10,7 +10,7 @@
     "description": """
         This module allow to integrate BiCom with Odoo CRM
     """,
-    "version": "17.0.1.0.1",
+    "version": "17.0.1.0.2",
     "depends": [
         'base',
         'voip'

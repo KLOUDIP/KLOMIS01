@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 import datetime
-import uuid
 import json
 import logging
-
+from markupsafe import Markup
 
 from odoo import http
 from odoo.http import request, Response
@@ -116,6 +115,9 @@ class UserExtensionController(http.Controller):
 
     @http.route(['/calllog'], type='http', auth='none', methods=['POST'], csrf=False)
     def create_calllog(self, **kwargs):
+        """
+            Create calllog with bicom request data
+        """
         json_data = json.loads(request.httprequest.data)
         uuid_token = request.httprequest.headers.get('X-CrmIService-Token')
         user = request.env['res.users'].sudo().search([('uuid_token', '=', uuid_token)])
@@ -133,16 +135,24 @@ class UserExtensionController(http.Controller):
                 response = Response(json.dumps(data), status=200, content_type='application/json')
                 return response
             call_rec = Call.sudo().create({
-                'display_name': 'Testing',
+                'display_name': json_data.get('description', ''),
                 'phone_number': json_data.get('phonenumber', ''),
                 'direction': 'incoming' if json_data.get('direction', '') == 'INBOUND' else 'outgoing',
+                'partner_id': int(json_data.get('customerid', False)) if json_data.get('customerid', False) else False,
                 'state': 'calling',
                 'activity_name': json_data.get('subject', ''),
                 'user_id': user.id,
                 'start_date': datetime.datetime.now(),
-
             })
             if call_rec:
+                body = f"""
+                        Subject - {call_rec.activity_name} \n
+                        Description - {call_rec.display_name} \n
+                        Direction - {call_rec.direction} \n
+                        Start Time - {call_rec.start_date} \n
+                """
+                contact = call_rec.partner_id
+                contact.with_user(user).message_post(body=body, message_type='notification', subtype_xmlid="mail.mt_comment")
                 data = {
                     "id": call_rec.id,
                     "status": "READY",
@@ -162,3 +172,26 @@ class UserExtensionController(http.Controller):
                                 content_type='application/json')
             return response
 
+    @http.route(['/recording'], type='http', auth='none', methods=['POST'], csrf=False)
+    def create_recording_log(self, **kwargs):
+        json_data = json.loads(request.httprequest.data)
+        uuid_token = request.httprequest.headers.get('X-CrmIService-Token')
+        user = request.env['res.users'].sudo().search([('uuid_token', '=', uuid_token)])
+        Call = request.env['voip.call']
+        if user:
+            if bool(json_data) == False:
+                response = Response({"error": "Invalid parameters/json in body"}, status=400, content_type='application/json')
+                return response
+            call_rec = Call.sudo().browse(int(json_data['calllogid']))
+            if call_rec:
+                call_rec.partner_id.with_user(user).message_post(body=Markup(f"<a href={json_data['recordingurl']}>Recording</a>"), message_type='comment', subject=json_data['description'])
+                response = Response(json.dumps({"message": "Success"}), status=200, content_type='application/json')
+                return response
+            else:
+                response = Response(json.dumps({"error": f"Couldn't find Call log with provided {json_data['calllogid']}"}), status=404,
+                                    content_type='application/json')
+                return response
+        else:
+            response = Response(json.dumps({"error": "Invalid or missing authorization token"}), status=401,
+                                content_type='application/json')
+            return response
