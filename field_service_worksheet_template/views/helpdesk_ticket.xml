@@ -20,6 +20,13 @@
                     <field string="Tasks" name="fsm_task_count" widget="statinfo" />
                 </button>
             </xpath>
+            <xpath expr="//field[@name='is_partner_phone_update']" position="after">
+                <label for="partner_mobile" string="Mobile"/>
+                <div class="o_row o_row_readonly">
+                    <field name="partner_mobile" widget="phone" string="Mobile"/>
+                    <span class="fa fa-exclamation-triangle text-warning oe_edit_only" title="By saving this change, the customer mobile number will also be updated." invisible="not is_partner_phone_update"/>
+                </div>
+            </xpath>
         </field>
     </record>
 </odoo>
