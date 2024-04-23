@@ -188,6 +188,14 @@
                     <button class="btn btn-primary" name="action_create_new_task" type="object" string="Create New Task"
                             invisible="fsm_done == True" groups="field_service_worksheet_template.group_coordinator_fsm,industry_fsm.group_fsm_manager"/>
                 </xpath>
+
+                <xpath expr="//field[@name='is_task_phone_update']" position="after">
+                    <label for="partner_mobile" invisible="not is_fsm"/>
+                    <div class="o_row o_row_readonly" invisible="not is_fsm">
+                        <field name="partner_mobile" widget="phone"/>
+                        <span class="fa fa-exclamation-triangle text-warning oe_edit_only" title="By saving this change, the customer mobile number will also be updated." invisible="not partner_id or not is_task_phone_update"/>
+                    </div>
+                </xpath>
             </field>
         </record>
 
