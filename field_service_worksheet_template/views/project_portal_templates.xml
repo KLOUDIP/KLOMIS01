@@ -53,6 +53,31 @@
 
                 <div class="col-12 col-lg justify-content-end">
 
+                    <div role="dialog" class="modal fade mt-5 pt-5" id="tmodalaccept">
+                        <div class="modal-dialog" t-if="sheet.technician_has_to_be_signed()">
+                            <form id="accept" method="POST" t-att-sheet-task-id="sheet.id" t-att-data-token="sheet.access_token" class="js_accept_json modal-content js_website_submit_form">
+                                <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                <header class="modal-header">
+                                    <h4 class="modal-title">Sign Worksheet</h4>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                </header>
+                                <main class="modal-body" id="sign-dialog">
+                                    <p>
+                                        <span>By signing this proposal, I agree to the following terms:</span>
+                                        <ul>
+                                            <li><span>Accepted on the behalf of:</span> <b t-field="sheet.project_task_id.partner_id.commercial_partner_id"/></li>
+                                        </ul>
+                                    </p>
+                                    <t t-call="portal.signature_form">
+                                        <t t-set="call_url" t-value="sheet.get_portal_url(suffix='/worksheet/technician_sign/%s' % source)"/>
+                                        <t t-set="default_name" t-value="sheet.project_task_id.tech_team_member_id.name"/>
+                                        <t t-set="send_label" t-value="'Sign'"/>
+                                    </t>
+                                </main>
+                            </form>
+                        </div>
+                    </div>
+
                     <!-- modal relative to the sign action -->
                     <div role="dialog" class="modal fade mt-5 pt-5" id="modalaccept">
                         <div class="modal-dialog" t-if="sheet.customer_has_to_be_signed()">
@@ -72,31 +97,6 @@
                                     <t t-call="portal.signature_form">
                                         <t t-set="call_url" t-value="sheet.get_portal_url(suffix='/worksheet/customer_sign/%s' % source)"/>
                                         <t t-set="default_name" t-value="sheet.project_task_id.partner_id.name"/>
-                                        <t t-set="send_label" t-value="'Sign'"/>
-                                    </t>
-                                </main>
-                            </form>
-                        </div>
-                    </div>
-
-                    <div role="dialog" class="modal fade mt-5 pt-5" id="tmodalaccept">
-                        <div class="modal-dialog" t-if="sheet.technician_has_to_be_signed()">
-                            <form id="accept" method="POST" t-att-sheet-task-id="sheet.id" t-att-data-token="sheet.access_token" class="js_accept_json modal-content js_website_submit_form">
-                                <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
-                                <header class="modal-header">
-                                    <h4 class="modal-title">Sign Worksheet</h4>
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                </header>
-                                <main class="modal-body" id="sign-dialog">
-                                    <p>
-                                        <span>By signing this proposal, I agree to the following terms:</span>
-                                        <ul>
-                                            <li><span>Accepted on the behalf of:</span> <b t-field="sheet.project_task_id.partner_id.commercial_partner_id"/></li>
-                                        </ul>
-                                    </p>
-                                    <t t-call="portal.signature_form">
-                                        <t t-set="call_url" t-value="sheet.get_portal_url(suffix='/worksheet/technician_sign/%s' % source)"/>
-                                        <t t-set="default_name" t-value="sheet.project_task_id.tech_team_member_id.name"/>
                                         <t t-set="send_label" t-value="'Sign'"/>
                                     </t>
                                 </main>
