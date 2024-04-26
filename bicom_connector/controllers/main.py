@@ -183,7 +183,7 @@ class UserExtensionController(http.Controller):
                     "status": "ANSWERED",
                     "customerid": call_rec.partner_id.id,
                     "customertype": "Contact",
-                    "phonenumber": call_rec.phone_sanitized,
+                    "phonenumber": call_rec.partner_id.phone_sanitized,
                     "direction": "OUTBOUND" if call_rec.direction == 'outgoing' else "INBOUND",
                     "duration": 15,
                     "subject": call_rec.display_name,
