@@ -86,7 +86,7 @@ class UserExtensionController(http.Controller):
         domain = []
         user = request.env['res.users'].sudo().search([('uuid_token', '=', uuid_token)])
         if id is not None:
-            domain.append(('log_id', '=', id))
+            domain.append(('id', '=', id))
         if user:
             log = request.env['voip.call'].with_user(user).search(domain)
             log_list = [{
@@ -113,13 +113,36 @@ class UserExtensionController(http.Controller):
                                 content_type='application/json')
             return response
 
+    @http.route(['/status/<string:id>'], type='http', auth='none', methods=['GET'], csrf=False)
+    def get_status(self, id, **kwargs):
+        _logger.info(kwargs)
+        uuid_token = request.httprequest.headers.get('X-CrmIService-Token')
+        domain = []
+        user = request.env['res.users'].sudo().search([('uuid_token', '=', uuid_token)])
+        if id is not None:
+            domain.append(('id', '=', id))
+        if user:
+            partner = request.env['res.partner'].sudo().search(domain)
+            data = {
+                "id": partner.id,
+                "status": "READY",
+                "timestamp": 1684499266,
+                "timetolive": 86400,
+                "resourcetype": "CallRecord",
+                "resourceid": "23487cdc093e810a01ff0"
+            }
+            response = Response(json.dumps(data), status=200, content_type='application/json')
+            return response
+        else:
+            response = Response(json.dumps({"error": "Invalid or missing authorization token"}), status=401,
+                                content_type='application/json')
+            return response
+
     @http.route(['/calllog'], type='http', auth='none', methods=['POST'], csrf=False)
     def create_calllog(self, **kwargs):
         """
             Create calllog with bicom request data
         """
-        _logger.info(kwargs)
-        _logger.info(request.httprequest.data)
         json_data = json.loads(request.httprequest.data)
         uuid_token = request.httprequest.headers.get('X-CrmIService-Token')
         user = request.env['res.users'].sudo().search([('uuid_token', '=', uuid_token)])
@@ -157,7 +180,13 @@ class UserExtensionController(http.Controller):
                 contact.with_user(user).message_post(body=body, message_type='notification', subtype_xmlid="mail.mt_comment")
                 data = {
                     "id": call_rec.id,
-                    "status": "READY",
+                    "status": "ANSWERED",
+                    "customerid": call_rec.partner_id.id,
+                    "customertype": "Contact",
+                    "phonenumber": call_rec.phone_sanitized,
+                    "direction": "OUTBOUND" if call_rec.direction == 'outgoing' else "INBOUND",
+                    "duration": 15,
+                    "subject": call_rec.display_name,
                     "timestamp": int(call_rec.start_date.timestamp()),
                     "timetolive": 86400,
                     "resourcetype": None,
@@ -176,8 +205,6 @@ class UserExtensionController(http.Controller):
 
     @http.route(['/recording'], type='http', auth='none', methods=['POST'], csrf=False)
     def create_recording_log(self, **kwargs):
-        _logger.info(kwargs)
-        _logger.info(request.httprequest.data)
         json_data = json.loads(request.httprequest.data)
         uuid_token = request.httprequest.headers.get('X-CrmIService-Token')
         user = request.env['res.users'].sudo().search([('uuid_token', '=', uuid_token)])
