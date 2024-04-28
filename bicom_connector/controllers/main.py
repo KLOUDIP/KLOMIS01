@@ -4,7 +4,7 @@ import json
 import logging
 from markupsafe import Markup
 
-from odoo import http
+from odoo import http, _
 from odoo.http import request, Response
 
 _logger = logging.getLogger(__name__)
@@ -168,15 +168,19 @@ class UserExtensionController(http.Controller):
                 'activity_name': json_data.get('subject', ''),
                 'user_id': user.id,
                 'start_date': datetime.datetime.now(),
+                'asteriskcallid_one': json_data.get('asteriskcallid1', False),
+                'asteriskcallid_two': json_data.get('asteriskcallid2', False),
             })
             if call_rec:
-                body = f"""
-                        Subject - {call_rec.activity_name} \n
-                        Description - {call_rec.display_name} \n
-                        Direction - {call_rec.direction} \n
-                        Start Time - {call_rec.start_date} \n
-                """
+                body = Markup(f"""
+                        Subject - {call_rec.activity_name} <br/>
+                        Description - {call_rec.display_name} <br/>
+                        Direction - {call_rec.direction} <br/>
+                        Start Time - {call_rec.start_date} <br/>
+                        Responsible User - {call_rec.user_id.name}
+                """)
                 contact = call_rec.partner_id
+
                 contact.with_user(user).message_post(body=body, message_type='notification', subtype_xmlid="mail.mt_comment")
                 data = {
                     "id": call_rec.id,
@@ -195,8 +199,7 @@ class UserExtensionController(http.Controller):
                 response = Response(json.dumps(data), status=200, content_type='application/json')
                 return response
             else:
-                response = Response(json.dumps({"error": "Invalid parameters/json in body or query"}), status=400,
-                                    content_type='application/json')
+                response = Response(json.dumps({"error": "Invalid parameters/json in body or query"}), status=400, content_type='application/json')
                 return response
         else:
             response = Response(json.dumps({"error": "Invalid or missing authorization token"}), status=401,
