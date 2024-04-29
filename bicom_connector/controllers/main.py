@@ -143,7 +143,9 @@ class UserExtensionController(http.Controller):
         """
             Create calllog with bicom request data
         """
+        _logger.info("---------------------------------------")
         json_data = json.loads(request.httprequest.data)
+        _logger.info(json_data)
         uuid_token = request.httprequest.headers.get('X-CrmIService-Token')
         user = request.env['res.users'].sudo().search([('uuid_token', '=', uuid_token)])
         Call = request.env['voip.call']
