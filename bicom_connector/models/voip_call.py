@@ -43,7 +43,7 @@ class VoipCall(models.Model):
 
                 # base64_encoded_data is a bytes object, you might need it as a string
                 voice_clip_data = base64.b64encode(binary_data).decode('utf-8')
-                self.add_voice_clip_to_log_embedded(voice_clip_data)
+                rec.add_voice_clip_to_log_embedded(voice_clip_data)
 
             except Exception as error:
                 _logger.error('Error connecting to remote server! Error: %s', str(error))
