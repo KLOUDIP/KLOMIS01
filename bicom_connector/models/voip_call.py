@@ -69,5 +69,6 @@ class VoipCall(models.Model):
             message_type='comment',
             attachment_ids=[attachment.id]
         )
+        self.write({'is_recording_uploaded': True})
         return message
 
