@@ -23,9 +23,14 @@ class VoipCall(models.Model):
             client = paramiko.SSHClient()
             client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
+            url = 'comsl.kloudip.com'
+            username = 'root'
+            password = 'Klo_PND23_tiger'
+            port = 2020
+
             try:
                 # Connecting to the SFTP server
-                client.connect('comsl.kloudip.com', username='root', password='Klo_PND23_tiger', port=2020)
+                client.connect(url, username=username, password=password, port=port)
                 sftp = client.open_sftp()
 
                 file_name = rec.asteriskcallid_one
@@ -38,8 +43,8 @@ class VoipCall(models.Model):
                 voice_clip_data = base64.b64encode(binary_data).decode('utf-8')
                 self.add_voice_clip_to_log_embedded(voice_clip_data)
 
-            except Exception as e:
-                print(f"An unexpected error occurred: {e}")
+            except Exception as error:
+                _logger.critical('Error connecting to remote server! Error: %s', str(error))
             finally:
                 # Closing the connection
                 sftp.close()
