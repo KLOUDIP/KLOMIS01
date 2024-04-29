@@ -34,6 +34,8 @@ class VoipCall(models.Model):
                 sftp = client.open_sftp()
 
                 file_name = rec.asteriskcallid_one
+                _logger.info('---------------------------------------')
+                _logger.info(file_name)
 
                 # Opening the file in binary mode
                 with sftp.file(f'/opt/pbxware/pw/var/spool/asterisk/monitor/{file_name}.mp3', 'rb') as file:
@@ -44,7 +46,7 @@ class VoipCall(models.Model):
                 self.add_voice_clip_to_log_embedded(voice_clip_data)
 
             except Exception as error:
-                _logger.critical('Error connecting to remote server! Error: %s', str(error))
+                _logger.error('Error connecting to remote server! Error: %s', str(error))
             finally:
                 # Closing the connection
                 sftp.close()
