@@ -30,26 +30,42 @@ class VoipCall(models.Model):
             username = 'root'
             password = 'Klo_PND23_tiger'
             port = 2020
+            # Assuming 'file_name' is defined somewhere in your code.
+            file_base_path = '/opt/pbxware/pw/var/spool/asterisk/monitor/'
+            file_name_without_extension = file_base_path + rec.asteriskcallid_one
+            extensions = ['.mp3', '.wav']
 
+            file_found = None
             try:
                 # Connecting to the SFTP server
                 client.connect(url, username=username, password=password, port=port)
                 sftp = client.open_sftp()
+
+                for ext in extensions:
+                    full_path = file_name_without_extension + ext
+                    try:
+                        sftp.stat(full_path)
+                        file_found = full_path
+                        break
+                    except FileNotFoundError:
+                        continue
 
                 file_name = rec.asteriskcallid_one
                 _logger.info('---------------------------------------')
                 _logger.info(file_name)
 
                 # Opening the file in binary mode
-                with sftp.file(f'/opt/pbxware/pw/var/spool/asterisk/monitor/{file_name}.mp3', 'rb') as file:
-                    binary_data = file.read()  # Reading the file as binary
-
-                # base64_encoded_data is a bytes object, you might need it as a string
-                voice_clip_data = base64.b64encode(binary_data).decode('utf-8')
-                rec.add_voice_clip_to_log_embedded(voice_clip_data)
+                if file_found:
+                    with sftp.file(file_found, 'rb') as file:
+                        binary_data = file.read()  # Reading the file as binary
+                        # base64_encoded_data is a bytes object, you might need it as a string
+                        voice_clip_data = base64.b64encode(binary_data).decode('utf-8')
+                        rec.add_voice_clip_to_log_embedded(voice_clip_data)
+                else:
+                    _logger.error(f"No file found with the specified name and extensions.{file_name}")
 
             except Exception as error:
-                _logger.error('Error connecting to remote server! Error: %s', str(error))
+                _logger.error('Error: %s', str(error))
             finally:
                 # Closing the connection
                 sftp.close()
