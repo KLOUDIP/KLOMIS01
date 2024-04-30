@@ -189,7 +189,7 @@ class BiComController(http.Controller):
                 call_rec.write({'log_note': body})
                 data = {
                     "id": call_rec.id,
-                    "status": RESPONSE_STATUS[call_rec.status] if call_rec.status != False else 'UNAVAILABLE',
+                    "status": RESPONSE_STATUS[call_rec.state] if call_rec.state != False else 'UNAVAILABLE',
                     "customerid": call_rec.partner_id.id,
                     "customertype": "Contact",
                     "phonenumber": call_rec.partner_id.phone_sanitized,
