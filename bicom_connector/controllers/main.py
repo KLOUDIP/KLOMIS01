@@ -173,7 +173,7 @@ class BiComController(http.Controller):
                 'state': STATUS[json_data.get('status', 'rejected')],
                 'activity_name': json_data.get('subject', ''),
                 'user_id': user.id,
-                'start_date': fields.Datetime.now,
+                'start_date': fields.Datetime.now(),
                 'asteriskcallid_one': json_data.get('asteriskcallid1', False),
                 'asteriskcallid_two': json_data.get('asteriskcallid2', False),
             })
