@@ -35,7 +35,7 @@ class UserExtensionController(http.Controller):
         _logger.info("status")
         return Response(json.dumps(status), status=status_code, content_type='application/json')
 
-    @http.route(['/customers', '/customers/search', ], type='http', auth='none', methods=['GET'], csrf=False)
+    @http.route(['/customers', '/customers/search'], type='http', auth='none', methods=['GET'], csrf=False)
     def get_customers(self, **kwargs):
         uuid_token = request.httprequest.headers.get('X-CrmIService-Token')
         domain = []
@@ -45,6 +45,8 @@ class UserExtensionController(http.Controller):
             domain.append(('phone_sanitized', '=', '+'+phonenumber))
         if user:
             customers = request.env['res.partner'].sudo().with_user(user).search(domain)
+            if not customers:
+               customers = request.env['res.partner'].sudo().create({'name': phonenumber, 'phone': '+'+phonenumber})
             customer_list = [{
                 "id": rec.id,
                 "type": rec.type,
@@ -181,9 +183,8 @@ class UserExtensionController(http.Controller):
                         Start Time - {call_rec.start_date} <br/>
                         Responsible User - {call_rec.user_id.name}
                 """)
-                contact = call_rec.partner_id
-
-                contact.with_user(user).message_post(body=body, message_type='notification', subtype_xmlid="mail.mt_comment")
+                call_rec.write({'log_note': body})
+                # contact.with_user(user).message_post(body=body, message_type='notification', subtype_xmlid="mail.mt_comment")
                 data = {
                     "id": call_rec.id,
                     "status": "ANSWERED",

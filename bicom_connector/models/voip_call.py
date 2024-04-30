@@ -15,6 +15,7 @@ class VoipCall(models.Model):
     is_recording_uploaded = fields.Boolean(string='Is Recording Uploaded?')
     asteriskcallid_one = fields.Char(string="Asterisk Call ID 1")
     asteriskcallid_two = fields.Char(string="Asterisk Call ID 2")
+    log_note = fields.Text(string="Log Note")
 
     def _cron_update_call_recording(self):
         # Setting up the SSH client
@@ -65,7 +66,7 @@ class VoipCall(models.Model):
 
         # Create a log note with the attachment
         message = self.partner_id.message_post(
-            body="Recording Added",
+            body=self.log_note,
             message_type='comment',
             attachment_ids=[attachment.id]
         )
