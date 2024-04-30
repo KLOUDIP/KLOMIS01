@@ -2,6 +2,7 @@
 import logging
 import paramiko
 import base64
+from markupsafe import Markup
 
 from odoo import fields, models
 
@@ -66,10 +67,9 @@ class VoipCall(models.Model):
 
         # Create a log note with the attachment
         message = self.partner_id.message_post(
-            body=self.log_note,
+            body=Markup(self.log_note),
             message_type='comment',
             attachment_ids=[attachment.id]
         )
         self.write({'is_recording_uploaded': True})
         return message
-
