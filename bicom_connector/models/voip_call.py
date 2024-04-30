@@ -30,6 +30,11 @@ class VoipCall(models.Model):
             username = 'root'
             password = 'Klo_PND23_tiger'
             port = 2020
+
+            # Connecting to the SFTP server
+            client.connect(url, username=username, password=password, port=port)
+            sftp = client.open_sftp()
+
             # Assuming 'file_name' is defined somewhere in your code.
             file_base_path = '/opt/pbxware/pw/var/spool/asterisk/monitor/'
             file_name_without_extension = file_base_path + rec.asteriskcallid_one
@@ -37,10 +42,6 @@ class VoipCall(models.Model):
 
             file_found = None
             try:
-                # Connecting to the SFTP server
-                client.connect(url, username=username, password=password, port=port)
-                sftp = client.open_sftp()
-
                 for ext in extensions:
                     full_path = file_name_without_extension + ext
                     try:
