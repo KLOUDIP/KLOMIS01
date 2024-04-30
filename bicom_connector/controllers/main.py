@@ -4,13 +4,15 @@ import json
 import logging
 from markupsafe import Markup
 
-from odoo import http, _
+from odoo import http, _, fields
 from odoo.http import request, Response
 
 _logger = logging.getLogger(__name__)
 
+STATUS = {"ANSWERED": 'calling', "UNANSWERED": 'missed', "BUSY": 'aborted', "UNAVAILABLE": 'terminated', "INPROGRESS": 'ongoing', 'REJECTED': 'rejected'}
+RESPONSE_STATUS = {"calling": 'ANSWERED', "missed": 'UNANSWERED', "aborted": 'BUSY', "terminated": 'UNAVAILABLE', "ongoing": 'INPROGRESS', 'rejected': 'UNAVAILABLE'}
 
-class UserExtensionController(http.Controller):
+class BiComController(http.Controller):
 
     @http.route('/token', type='http', auth='none', methods=['GET', 'POST'], csrf=False)
     def get_token(self, **kwargs):
@@ -96,15 +98,15 @@ class UserExtensionController(http.Controller):
                 "userid": None,
                 "customerid": rec.partner_id.id if rec.partner_id else "",
                 "customertype": rec.partner_id.type if rec.partner_id else '',
-                "subject": "PBXware call",
+                "subject": rec.display_name,
                 "phonenumber": rec.phone_number,
                 "direction": rec.direction,
                 "duration": 0,
                 "starttime": int(rec.start_date.timestamp()) if rec.start_date else '',
-                "status": rec.state,
-                "description": "",
-                "asteriskcallid1": "",
-                "asteriskcallid2": "",
+                "status": RESPONSE_STATUS[rec.status] if rec.status != False else 'UNAVAILABLE',
+                "description": rec.display_name,
+                "asteriskcallid1": rec.asteriskcallid_one,
+                "asteriskcallid2": rec.asteriskcallid_two,
                 "recordname": "",
                 "recorddesc": ""
             } for rec in log]
@@ -168,10 +170,10 @@ class UserExtensionController(http.Controller):
                 'phone_number': json_data.get('phonenumber', ''),
                 'direction': 'incoming' if json_data.get('direction', '') == 'INBOUND' else 'outgoing',
                 'partner_id': int(json_data.get('customerid', False)) if json_data.get('customerid', False) else False,
-                'state': 'calling',
+                'state': STATUS[json_data.get('status', 'rejected')],
                 'activity_name': json_data.get('subject', ''),
                 'user_id': user.id,
-                'start_date': datetime.datetime.now(),
+                'start_date': fields.Datetime.now,
                 'asteriskcallid_one': json_data.get('asteriskcallid1', False),
                 'asteriskcallid_two': json_data.get('asteriskcallid2', False),
             })
@@ -181,18 +183,18 @@ class UserExtensionController(http.Controller):
                         Description - {call_rec.display_name} <br/>
                         Direction - {call_rec.direction} <br/>
                         Start Time - {call_rec.start_date} <br/>
+                        Phone Number - {call_rec.phone_number} <br/>
                         Responsible User - {call_rec.user_id.name}
                 """)
                 call_rec.write({'log_note': body})
-                # contact.with_user(user).message_post(body=body, message_type='notification', subtype_xmlid="mail.mt_comment")
                 data = {
                     "id": call_rec.id,
-                    "status": "ANSWERED",
+                    "status": RESPONSE_STATUS[call_rec.status] if call_rec.status != False else 'UNAVAILABLE',
                     "customerid": call_rec.partner_id.id,
                     "customertype": "Contact",
                     "phonenumber": call_rec.partner_id.phone_sanitized,
                     "direction": "OUTBOUND" if call_rec.direction == 'outgoing' else "INBOUND",
-                    "duration": 15,
+                    "duration": call_rec.duration,
                     "subject": call_rec.display_name,
                     "timestamp": int(call_rec.start_date.timestamp()),
                     "timetolive": 86400,

@@ -17,6 +17,7 @@ class VoipCall(models.Model):
     asteriskcallid_one = fields.Char(string="Asterisk Call ID 1")
     asteriskcallid_two = fields.Char(string="Asterisk Call ID 2")
     log_note = fields.Text(string="Log Note")
+    duration = fields.Integer(string="Duration")
 
     def _cron_update_call_recording(self):
         # Setting up the SSH client
