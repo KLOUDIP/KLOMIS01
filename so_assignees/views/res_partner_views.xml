@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<odoo>
+
+    <!-- Add SO Assignees details to contact view -->
+    <record id="view_partners_form_so_assignees" model="ir.ui.view">
+        <field name="name">view.res.partner.form.so_assignees</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='internal_notes']" position="after">
+                <page name="unit_count" string="Units">
+                    <field name="coordinator_assigned_ids" readonly="1">
+                        <tree>
+                            <field name="year"/>
+                            <field name="month"/>
+                            <field name="count"/>
+                        </tree>
+                    </field>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>
