@@ -11,13 +11,13 @@ _logger = logging.getLogger(__name__)
 class ActiveUnits(models.Model):
     _inherit = 'active.units'
 
-    # def write(self, vals):
-    #     rec = super(ActiveUnits, self).write(vals)
-    #     if 'contract_ids' in vals:
-    #         contract_id = vals.get('contract_ids')[0]
-    #         if contract_id:
-    #             self.update_coordinator_unit_line(contract_id[1])
-    #     return rec
+    def write(self, vals):
+        rec = super(ActiveUnits, self).write(vals)
+        if 'contract_ids' in vals:
+            contract_id = vals.get('contract_ids')[0]
+            if contract_id:
+                self.update_coordinator_unit_line(contract_id[1])
+        return rec
 
     def update_coordinator_unit_line(self, contract_id):
         sale_order = self.env['fleet.vehicle.log.contract'].browse(contract_id).sale_id
