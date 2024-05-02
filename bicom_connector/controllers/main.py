@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import datetime
+import pytz
 import json
 import logging
 from markupsafe import Markup
@@ -9,8 +9,8 @@ from odoo.http import request, Response
 
 _logger = logging.getLogger(__name__)
 
-STATUS = {"ANSWERED": 'calling', "UNANSWERED": 'missed', "BUSY": 'aborted', "UNAVAILABLE": 'terminated', "INPROGRESS": 'ongoing', 'REJECTED': 'rejected'}
-RESPONSE_STATUS = {"calling": 'ANSWERED', "missed": 'UNANSWERED', "aborted": 'BUSY', "terminated": 'UNAVAILABLE', "ongoing": 'INPROGRESS', 'rejected': 'UNAVAILABLE'}
+STATUS = {"ANSWERED": 'answered', "UNANSWERED": 'unanswered', "BUSY": 'aborted', "UNAVAILABLE": 'terminated', "INPROGRESS": 'ongoing', 'REJECTED': 'rejected'}
+RESPONSE_STATUS = {"answered": 'ANSWERED', "unanswered": 'UNANSWERED', "aborted": 'BUSY', "terminated": 'UNAVAILABLE', "ongoing": 'INPROGRESS', 'rejected': 'UNAVAILABLE'}
 
 class BiComController(http.Controller):
 
@@ -178,11 +178,15 @@ class BiComController(http.Controller):
                 'asteriskcallid_two': json_data.get('asteriskcallid2', False),
             })
             if call_rec:
+                local_tz = pytz.timezone('Asia/Colombo')
+                utc_dt = pytz.utc.localize(call_rec.start_date)
+                user_dt = utc_dt.astimezone(local_tz)
+
                 body = Markup(f"""
                         Subject - {call_rec.activity_name} <br/>
                         Description - {call_rec.display_name} <br/>
                         Direction - {call_rec.direction} <br/>
-                        Start Time - {call_rec.start_date} <br/>
+                        Start Time - {user_dt} <br/>
                         Phone Number - {call_rec.phone_number} <br/>
                         Responsible User - {call_rec.user_id.name}
                 """)

@@ -18,6 +18,8 @@ class VoipCall(models.Model):
     asteriskcallid_two = fields.Char(string="Asterisk Call ID 2")
     log_note = fields.Text(string="Log Note")
     duration = fields.Integer(string="Duration")
+    state = fields.Selection(selection_add=[('answered', "Answered"), ('unanswered', "Unanswered")])
+
 
     def _cron_update_call_recording(self):
         # Setting up the SSH client
@@ -63,6 +65,11 @@ class VoipCall(models.Model):
                         voice_clip_data = base64.b64encode(binary_data).decode('utf-8')
                         rec.add_voice_clip_to_log_embedded(voice_clip_data)
                 else:
+                    if rec.direction == 'incoming':
+                        rec.partner_id.message_post(
+                            body=Markup(rec.log_note),
+                            message_type='comment',
+                        )
                     _logger.error(f"No file found with the specified name and extensions.{file_found}")
 
             except Exception as error:
