@@ -2,6 +2,7 @@
 import pytz
 import json
 import logging
+from datetime import datetime
 from markupsafe import Markup
 
 from odoo import http, _, fields
@@ -181,12 +182,13 @@ class BiComController(http.Controller):
                 local_tz = pytz.timezone('Asia/Colombo')
                 utc_dt = pytz.utc.localize(call_rec.start_date)
                 user_dt = utc_dt.astimezone(local_tz)
+                tz_datetime = datetime.strftime(user_dt, "%Y-%m-%d %H:%M:%S")
 
                 body = Markup(f"""
                         Subject - {call_rec.activity_name} <br/>
                         Description - {call_rec.display_name} <br/>
                         Direction - {call_rec.direction} <br/>
-                        Start Time - {user_dt} <br/>
+                        Start Time - {tz_datetime} <br/>
                         Phone Number - {call_rec.phone_number} <br/>
                         Responsible User - {call_rec.user_id.name}
                 """)
