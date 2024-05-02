@@ -23,4 +23,4 @@ class CoordinatorUnitLine(models.Model):
     year = fields.Char(string="Year")
     month = fields.Selection(selection=MONTH_SELECTION, string="Month")
     count = fields.Integer(string="Unit Count")
-    partner_id = fields.Many2one("res.partner", string="Contact")
+    employee_id = fields.Many2one("hr.employee", string="Employee")
