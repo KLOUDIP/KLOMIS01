@@ -1,16 +1,19 @@
 # -*- coding: utf-8 -*-
-import datetime
+import pytz
 import json
 import logging
+from datetime import datetime
 from markupsafe import Markup
 
-from odoo import http
+from odoo import http, _, fields
 from odoo.http import request, Response
 
 _logger = logging.getLogger(__name__)
 
+STATUS = {"ANSWERED": 'answered', "UNANSWERED": 'unanswered', "BUSY": 'aborted', "UNAVAILABLE": 'terminated', "INPROGRESS": 'ongoing', 'REJECTED': 'rejected'}
+RESPONSE_STATUS = {"answered": 'ANSWERED', "unanswered": 'UNANSWERED', "aborted": 'BUSY', "terminated": 'UNAVAILABLE', "ongoing": 'INPROGRESS', 'rejected': 'UNAVAILABLE'}
 
-class UserExtensionController(http.Controller):
+class BiComController(http.Controller):
 
     @http.route('/token', type='http', auth='none', methods=['GET', 'POST'], csrf=False)
     def get_token(self, **kwargs):
@@ -35,7 +38,7 @@ class UserExtensionController(http.Controller):
         _logger.info("status")
         return Response(json.dumps(status), status=status_code, content_type='application/json')
 
-    @http.route(['/customers', '/customers/search', ], type='http', auth='none', methods=['GET'], csrf=False)
+    @http.route(['/customers', '/customers/search'], type='http', auth='none', methods=['GET'], csrf=False)
     def get_customers(self, **kwargs):
         uuid_token = request.httprequest.headers.get('X-CrmIService-Token')
         domain = []
@@ -45,6 +48,8 @@ class UserExtensionController(http.Controller):
             domain.append(('phone_sanitized', '=', '+'+phonenumber))
         if user:
             customers = request.env['res.partner'].sudo().with_user(user).search(domain)
+            if not customers:
+               customers = request.env['res.partner'].sudo().create({'name': phonenumber, 'phone': '+'+phonenumber})
             customer_list = [{
                 "id": rec.id,
                 "type": rec.type,
@@ -86,7 +91,7 @@ class UserExtensionController(http.Controller):
         domain = []
         user = request.env['res.users'].sudo().search([('uuid_token', '=', uuid_token)])
         if id is not None:
-            domain.append(('log_id', '=', id))
+            domain.append(('id', '=', id))
         if user:
             log = request.env['voip.call'].with_user(user).search(domain)
             log_list = [{
@@ -94,19 +99,44 @@ class UserExtensionController(http.Controller):
                 "userid": None,
                 "customerid": rec.partner_id.id if rec.partner_id else "",
                 "customertype": rec.partner_id.type if rec.partner_id else '',
-                "subject": "PBXware call",
+                "subject": rec.display_name,
                 "phonenumber": rec.phone_number,
                 "direction": rec.direction,
                 "duration": 0,
                 "starttime": int(rec.start_date.timestamp()) if rec.start_date else '',
-                "status": rec.state,
-                "description": "",
-                "asteriskcallid1": "",
-                "asteriskcallid2": "",
+                "status": RESPONSE_STATUS[rec.status] if rec.status != False else 'UNAVAILABLE',
+                "description": rec.display_name,
+                "asteriskcallid1": rec.asteriskcallid_one,
+                "asteriskcallid2": rec.asteriskcallid_two,
                 "recordname": "",
                 "recorddesc": ""
             } for rec in log]
             response = Response(json.dumps(log_list), status=200, content_type='application/json')
+            return response
+        else:
+            response = Response(json.dumps({"error": "Invalid or missing authorization token"}), status=401,
+                                content_type='application/json')
+            return response
+
+    @http.route(['/status/<string:id>'], type='http', auth='none', methods=['GET'], csrf=False)
+    def get_status(self, id, **kwargs):
+        _logger.info(kwargs)
+        uuid_token = request.httprequest.headers.get('X-CrmIService-Token')
+        domain = []
+        user = request.env['res.users'].sudo().search([('uuid_token', '=', uuid_token)])
+        if id is not None:
+            domain.append(('id', '=', id))
+        if user:
+            partner = request.env['res.partner'].sudo().search(domain)
+            data = {
+                "id": partner.id,
+                "status": "READY",
+                "timestamp": 1684499266,
+                "timetolive": 86400,
+                "resourcetype": "CallRecord",
+                "resourceid": "23487cdc093e810a01ff0"
+            }
+            response = Response(json.dumps(data), status=200, content_type='application/json')
             return response
         else:
             response = Response(json.dumps({"error": "Invalid or missing authorization token"}), status=401,
@@ -118,9 +148,9 @@ class UserExtensionController(http.Controller):
         """
             Create calllog with bicom request data
         """
-        _logger.info(kwargs)
-        _logger.info(request.httprequest.data)
+        _logger.info("---------------------------------------")
         json_data = json.loads(request.httprequest.data)
+        _logger.info(json_data)
         uuid_token = request.httprequest.headers.get('X-CrmIService-Token')
         user = request.env['res.users'].sudo().search([('uuid_token', '=', uuid_token)])
         Call = request.env['voip.call']
@@ -141,23 +171,37 @@ class UserExtensionController(http.Controller):
                 'phone_number': json_data.get('phonenumber', ''),
                 'direction': 'incoming' if json_data.get('direction', '') == 'INBOUND' else 'outgoing',
                 'partner_id': int(json_data.get('customerid', False)) if json_data.get('customerid', False) else False,
-                'state': 'calling',
+                'state': STATUS[json_data.get('status', 'rejected')],
                 'activity_name': json_data.get('subject', ''),
                 'user_id': user.id,
-                'start_date': datetime.datetime.now(),
+                'start_date': fields.Datetime.now(),
+                'asteriskcallid_one': json_data.get('asteriskcallid1', False),
+                'asteriskcallid_two': json_data.get('asteriskcallid2', False),
             })
             if call_rec:
-                body = f"""
-                        Subject - {call_rec.activity_name} \n
-                        Description - {call_rec.display_name} \n
-                        Direction - {call_rec.direction} \n
-                        Start Time - {call_rec.start_date} \n
-                """
-                contact = call_rec.partner_id
-                contact.with_user(user).message_post(body=body, message_type='notification', subtype_xmlid="mail.mt_comment")
+                local_tz = pytz.timezone('Asia/Colombo')
+                utc_dt = pytz.utc.localize(call_rec.start_date)
+                user_dt = utc_dt.astimezone(local_tz)
+                tz_datetime = datetime.strftime(user_dt, "%Y-%m-%d %H:%M:%S")
+
+                body = Markup(f"""
+                        Subject - {call_rec.activity_name} <br/>
+                        Description - {call_rec.display_name} <br/>
+                        Direction - {call_rec.direction} <br/>
+                        Start Time - {tz_datetime} <br/>
+                        Phone Number - {call_rec.phone_number} <br/>
+                        Responsible User - {call_rec.user_id.name}
+                """)
+                call_rec.write({'log_note': body})
                 data = {
                     "id": call_rec.id,
-                    "status": "READY",
+                    "status": RESPONSE_STATUS[call_rec.state] if call_rec.state != False else 'UNAVAILABLE',
+                    "customerid": call_rec.partner_id.id,
+                    "customertype": "Contact",
+                    "phonenumber": call_rec.partner_id.phone_sanitized,
+                    "direction": "OUTBOUND" if call_rec.direction == 'outgoing' else "INBOUND",
+                    "duration": call_rec.duration,
+                    "subject": call_rec.display_name,
                     "timestamp": int(call_rec.start_date.timestamp()),
                     "timetolive": 86400,
                     "resourcetype": None,
@@ -166,8 +210,7 @@ class UserExtensionController(http.Controller):
                 response = Response(json.dumps(data), status=200, content_type='application/json')
                 return response
             else:
-                response = Response(json.dumps({"error": "Invalid parameters/json in body or query"}), status=400,
-                                    content_type='application/json')
+                response = Response(json.dumps({"error": "Invalid parameters/json in body or query"}), status=400, content_type='application/json')
                 return response
         else:
             response = Response(json.dumps({"error": "Invalid or missing authorization token"}), status=401,
@@ -176,8 +219,6 @@ class UserExtensionController(http.Controller):
 
     @http.route(['/recording'], type='http', auth='none', methods=['POST'], csrf=False)
     def create_recording_log(self, **kwargs):
-        _logger.info(kwargs)
-        _logger.info(request.httprequest.data)
         json_data = json.loads(request.httprequest.data)
         uuid_token = request.httprequest.headers.get('X-CrmIService-Token')
         user = request.env['res.users'].sudo().search([('uuid_token', '=', uuid_token)])
