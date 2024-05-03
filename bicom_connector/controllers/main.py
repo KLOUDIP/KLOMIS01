@@ -45,11 +45,11 @@ class BiComController(http.Controller):
         user = request.env['res.users'].sudo().search([('uuid_token', '=', uuid_token)])
         phonenumber = kwargs.get('phonenumber', '').strip()
         if phonenumber != '':
-            domain.append(('phone_sanitized', '=', '+'+phonenumber))
+            domain.append(('phone_sanitized', '!=', False))
         if user:
-            customers = request.env['res.partner'].sudo().with_user(user).search(domain)
+            customers = request.env['res.partner'].sudo().with_user(user).search(domain).filtered(lambda x: x.phone_sanitized[-8:] == phonenumber[-8:])
             if not customers:
-               customers = request.env['res.partner'].sudo().create({'name': phonenumber, 'phone': '+'+phonenumber})
+               customers = request.env['res.partner'].sudo().create({'name': phonenumber, 'phone': phonenumber})
             customer_list = [{
                 "id": rec.id,
                 "type": rec.type,
