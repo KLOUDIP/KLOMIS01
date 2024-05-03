@@ -64,6 +64,7 @@ class VoipCall(models.Model):
                         # base64_encoded_data is a bytes object, you might need it as a string
                         voice_clip_data = base64.b64encode(binary_data).decode('utf-8')
                         rec.add_voice_clip_to_log_embedded(voice_clip_data)
+                        rec.write({'is_recording_uploaded': True})
                 # else:
                 #     if rec.direction == 'incoming':
                 #         rec.partner_id.message_post(
@@ -90,12 +91,11 @@ class VoipCall(models.Model):
             'res_id': self.id,
             'mimetype': 'audio/mpeg',  # Adjust mimetype according to your image format
         })
-
-        # Create a log note with the attachment
-        message = self.partner_id.message_post(
-            body=Markup(self.log_note),
-            message_type='comment',
-            attachment_ids=[attachment.id]
-        )
-        self.write({'is_recording_uploaded': True})
-        return message
+        if self.state == 'answered':
+            # Create a log note with the attachment
+            message = self.partner_id.message_post(
+                body=Markup(self.log_note),
+                message_type='comment',
+                attachment_ids=[attachment.id]
+            )
+            return message
