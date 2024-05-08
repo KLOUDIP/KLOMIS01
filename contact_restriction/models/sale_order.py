@@ -16,8 +16,11 @@ class SaleOrder(models.Model):
                     raise UserError("This contact is blocked. You cannot create a Sales Order.")
         return super(SaleOrder, self).create(vals_list)
 
-    def write(self, values):
-        rec = super(SaleOrder, self).write(values)
+    def action_confirm(self):
+        rec = super(SaleOrder, self).action_confirm()
         if self.partner_id.is_blocked or self.partner_invoice_id.is_blocked:
-            raise UserError("This contact is blocked.")
+            raise UserError("This contact is blocked. You cannot create a Sales Order.")
         return rec
+
+
+
