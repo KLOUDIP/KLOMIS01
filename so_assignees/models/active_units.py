@@ -21,8 +21,9 @@ class ActiveUnits(models.Model):
                 rec.write({'contract_ids': [(4, contract.id) for contract in contracts]})
             else:
                 contracts = rec.contract_ids.filtered(lambda x: x.sale_id.coordinator_id.id != False)
-                self.update_monthly_rec(contracts[0].id)
-                self.update_coordinator_unit_line(contracts[0].id)
+                if contracts:
+                    self.update_monthly_rec(contracts[0].id)
+                    self.update_coordinator_unit_line(contracts[0].id)
         return records
 
     def write(self, vals):
