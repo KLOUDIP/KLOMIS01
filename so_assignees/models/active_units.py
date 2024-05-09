@@ -63,16 +63,18 @@ class ActiveUnits(models.Model):
             last_date = datetime(year=today.year, month=today.month, day=last_day).date()
 
             unit_count = self.env['active.units.monthly'].search_count([('date', '>=', first_day), ('date', '<=', last_date), ('contract_id', '=', contract_id)])
-            if unit_count <= 0 and action == 'remove':
-                unit_count -= unit_count
 
             month = today.month
             year = today.year
             if sale_order.coordinator_id.employee_id:
                 unit_line = self.env['coordinator.unit.line'].search([('employee_id', '=', sale_order.coordinator_id.employee_id.id), ('year', '=', year), ('month', '=', str(month))])
                 if unit_line:
+                    if action == 'remove' and unit_count <= 0:
+                        unit_count = unit_line.count - 1
                     unit_line.write({'count': unit_count})
                 else:
+                    if action == 'remove' and unit_count <= 0:
+                        unit_count -= 1
                     sale_order.coordinator_id.employee_id.write({
                         'coordinator_assigned_ids': [Command.create({
                             'year': str(year),
