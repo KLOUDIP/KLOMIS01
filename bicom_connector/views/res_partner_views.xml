@@ -15,6 +15,9 @@
                     </div>
                 </button>
             </div>
+            <xpath expr="//field[@name='function'][1]" position="after">
+                <field name="phone_sanitized"/>
+            </xpath>
         </field>
     </record>
 

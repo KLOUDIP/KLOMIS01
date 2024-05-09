@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import babel.dates
 from odoo import models, fields
 
 MONTH_SELECTION = [

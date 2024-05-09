@@ -15,9 +15,3 @@ class AccountMove(models.Model):
                 if partner and partner.is_blocked:
                     raise UserError("This contact is blocked. You cannot create a Sales Order.")
         return super(AccountMove, self).create(vals_list)
-
-    def write(self, values):
-        rec = super(AccountMove, self).write(values)
-        if self.partner_id.is_blocked:
-            raise UserError("This contact is blocked.")
-        return rec
