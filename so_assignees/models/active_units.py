@@ -33,10 +33,10 @@ class ActiveUnits(models.Model):
                 contract_id = vals.get('contract_ids')[0]
                 if contract_id[0] == 4:
                     self.update_monthly_rec(contract_id[1])
-                    self.update_coordinator_unit_line(contract_id[1], 'remove')
+                    self.update_coordinator_unit_line(contract_id[1], 'add')
                 else:
                     self.unlink_monthly_rec(contract_id[1])
-                    self.update_coordinator_unit_line(contract_id[1], 'add')
+                    self.update_coordinator_unit_line(contract_id[1], 'remove')
         return rec
 
     def update_monthly_rec(self, contract_id):
