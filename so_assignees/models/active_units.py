@@ -17,13 +17,13 @@ class ActiveUnits(models.Model):
         records = super(ActiveUnits, self).create(values)
         for rec in records:
             contracts = rec.contract_ids.filtered(lambda x: x.sale_id.coordinator_id.id == False)
-            if contracts:
+            if len(contracts) > 0:
                 rec.write({'contract_ids': [(4, contract.id) for contract in contracts]})
             else:
                 contracts = rec.contract_ids.filtered(lambda x: x.sale_id.coordinator_id.id != False)
-                if contracts:
+                if len(contracts) > 0:
                     self.update_monthly_rec(contracts[0].id)
-                    self.update_coordinator_unit_line(contracts[0].id)
+                    self.update_coordinator_unit_line(contracts[0].id, 'add')
         return records
 
     def write(self, vals):
@@ -33,9 +33,10 @@ class ActiveUnits(models.Model):
                 contract_id = vals.get('contract_ids')[0]
                 if contract_id[0] == 4:
                     self.update_monthly_rec(contract_id[1])
+                    self.update_coordinator_unit_line(contract_id[1], 'remove')
                 else:
                     self.unlink_monthly_rec(contract_id[1])
-                self.update_coordinator_unit_line(contract_id[1])
+                    self.update_coordinator_unit_line(contract_id[1], 'add')
         return rec
 
     def update_monthly_rec(self, contract_id):
@@ -51,7 +52,7 @@ class ActiveUnits(models.Model):
         if rec:
             rec.unlink()
 
-    def update_coordinator_unit_line(self, contract_id):
+    def update_coordinator_unit_line(self, contract_id, action):
         sale_order = self.env['fleet.vehicle.log.contract'].browse(contract_id).sale_id
         today = datetime.now()
         if sale_order:
@@ -62,6 +63,8 @@ class ActiveUnits(models.Model):
             last_date = datetime(year=today.year, month=today.month, day=last_day).date()
 
             unit_count = self.env['active.units.monthly'].search_count([('date', '>=', first_day), ('date', '<=', last_date), ('contract_id', '=', contract_id)])
+            if unit_count <= 0 and action == 'remove':
+                unit_count -= unit_count
 
             month = today.month
             year = today.year
