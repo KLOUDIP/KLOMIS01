@@ -12,32 +12,32 @@ _logger = logging.getLogger(__name__)
 class ActiveUnits(models.Model):
     _inherit = 'active.units'
 
-    @api.model_create_multi
-    def create(self, values):
-        records = super(ActiveUnits, self).create(values)
-        for rec in records:
-            contracts = rec.contract_ids.filtered(lambda x: x.sale_id.coordinator_id.id == False)
-            if len(contracts) > 0:
-                rec.write({'contract_ids': [(4, contract.id) for contract in contracts]})
-            else:
-                contracts = rec.contract_ids.filtered(lambda x: x.sale_id.coordinator_id.id != False)
-                if len(contracts) > 0:
-                    self.update_monthly_rec(contracts[0].id)
-                    self.update_coordinator_unit_line(contracts[0].id, 'add')
-        return records
+    # @api.model_create_multi
+    # def create(self, values):
+    #     records = super(ActiveUnits, self).create(values)
+    #     for rec in records:
+    #         contracts = rec.contract_ids.filtered(lambda x: x.sale_id.coordinator_id.id == False)
+    #         if len(contracts) > 0:
+    #             rec.write({'contract_ids': [(4, contract.id) for contract in contracts]})
+    #         else:
+    #             contracts = rec.contract_ids.filtered(lambda x: x.sale_id.coordinator_id.id != False)
+    #             if len(contracts) > 0:
+    #                 self.update_monthly_rec(contracts[0].id)
+    #                 self.update_coordinator_unit_line(contracts[0].id, 'add')
+    #     return records
 
-    def write(self, vals):
-        rec = super(ActiveUnits, self).write(vals)
-        if 'contract_ids' in vals:
-            if vals.get('contract_ids'):
-                contract_id = vals.get('contract_ids')[0]
-                if contract_id[0] == 4:
-                    self.update_monthly_rec(contract_id[1])
-                    self.update_coordinator_unit_line(contract_id[1], 'add')
-                else:
-                    self.unlink_monthly_rec(contract_id[1])
-                    self.update_coordinator_unit_line(contract_id[1], 'remove')
-        return rec
+    # def write(self, vals):
+    #     rec = super(ActiveUnits, self).write(vals)
+    #     if 'contract_ids' in vals:
+    #         if vals.get('contract_ids'):
+    #             contract_id = vals.get('contract_ids')[0]
+    #             if contract_id[0] == 4:
+    #                 self.update_monthly_rec(contract_id[1])
+    #                 self.update_coordinator_unit_line(contract_id[1], 'add')
+    #             else:
+    #                 self.unlink_monthly_rec(contract_id[1])
+    #                 self.update_coordinator_unit_line(contract_id[1], 'remove')
+    #     return rec
 
     def update_monthly_rec(self, contract_id):
         res = self.env['active.units.monthly'].create({
