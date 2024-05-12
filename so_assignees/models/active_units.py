@@ -20,7 +20,7 @@ class ActiveUnits(models.Model):
         for rec in records:
             contracts = rec.contract_ids.filtered(lambda x: x.sale_id.coordinator_id.id == False)
             if len(contracts) > 0:
-                rec.write({'contract_ids': [(4, contract.id) for contract in contracts]})
+                rec.write({'contract_ids': [(3, contract.id) for contract in contracts]})
             else:
                 contracts = rec.contract_ids.filtered(lambda x: x.sale_id.coordinator_id.id != False)
                 if len(contracts) > 0:
@@ -53,16 +53,16 @@ class ActiveUnits(models.Model):
     def unlink_monthly_rec(self, contract_id):
         rec = self.env['active.units.monthly'].search([('unit_id', '=', self.id), ('contract_id', '=', contract_id)])
         if not rec.contract_id.sale_id.coordinator_id:
-            raise ValidationError(f'Please, select a coordinator for this sale order - {rec.contract_id.sale_id.name}')
+            raise ValidationError(f'Please, select a coordinator for this sale order - {rec.contract_id.sale_id.name}, contract - {rec.contract_id.name}')
         if rec:
             rec.unlink()
 
     def update_coordinator_unit_line(self, contract_id, action):
-        sale_order = self.env['fleet.vehicle.log.contract'].browse(contract_id).sale_id
+        contract_id = self.env['fleet.vehicle.log.contract'].browse(contract_id)
         today = datetime.now()
-        if sale_order:
-            if not sale_order.coordinator_id:
-                raise ValidationError(f'Please, select a coordinator for this sale order - {sale_order.name}')
+        if contract_id.sale_id:
+            if not contract_id.sale_id.coordinator_id:
+                raise ValidationError(f'Please, select a coordinator for this sale order - {contract_id.sale_id.name}, contract - {contract_id.name}')
             last_day = calendar.monthrange(today.year, today.month)[1]
             first_day = today.replace(day=1).date()
             last_date = datetime(year=today.year, month=today.month, day=last_day).date()
@@ -71,8 +71,8 @@ class ActiveUnits(models.Model):
 
             month = today.month
             year = today.year
-            if sale_order.coordinator_id.employee_id:
-                unit_line = self.env['coordinator.unit.line'].search([('employee_id', '=', sale_order.coordinator_id.employee_id.id), ('year', '=', year), ('month', '=', str(month))])
+            if contract_id.sale_id.coordinator_id.employee_id:
+                unit_line = self.env['coordinator.unit.line'].search([('employee_id', '=', contract_id.sale_id.coordinator_id.employee_id.id), ('year', '=', year), ('month', '=', str(month))])
                 if unit_line:
                     if action == 'remove' and unit_count <= 0:
                         unit_count = unit_line.count - 1
@@ -80,12 +80,12 @@ class ActiveUnits(models.Model):
                 else:
                     if action == 'remove' and unit_count <= 0:
                         unit_count -= 1
-                    sale_order.coordinator_id.employee_id.write({
+                    contract_id.sale_id.coordinator_id.employee_id.write({
                         'coordinator_assigned_ids': [Command.create({
                             'year': str(year),
                             'month': str(month),
                             'count': unit_count,
-                            'employee_id': sale_order.coordinator_id.employee_id.id
+                            'employee_id': contract_id.sale_id.coordinator_id.employee_id.id
                         })]
                     })
 
