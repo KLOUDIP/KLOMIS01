@@ -52,6 +52,7 @@ class ActiveUnits(models.Model):
 
     def unlink_monthly_rec(self, contract_id):
         rec = self.env['active.units.monthly'].search([('unit_id', '=', self.id), ('contract_id', '=', contract_id)])
+        _logger.info(rec.contract_id.name)
         if not rec.contract_id.sale_id.coordinator_id:
             raise ValidationError(f'Please, select a coordinator for this sale order - {rec.contract_id.sale_id.name}')
         if rec:
