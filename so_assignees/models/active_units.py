@@ -37,6 +37,9 @@ class ActiveUnits(models.Model):
                 if contract[0] == 4:
                     self.update_monthly_rec(contract[1])
                     self.update_coordinator_unit_line(contract[1], 'add')
+                elif contract[0] == 6:
+                    self.update_monthly_rec(contract[2])
+                    self.update_coordinator_unit_line(contract[2], 'add')
                 else:
                     self.unlink_monthly_rec(contract[1])
                     self.update_coordinator_unit_line(contract[1], 'remove')
