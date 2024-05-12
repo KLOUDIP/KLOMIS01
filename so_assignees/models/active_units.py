@@ -60,10 +60,11 @@ class ActiveUnits(models.Model):
             rec.unlink()
 
     def update_coordinator_unit_line(self, contract_id, action):
-        sale_order = self.env['fleet.vehicle.log.contract'].browse(contract_id).sale_id
+        contract = self.env['fleet.vehicle.log.contract'].browse(contract_id)
+        sale_order = contract.sale_id
         today = datetime.now()
         if sale_order:
-            if not sale_order.coordinator_id:
+            if not sale_order.coordinator_id and action == 'add':
                 raise ValidationError(f'Please, select a coordinator for this sale order - {sale_order.name}')
             last_day = calendar.monthrange(today.year, today.month)[1]
             first_day = today.replace(day=1).date()
@@ -90,6 +91,13 @@ class ActiveUnits(models.Model):
                             'employee_id': sale_order.coordinator_id.employee_id.id
                         })]
                     })
+                if action == 'add':
+                    message = f'Contract Added {contract.name}'
+                else:
+                    message = f'Contract Removed {contract.name}'
+                self.partner_id.message_post(
+                    body=message
+                )
 
 
 class ActiveUnitsMonthly(models.Model):
