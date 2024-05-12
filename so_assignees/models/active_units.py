@@ -14,6 +14,8 @@ class ActiveUnits(models.Model):
 
     @api.model_create_multi
     def create(self, values):
+        _logger.info("--------------------active.units--------------------")
+        _logger.info(values)
         records = super(ActiveUnits, self).create(values)
         for rec in records:
             contracts = rec.contract_ids.filtered(lambda x: x.sale_id.coordinator_id.id == False)
@@ -27,6 +29,8 @@ class ActiveUnits(models.Model):
         return records
 
     def write(self, vals):
+        _logger.info("--------------------active.units--------------------")
+        _logger.info(vals)
         rec = super(ActiveUnits, self).write(vals)
         if 'contract_ids' in vals:
             if vals.get('contract_ids'):
