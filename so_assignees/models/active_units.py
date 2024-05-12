@@ -14,7 +14,7 @@ class ActiveUnits(models.Model):
 
     @api.model_create_multi
     def create(self, values):
-        _logger.info("--------------------active.units--------------------")
+        _logger.info("--------------------active.units - create--------------------")
         _logger.info(values)
         records = super(ActiveUnits, self).create(values)
         for rec in records:
@@ -29,18 +29,17 @@ class ActiveUnits(models.Model):
         return records
 
     def write(self, vals):
-        _logger.info("--------------------active.units--------------------")
+        _logger.info("--------------------active.units - write--------------------")
         _logger.info(vals)
         rec = super(ActiveUnits, self).write(vals)
         if 'contract_ids' in vals:
-            if vals.get('contract_ids'):
-                contract_id = vals.get('contract_ids')[0]
-                if contract_id[0] == 4:
-                    self.update_monthly_rec(contract_id[1])
-                    self.update_coordinator_unit_line(contract_id[1], 'add')
+            for contract in vals.get('contract_ids', []):
+                if contract[0] == 4:
+                    self.update_monthly_rec(contract[1])
+                    self.update_coordinator_unit_line(contract[1], 'add')
                 else:
-                    self.unlink_monthly_rec(contract_id[1])
-                    self.update_coordinator_unit_line(contract_id[1], 'remove')
+                    self.unlink_monthly_rec(contract[1])
+                    self.update_coordinator_unit_line(contract[1], 'remove')
         return rec
 
     def update_monthly_rec(self, contract_id):
@@ -53,6 +52,8 @@ class ActiveUnits(models.Model):
 
     def unlink_monthly_rec(self, contract_id):
         rec = self.env['active.units.monthly'].search([('unit_id', '=', self.id), ('contract_id', '=', contract_id)])
+        if not rec.contract_id.sale_id.coordinator_id:
+            raise ValidationError(f'Please, select a coordinator for this sale order - {rec.contract_id.sale_id.name}')
         if rec:
             rec.unlink()
 
