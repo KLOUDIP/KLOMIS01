@@ -34,7 +34,7 @@ def _create_invoices(self, grouped=False, final=False, date=None):
         # 1) Create invoices.
         invoice_vals_list = []
         # Extended content
-        refunded_amount = self.env.context.get('refunded_amount')
+        refunded_amount = self.env.context.get('refunded_amount', 0)
         refund_moves = []
         credit_note_with_coupon = False
         # ====
