@@ -9,6 +9,7 @@
                 <label for="partner_mobile" invisible="not is_fsm"/>
                 <div class="o_row o_row_readonly" invisible="not is_fsm">
                     <field name="is_task_phone_update" invisible="1"/>
+                    <field name="is_technician" invisible="True"/>
                     <field name="partner_mobile" widget="phone" readonly="is_technician == True"/>
                     <span class="fa fa-exclamation-triangle text-warning oe_edit_only" title="By saving this change, the customer mobile number will also be updated." invisible="not partner_id or not is_task_phone_update"/>
                 </div>
