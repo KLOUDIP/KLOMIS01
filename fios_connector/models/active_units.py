@@ -184,7 +184,9 @@ class ActiveUnits(models.Model):
                     'lot_id': lot_serial.id if lot_serial else False
                 }
                 matching_line_id = matching_record.matching_line_ids.search([('fios_plate_no', '=', missing_fleet_id.id)], limit=1) or matching_record.matching_line_ids.filtered(lambda x: x.fleet_vehicle_id.license_plate == sync_key)
-                if not matching_line_id:
+                if matching_line_id:
+                    matching_line_id = matching_line_id[0]
+                elif not matching_line_id:
                     matching_record.matching_line_ids.create(matching_line_data)
                 elif matching_line_id.removed_from_fios:
                     # check same serial or different serial received from fios
