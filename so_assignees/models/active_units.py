@@ -12,93 +12,82 @@ _logger = logging.getLogger(__name__)
 class ActiveUnits(models.Model):
     _inherit = 'active.units'
 
-    # @api.model_create_multi
-    # def create(self, values):
-    #     _logger.info("--------------------active.units - create--------------------")
-    #     _logger.info(values)
-    #     records = super(ActiveUnits, self).create(values)
-    #     for rec in records:
-    #         contracts = rec.contract_ids.filtered(lambda x: x.sale_id.coordinator_id.id == False)
-    #         if len(contracts) > 0:
-    #             rec.write({'contract_ids': [(3, contract.id) for contract in contracts]})
-    #         else:
-    #             contracts = rec.contract_ids.filtered(lambda x: x.sale_id.coordinator_id.id != False)
-    #             if len(contracts) > 0:
-    #                 self.update_monthly_rec(contracts[0].id)
-    #                 self.update_coordinator_unit_line(contracts[0].id, 'add')
-    #     return records
+    coordinator_id = fields.Many2one("res.users", string="Assigned To", tracking=True)
+    is_coordinator_add = fields.Boolean(string="Coordinator Added")
 
-    # def write(self, vals):
-    #     _logger.info("--------------------active.units - write--------------------")
-    #     _logger.info(vals)
-    #     rec = super(ActiveUnits, self).write(vals)
-    #     if 'contract_ids' in vals:
-    #         for contract in vals.get('contract_ids', []):
-    #             if contract[0] == 4:
-    #                 self.update_monthly_rec(contract[1])
-    #                 self.update_coordinator_unit_line(contract[1], 'add')
-    #             elif contract[0] == 6:
-    #                 if len(contract[2]) > 0:
-    #                     self.update_monthly_rec(contract[2][0])
-    #                     self.update_coordinator_unit_line(contract[2][0], 'add')
-    #             else:
-    #                 self.unlink_monthly_rec(contract[1])
-    #                 self.update_coordinator_unit_line(contract[1], 'remove')
-    #     return rec
+    @api.onchange('coordinator_id')
+    def onchange_coordinator_id(self):
+        if self.coordinator_id:
+            if not self.contract_ids:
+                raise ValidationError("Please, add a contract first.")
+            if not self.contract_ids.mapped('sale_id').coordinator_id:
+                raise ValidationError("Please, select the coordinator for the contract's SO")
+            if self.contract_ids.mapped('sale_id').filtered(lambda x: x.coordinator_id.id != self.coordinator_id.id):
+                raise ValidationError("Please, select the correct coordinator")
+            if not all(self.contract_ids.mapped('activated_time')):
+                raise ValidationError("This contract's activated date time is empty")
+            self.update_monthly_rec(self.contract_ids[0]._origin, 1)
+            self.update_coordinator_unit_line(self.contract_ids[0]._origin)
+            self.is_coordinator_add = True
+        else:
+            if self.is_coordinator_add:
+                self.update_monthly_rec(self.contract_ids[0]._origin, -1)
+                self.update_coordinator_unit_line(self.contract_ids[0]._origin)
+                _logger.info(self.contract_ids[0])
+                _logger.info(self.contract_ids[0]._origin)
+                self.is_coordinator_add = False
 
-    def update_monthly_rec(self, contract_id):
+    def update_monthly_rec(self, contract_id, value):
         res = self.env['active.units.monthly'].create({
-            'date': fields.Datetime.now(),
-            'contract_id': contract_id,
-            'unit_id': self.id
+            'date': contract_id.activated_time.date() if contract_id.activated_time else fields.Datetime.now(),
+            'contract_id': contract_id.id,
+            'coordinator_id': contract_id.sale_id.coordinator_id.id,
+            'unit_id': self.id,
+            'value': value
         })
+        if res.unit_id.partner_id:
+            if res.value == 1:
+                message = f"Unit removed by{res.coordinator_id.name}"
+            else:
+                message = f"Unit removed by{res.coordinator_id.name}"
+            # res.unit_id.partner_id.message_notify(body=message)
         return res
 
-    def unlink_monthly_rec(self, contract_id):
-        rec = self.env['active.units.monthly'].search([('unit_id', '=', self.id), ('contract_id', '=', contract_id)])
-        _logger.info(rec.contract_id.name)
-        if rec:
-            rec.unlink()
+    def update_coordinator_unit_line(self, contract_id):
+        _logger.info(contract_id)
+        contract = contract_id.activated_time if contract_id.activated_time else datetime.now()
+        last_day = calendar.monthrange(contract.year, contract.month)[1]
+        first_day = contract.replace(day=1).date()
+        last_date = datetime(year=contract.year, month=contract.month, day=last_day).date()
 
-    def update_coordinator_unit_line(self, contract_id, action):
-        contract = self.env['fleet.vehicle.log.contract'].browse(contract_id)
-        sale_order = contract.sale_id
-        today = datetime.now()
-        if sale_order:
-            if not sale_order.coordinator_id and action == 'add':
-                raise ValidationError(f'Please, select a coordinator for this sale order - {sale_order.name}')
-            last_day = calendar.monthrange(today.year, today.month)[1]
-            first_day = today.replace(day=1).date()
-            last_date = datetime(year=today.year, month=today.month, day=last_day).date()
-
-            unit_count = self.env['active.units.monthly'].search_count([('date', '>=', first_day), ('date', '<=', last_date), ('contract_id', '=', contract_id)])
-
-            month = today.month
-            year = today.year
-            if sale_order.coordinator_id.employee_id:
-                unit_line = self.env['coordinator.unit.line'].search([('employee_id', '=', sale_order.coordinator_id.employee_id.id), ('year', '=', year), ('month', '=', str(month))])
+        coordinator_id = contract_id.sale_id.coordinator_id.id
+        if coordinator_id:
+            unit_count = sum(self.env['active.units.monthly'].search([('date', '>=', first_day), ('date', '<=', last_date), ('coordinator_id', '=', coordinator_id)]).mapped('value'))
+            _logger.info("unit_count")
+            _logger.info(unit_count)
+            month = contract.month
+            year = contract.year
+            if contract_id.sale_id:
+                unit_line = self.env['coordinator.unit.line'].search([('employee_id', '=', contract_id.sale_id.coordinator_id.employee_id.id), ('year', '=', year), ('month', '=', str(month))])
+                _logger.info("unit_line")
+                _logger.info(unit_line.employee_id.name)
                 if unit_line:
-                    if action == 'remove' and unit_count <= 0:
-                        unit_count = unit_line.count - 1
                     unit_line.write({'count': unit_count})
                 else:
-                    if action == 'remove' and unit_count <= 0:
-                        unit_count -= 1
-                    sale_order.coordinator_id.employee_id.write({
+                    contract_id.sale_id.coordinator_id.employee_id.sudo().write({
                         'coordinator_assigned_ids': [Command.create({
                             'year': str(year),
                             'month': str(month),
                             'count': unit_count,
-                            'employee_id': sale_order.coordinator_id.employee_id.id
+                            'employee_id': contract_id.sale_id.coordinator_id.employee_id.id
                         })]
                     })
-                if action == 'add':
-                    message = f'Contract Added {contract.name}'
-                else:
-                    message = f'Contract Removed {contract.name}'
-                self.partner_id.message_post(
-                    body=message
-                )
+                    
+    def unlink(self):
+        if self.coordinator_id:
+            self.update_monthly_rec(self.contract_ids[0], -1)
+            self.update_coordinator_unit_line(self.contract_ids[0])
+        return super(ActiveUnits, self).unlink()
 
 
 class ActiveUnitsMonthly(models.Model):
@@ -106,4 +95,6 @@ class ActiveUnitsMonthly(models.Model):
 
     date = fields.Date(string="Date")
     contract_id = fields.Many2one("fleet.vehicle.log.contract", string="Contract")
+    coordinator_id = fields.Many2one("res.users", string="Assigned To")
     unit_id = fields.Many2one("active.units", string="Active Unit")
+    value = fields.Integer(string="Value")
