@@ -12,7 +12,7 @@
                 <label for="is_activated"/>
                 <div>
                     <field name="is_activated" class="oe_inline"/>
-                    <span class="oe_inline" style="font-weight:550; margin-right:3%" invisible="is_activated == False">-
+                    <span class="oe_inline" style="font-weight:550; margin-right:3%">-
                         <span invisible="is_activated == False">Activated On:</span>
                         <span invisible="is_activated == True">Deactivated On:</span>
                     </span>
