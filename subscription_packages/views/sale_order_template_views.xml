@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!--Sale order template form view customizations -->
+    <record id="sale_order_template_view_form" model="ir.ui.view">
+        <field name="name">sale.order.template.view.form.inherit.subscription_packages</field>
+        <field name="model">sale.order.template</field>
+        <field name="inherit_id" ref="sale_management.sale_order_template_view_form"/>
+        <field name="arch" type="xml">
+
+            <page name="optional_products" position="after">
+                <page string="Recurring Products" name="recurring_products">
+                    <field name="sale_order_template_recurring_ids">
+                        <tree string="Template Recurring Products" editable="bottom">
+                            <field name="product_id"/>
+                            <field name="name"/>
+                            <field name="quantity"/>
+                            <field name="product_uom_category_id" column_invisible="True"/>
+                            <field name="uom_id" groups="uom.group_uom"/>
+                            <field name="company_id" column_invisible="True"/>
+                        </tree>
+                    </field>
+                </page>
+            </page>
+
+        </field>
+    </record>
+
+</odoo>

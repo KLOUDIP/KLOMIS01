@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+subscription_packages.access_sale_order_template_recurring,access_sale_order_template_recurring,subscription_packages.model_sale_order_template_recurring,base.group_user,1,1,1,1
+subscription_packages.access_sale_order_recurring,access_sale_order_recurring,subscription_packages.model_sale_order_recurring,base.group_user,1,1,1,1
