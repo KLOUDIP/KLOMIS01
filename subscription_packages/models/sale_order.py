@@ -27,10 +27,10 @@ class SaleOrder(models.Model):
         """
         if self.custom_plan_id:
             for rec in self.sale_order_recurring_ids:
-                plan_line_id = self.custom_plan_id.product_subscription_pricing_ids.filtered(lambda x: x.product_template_id.id == rec.product_id.product_tmpl_id.id)
+                plan_line_id = self.custom_plan_id.product_subscription_pricing_ids.filtered(lambda x: x.product_template_id.id == rec.product_id.product_tmpl_id.id and x.pricelist_id.id == self.pricelist_id.id)
                 price_unit = 0.00
                 if plan_line_id:
-                    price_unit = plan_line_id[0].pricelist_id._get_product_price(rec.product_id, rec.quantity or 1.0, currency=plan_line_id[0].pricelist_id.currency_id)
+                    price_unit = plan_line_id.pricelist_id._get_product_price(rec.product_id, rec.quantity or 1.0, currency=plan_line_id[0].pricelist_id.currency_id)
                 rec.update({
                     'price_unit': price_unit
                 })
@@ -44,7 +44,7 @@ class SaleOrder(models.Model):
         sale_order_template = self.sale_order_template_id.with_context(lang=self.partner_id.lang)
         recurring_lines_data = [fields.Command.clear()]
         recurring_lines_data += [
-            fields.Command.create(recurring._prepare_option_line_values())
+            fields.Command.create(recurring._prepare_recurring_line_values())
             for recurring in sale_order_template.sale_order_template_recurring_ids
         ]
 

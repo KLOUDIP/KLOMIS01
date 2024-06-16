@@ -11,7 +11,7 @@
     "description": """
 Add subscription package option to the website invoice preview
 """,
-    "version": "17.0.1.2.1",
+    "version": "17.0.1.2.2",
     "depends": [
         'sale',
         'sale_subscription',

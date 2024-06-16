@@ -35,10 +35,11 @@ class CustomerPortal(portal.CustomerPortal):
         """
         @public - get the package pricing with price-list
         """
+        sale_id = request.env['sale.order'].with_user(SUPERUSER_ID).browse(int(sale_id))
         subscription_plan_id = request.env['sale.subscription.plan'].with_user(SUPERUSER_ID).browse(
             int(subscription_package_id))
         product_id = request.env['product.product'].with_user(SUPERUSER_ID).browse(int(product_id))
-        plan_line_id = subscription_plan_id.product_subscription_pricing_ids.filtered(lambda x: x.product_template_id.id == product_id.product_tmpl_id.id)
+        plan_line_id = subscription_plan_id.product_subscription_pricing_ids.filtered(lambda x: x.product_template_id.id == product_id.product_tmpl_id.id and x.pricelist_id.id == sale_id.pricelist_id.id)
         pricelist_id = plan_line_id.pricelist_id
         recurring_line_id = request.env['sale.order.recurring'].with_user(SUPERUSER_ID).browse(int(recurring_line_id))
 
