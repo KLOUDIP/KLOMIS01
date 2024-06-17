@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="report_saleorder_document_subscription_packages" inherit_id="sale.report_saleorder_document">
+        <xpath expr="//div[@name='so_total_summary']" position="replace">
+            <div class="oe_structure"></div>
+            <t t-if="doc.sale_order_recurring_ids">
+                <h6 class="mt-4">
+                    <span>Subscription Products</span>
+                </h6>
+                <h6 class="mt-4">
+                    <span>Selected Plan</span>
+                    <span t-field="doc.custom_plan_id">SO0000</span>
+                </h6>
+                <table class="table table-sm o_main_table table-borderless mt-4">
+                    <thead style="display: table-row-group">
+                        <tr>
+                            <th name="th_description" class="text-start">Description</th>
+                            <th name="th_quantity" class="text-end">Quantity</th>
+                            <th name="th_priceunit" class="text-end">Unit Price</th>
+                            <th name="th_discount" t-if="display_discount" class="text-end">
+                                <span>Disc.%</span>
+                            </th>
+                            <th name="th_taxes" class="text-end">Taxes</th>
+                            <th name="th_subtotal" class="text-end">
+                                <span>Amount</span>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody class="sale_subscription_tbody">
+                        <t t-foreach="doc.sale_order_recurring_ids" t-as="line">
+                            <tr>
+                                <td name="td_name"><span t-field="line.name">Bacon Burger</span></td>
+                                <td name="td_quantity" class="text-end">
+                                    <span t-field="line.quantity">3</span>
+                                    <span t-field="line.uom_id.name">units</span>
+                                </td>
+                                <td name="td_priceunit" class="text-end">
+                                    <span t-field="line.price_unit">3</span>
+                                </td>
+                                <td t-if="display_discount" class="text-end">
+                                    <span t-field="line.discount">-</span>
+                                </td>
+                                <td name="td_taxes" class="text-end">
+                                    <span t-out="', '.join(map(lambda x: (x.description or x.name), line.tax_ids))">
+                                        Tax 15%
+                                    </span>
+                                </td>
+                                <td name="td_subtotal" class="text-end o_price_total">
+                                    <span t-field="line.price_subtotal">27.00</span>
+                                </td>
+                            </tr>
+                        </t>
+                    </tbody>
+                </table>
+            </t>
+        </xpath>
+    </template>
+</odoo>

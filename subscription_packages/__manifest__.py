@@ -23,6 +23,7 @@ Add subscription package option to the website invoice preview
         'views/sale_order_views.xml',
         'views/sale_portal_templates.xml',
         'views/sale_order_template_views.xml',
+        'report/sale_order_templates.xml'
     ],
     'assets': {
         'web.assets_frontend': [

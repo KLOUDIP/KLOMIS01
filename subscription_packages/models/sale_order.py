@@ -30,7 +30,8 @@ class SaleOrder(models.Model):
                 plan_line_id = self.custom_plan_id.product_subscription_pricing_ids.filtered(lambda x: x.product_template_id.id == rec.product_id.product_tmpl_id.id and x.pricelist_id.id == self.pricelist_id.id)
                 price_unit = 0.00
                 if plan_line_id:
-                    price_unit = plan_line_id.pricelist_id._get_product_price(rec.product_id, rec.quantity or 1.0, currency=plan_line_id[0].pricelist_id.currency_id)
+                    # price_unit = plan_line_id.pricelist_id._get_product_price(rec.product_id, rec.quantity or 1.0, currency=plan_line_id[0].pricelist_id.currency_id)
+                    price_unit = plan_line_id.price
                 rec.update({
                     'price_unit': price_unit
                 })
