@@ -4,11 +4,11 @@
         <xpath expr="//div[@name='so_total_summary']" position="replace">
             <div class="oe_structure"></div>
             <t t-if="doc.sale_order_recurring_ids">
-                <h6 class="mt-4">
+                <h5 class="mt-4">
                     <span>Subscription Products</span>
-                </h6>
+                </h5>
                 <h6 class="mt-4">
-                    <span>Selected Plan</span>
+                    <span>Selected Plan:</span>
                     <span t-field="doc.custom_plan_id">SO0000</span>
                 </h6>
                 <table class="table table-sm o_main_table table-borderless mt-4">
