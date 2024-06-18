@@ -11,7 +11,8 @@ class SaleOrder(models.Model):
         string='Subscription Plan',
         help='User selected recurring pricing on invoice preview will appear here',
         context={'sale_recurring': True},
-        tracking=1
+        tracking=1,
+        default=lambda self: self.env['sale.subscription.plan'].search([('name', '=', 'Monthly')], limit=1)
     )
     sale_order_recurring_ids = fields.One2many(
         comodel_name='sale.order.recurring',

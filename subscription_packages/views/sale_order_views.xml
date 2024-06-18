@@ -9,9 +9,7 @@
         <field name="arch" type="xml">
 
             <page name="optional_products" position="after">
-                <page string="Subscription Products"
-                      name="recurring_products"
-                      invisible="state not in ['draft', 'sent']">
+                <page string="Subscription Products" name="recurring_products">
                     <group>
                         <group>
                             <field name="custom_plan_id" options="{'no_create': True}"/>
