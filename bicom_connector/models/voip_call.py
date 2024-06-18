@@ -54,8 +54,6 @@ class VoipCall(models.Model):
                         continue
 
                 file_name = rec.asteriskcallid_one
-                _logger.info('---------------------------------------')
-                _logger.info(file_name)
 
                 # Opening the file in binary mode
                 if file_found:

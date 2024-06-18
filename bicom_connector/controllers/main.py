@@ -35,7 +35,6 @@ class BiComController(http.Controller):
                 return response
         except Exception as e:
             status, status_code = {'error': str(e)}, 403
-        _logger.info("status")
         return Response(json.dumps(status), status=status_code, content_type='application/json')
 
     @http.route(['/customers', '/customers/search'], type='http', auth='none', methods=['GET'], csrf=False)
@@ -86,7 +85,6 @@ class BiComController(http.Controller):
 
     @http.route(['/calllog/<string:id>'], type='http', auth='none', methods=['GET'], csrf=False)
     def get_calllog(self, id, **kwargs):
-        _logger.info(kwargs)
         uuid_token = request.httprequest.headers.get('X-CrmIService-Token')
         domain = []
         user = request.env['res.users'].sudo().search([('uuid_token', '=', uuid_token)])
@@ -120,7 +118,6 @@ class BiComController(http.Controller):
 
     @http.route(['/status/<string:id>'], type='http', auth='none', methods=['GET'], csrf=False)
     def get_status(self, id, **kwargs):
-        _logger.info(kwargs)
         uuid_token = request.httprequest.headers.get('X-CrmIService-Token')
         domain = []
         user = request.env['res.users'].sudo().search([('uuid_token', '=', uuid_token)])
@@ -148,9 +145,7 @@ class BiComController(http.Controller):
         """
             Create calllog with bicom request data
         """
-        _logger.info("---------------------------------------")
         json_data = json.loads(request.httprequest.data)
-        _logger.info(json_data)
         uuid_token = request.httprequest.headers.get('X-CrmIService-Token')
         user = request.env['res.users'].sudo().search([('uuid_token', '=', uuid_token)])
         Call = request.env['voip.call']
