@@ -19,6 +19,17 @@ class SaleOrder(models.Model):
         string="Subscription Products Lines",
         copy=True
     )
+    sub_tax_totals = fields.Binary(compute='_compute_sub_tax_totals', exportable=False)
+
+    @api.depends_context('lang')
+    @api.depends('sale_order_recurring_ids.tax_ids', 'sale_order_recurring_ids.price_unit', 'currency_id')
+    def _compute_sub_tax_totals(self):
+        for order in self:
+            order_lines = order.sale_order_recurring_ids
+            order.sub_tax_totals = self.env['account.tax']._prepare_tax_totals(
+                [x._convert_to_tax_base_line_dict() for x in order_lines],
+                order.currency_id or order.company_id.currency_id,
+            )
 
     @api.onchange('custom_plan_id')
     def _onchange_custom_plan_id(self):

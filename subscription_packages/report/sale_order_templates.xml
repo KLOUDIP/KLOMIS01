@@ -1,12 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <template id="report_saleorder_document_subscription_packages" inherit_id="sale.report_saleorder_document">
-        <xpath expr="//div[@name='so_total_summary']" position="replace">
+        <xpath expr="//div[@name='so_total_summary']" position="after">
             <div class="oe_structure"></div>
             <t t-if="doc.sale_order_recurring_ids">
                 <h5 class="mt-4">
                     <span>Subscription Products</span>
                 </h5>
+                <div class="alert alert-success" role="alert">
+                    Software subscription invoices will be issued separately starting the next billing cycle based on your preferred subscription plan.
+                </div>
                 <h6 class="mt-4">
                     <span>Selected Plan:</span>
                     <span t-field="doc.custom_plan_id">SO0000</span>
@@ -27,7 +30,11 @@
                         </tr>
                     </thead>
                     <tbody class="sale_subscription_tbody">
+
+                        <t t-set="sub_current_subtotal" t-value="0"/>
+
                         <t t-foreach="doc.sale_order_recurring_ids" t-as="line">
+                            <t t-set="sub_current_subtotal" t-value="sub_current_subtotal + line.price_subtotal"/>
                             <tr>
                                 <td name="td_name"><span t-field="line.name">Bacon Burger</span></td>
                                 <td name="td_quantity" class="text-end">
@@ -49,9 +56,30 @@
                                     <span t-field="line.price_subtotal">27.00</span>
                                 </td>
                             </tr>
+                            <tr class="is-subtotal text-end">
+                                <td name="td_sub_current_subtotal" colspan="99">
+                                    <strong class="mr16">Subtotal</strong>
+                                    <span
+                                            t-out="sub_current_subtotal"
+                                            t-options='{"widget": "monetary", "display_currency": doc.currency_id}'
+                                    >31.05</span>
+                                </td>
+                            </tr>
                         </t>
                     </tbody>
                 </table>
+                <div class="clearfix" name="so_total_summary">
+                    <div id="total" class="row" name="total">
+                        <div t-attf-class="#{'col-6' if report_type != 'html' else 'col-sm-7 col-md-6'} ms-auto">
+                            <table class="table table-sm table-borderless">
+                                <!-- Tax totals -->
+                                <t t-set="sub_tax_totals" t-value="doc.sub_tax_totals"/>
+                                <t t-call="sale.document_tax_totals"/>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="oe_structure"></div>
             </t>
         </xpath>
     </template>

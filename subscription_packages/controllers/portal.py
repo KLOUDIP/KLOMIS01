@@ -49,7 +49,8 @@ class CustomerPortal(portal.CustomerPortal):
             return: type - Tuple (format_amount, unit_price, price_subtotal)
             """
             # Compute product price
-            product_price = pricelist_id._get_product_price(product_id, product_qty or 1.0, currency=pricelist_id.currency_id)
+            # product_price = pricelist_id._get_product_price(product_id, product_qty or 1.0, currency=pricelist_id.currency_id)
+            product_price = plan_line_id.price
             product_price_formatted = format_amount(request.env, product_price, pricelist_id.currency_id) if pricelist_id else '0'
             # Compute price subtotal
             tax_results = request.env['account.tax']._compute_taxes([

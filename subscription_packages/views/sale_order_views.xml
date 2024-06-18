@@ -111,6 +111,13 @@
                             <field name="currency_id" column_invisible="1"/>
                         </tree>
                     </field>
+
+                    <group name="note_group" col="6" class="mt-2 mt-md-0">
+                        <group class="oe_subtotal_footer" colspan="2" name="sale_total">
+                            <field name="sub_tax_totals" widget="account-tax-totals-field" nolabel="1" colspan="2" readonly="1"/>
+                        </group>
+                        <div class="clearfix"/>
+                    </group>
                 </page>
             </page>
 

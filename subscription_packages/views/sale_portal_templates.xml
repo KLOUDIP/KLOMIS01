@@ -5,14 +5,18 @@
     <template id="subscription_packages_so_portal_template" inherit_id="sale_management.sale_order_portal_content_inherit_sale_management">
 
         <xpath expr="//section[@id='signature']" position="after">
-            <t t-if="sale_order._can_be_edited_on_portal() and any((not recurring.is_present) for recurring in sale_order.sale_order_recurring_ids)">
+            <t t-if="sale_order.sale_order_recurring_ids">
                 <section class="subscription_packages" t-att-sale-id="sale_order.id">
                     <hr/>
                     <h3>Subscription Package</h3>
+                    <div class="alert alert-success" role="alert">
+                        Software subscription invoices will be issued separately starting the next billing cycle based on your preferred subscription plan.
+                    </div>
+                    <hr/>
                     <div class="alert alert-secondary w-100 text-center" role="alert">
                         <div class="package-selection-dropdown-wrapper subscription-package-selection">
                             <label for="subscription-package">Select Subscription Plan</label>
-                            <select id="subscription-package" class="package-selection-dropdown">
+                            <select id="subscription-package" class="package-selection-dropdown" t-att-disabled="sale_order.state not in ['draft', 'sent']">
                                 <t t-set="subscription_plans" t-value="request.env['sale.subscription.plan'].sudo().search([])"/>
                                 <t t-if="sale_order.custom_plan_id.id not in subscription_plans.ids">
                                     <t t-set="monthly_value" t-value="subscription_plans.filtered(lambda x: x.name == 'Monthly')"/>
