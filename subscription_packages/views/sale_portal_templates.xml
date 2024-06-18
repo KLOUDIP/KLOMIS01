@@ -29,69 +29,78 @@
                             </select>
                         </div>
                     </div>
-                    <!--Empty pricelist alert-->
-                    <div class="alert alert-warning text-center mt-2 d-none pricelist-warning" role="alert">
-                        Oops! It looks like some products are missing subscription pricelist information. Please contact the System-Administrator.
-                    </div>
                     <t t-set="display_discount" t-value="True in [recurring.discount > 0 for recurring in sale_order.sale_order_recurring_ids]"/>
-                    <table class="table table-sm">
-                        <thead>
-                            <tr>
-                                <th class="text-start">Product</th>
-                                <th class="text-end" id="subscription_product_qty_header">Quantity</th>
-                                <th t-if="display_discount" class="text-end">Disc.%</th>
-                                <th class="text-end">Unit Price</th>
-                                <th t-attf-class="text-end {{ 'd-none d-md-table-cell' if report_type == 'html' else '' }}" id="subscription_taxes_header">
-                                    <span>Taxes</span>
-                                </th>
-                                <th class="text-end" id="subscription_subtotal_header">
-                                    <span>Amount</span>
-                                </th>
-                                <th t-if="sale_order._can_be_edited_on_portal() and report_type == 'html'"/>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr t-foreach="sale_order.sale_order_recurring_ids" t-as="recurring" t-attf-class="r_pkg_#{recurring.id}" t-att-data-productid="recurring.product_id.id" t-att-data-recurringline="recurring.id">
-                                <t t-if="not recurring.is_present">
-                                    <td>
-                                        <div t-field="recurring.name"/>
-                                    </td>
-                                    <td class="text-end" id="subscription_quote_qty_td">
-                                        <div id="subscription_quote_qty">
-                                            <span t-field="recurring.quantity"/>
-                                            <span t-field="recurring.uom_id"/>
-                                        </div>
-                                    </td>
-                                    <td t-if="display_discount" class="text-end">
-                                        <strong t-if="recurring.discount" class="text-info">
-                                            <t t-out="((recurring.discount % 1) and '%s' or '%d') % recurring.discount"/>%
-                                        </strong>
-                                    </td>
-                                    <td class="subscription-price-unit">
-                                        <strong class="text-end recurring-price-unit">
-                                            <div t-field="recurring.price_unit"
-                                                 t-options='{"widget": "monetary", "display_currency": sale_order.currency_id}'
-                                                 t-att-style="recurring.discount and 'text-decoration: line-through' or None"
-                                                 t-att-class="recurring.discount and 'text-danger' or None"/>
-                                            <div t-if="recurring.discount">
-                                                <t t-out="(1-recurring.discount / 100.0) * recurring.price_unit" t-options='{"widget": "monetary", "display_currency": sale_order.currency_id}'/>
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th class="text-start">Product</th>
+                                    <th class="text-end" id="subscription_product_qty_header">Quantity</th>
+                                    <th t-if="display_discount" class="text-end">Disc.%</th>
+                                    <th class="text-end">Unit Price</th>
+                                    <th t-attf-class="text-end {{ 'd-none d-md-table-cell' if report_type == 'html' else '' }}" id="subscription_taxes_header">
+                                        <span>Taxes</span>
+                                    </th>
+                                    <th class="text-end" id="subscription_subtotal_header">
+                                        <span>Amount</span>
+                                    </th>
+                                    <th t-if="sale_order._can_be_edited_on_portal() and report_type == 'html'"/>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="sale_order.sale_order_recurring_ids" t-as="recurring" t-attf-class="r_pkg_#{recurring.id}" t-att-data-productid="recurring.product_id.id" t-att-data-recurringline="recurring.id">
+                                    <t t-if="not recurring.is_present">
+                                        <td>
+                                            <div t-field="recurring.name"/>
+                                        </td>
+                                        <td class="text-end" id="subscription_quote_qty_td">
+                                            <div id="subscription_quote_qty">
+                                                <span t-field="recurring.quantity"/>
+                                                <span t-field="recurring.uom_id"/>
                                             </div>
-                                        </strong>
-                                    </td>
-                                    <td t-attf-class="text-end {{ 'd-none d-md-table-cell' if report_type == 'html' else '' }}" id="subscription_taxes">
-                                        <span t-out="', '.join(map(lambda x: (x.description or x.name), recurring.tax_ids))"/>
-                                    </td>
-                                    <td class="text-end" id="subscription_subtotal">
-                                        <span class="oe_order_line_price_subtotal" t-field="recurring.price_subtotal"/>
-                                    </td>
-                                </t>
-                            </tr>
-                        </tbody>
-                    </table>
+                                        </td>
+                                        <td t-if="display_discount" class="text-end">
+                                            <strong t-if="recurring.discount" class="text-info">
+                                                <t t-out="((recurring.discount % 1) and '%s' or '%d') % recurring.discount"/>%
+                                            </strong>
+                                        </td>
+                                        <td class="subscription-price-unit">
+                                            <strong class="text-end recurring-price-unit">
+                                                <div t-field="recurring.price_unit"
+                                                     t-options='{"widget": "monetary", "display_currency": sale_order.currency_id}'
+                                                     t-att-style="recurring.discount and 'text-decoration: line-through' or None"
+                                                     t-att-class="recurring.discount and 'text-danger' or None"/>
+                                                <div t-if="recurring.discount">
+                                                    <t t-out="(1-recurring.discount / 100.0) * recurring.price_unit" t-options='{"widget": "monetary", "display_currency": sale_order.currency_id}'/>
+                                                </div>
+                                            </strong>
+                                        </td>
+                                        <td t-attf-class="text-end {{ 'd-none d-md-table-cell' if report_type == 'html' else '' }}" id="subscription_taxes">
+                                            <span t-out="', '.join(map(lambda x: (x.description or x.name), recurring.tax_ids))"/>
+                                        </td>
+                                        <td class="text-end" id="subscription_subtotal">
+                                            <span class="oe_order_line_price_subtotal" t-field="recurring.price_subtotal"/>
+                                        </td>
+                                    </t>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div id="total" name="total" style="page-break-inside: avoid;">
+                        <div class="col-xs-7 col-md-5 ms-auto">
+                            <t t-call="subscription_packages.sale_order_portal_content_subscription_totals_table"/>
+                        </div>
+                    </div>
                 </section>
             </t>
         </xpath>
 
     </template>
 
+    <template id="sale_order_portal_content_subscription_totals_table">
+        <table class="table table-sm">
+            <t t-set="tax_totals" t-value="sale_order.sub_tax_totals"/>
+            <t t-call="sale.document_tax_totals"/>
+        </table>
+    </template>
 </odoo>
