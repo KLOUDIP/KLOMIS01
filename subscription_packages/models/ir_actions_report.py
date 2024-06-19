@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 import io
 from PyPDF2 import PdfFileWriter
+from PyPDF2.generic import NameObject, createStringObject
+
+from odoo import models
 
 from odoo.tools import pdf
 from odoo.addons.sale_pdf_quote_builder.models.ir_actions_report import IrActionsReport
@@ -55,7 +58,8 @@ def _render_qweb_pdf_prepare_streams(self, report_ref, data, res_ids=None):
                 for doc in included_product_docs:
                     doc_stream = IrBinary._record_to_stream(doc, 'datas').read()
                     self._add_pages_to_writer(writer, doc_stream, doc_line_id_mapping[doc.id])
-                    self._prefix_sol_form_fields(writer, doc_line_id_mapping[doc.id])
+                    if hasattr(self, '_prefix_sol_form_fields'):
+                        self._prefix_sol_form_fields(writer=writer, sol_id=doc_line_id_mapping[doc.id])
             self._add_pages_to_writer(writer, (initial_stream).getvalue())
             if has_footer:
                 footer_stream = IrBinary._record_to_stream(footer_record, 'sale_footer').read()
@@ -70,4 +74,25 @@ def _render_qweb_pdf_prepare_streams(self, report_ref, data, res_ids=None):
     return result
 
 
+def _prefix_sol_form_fields(self, writer, sol_id):
+    prefix = f'{sol_id}_'
+    sol_field_names = self._get_sol_form_fields_names()
+    if hasattr(writer, 'pages'):
+        nbr_pages = len(writer.pages)
+    else:  # This method was renamed in PyPDF2 2.0
+        nbr_pages = writer.getNumPages()
+    for page_id in range(0, nbr_pages):
+        page = writer.getPage(page_id)
+        if not page.get('/Annots'):
+            continue
+        for j in range(0, len(page['/Annots'])):
+            writer_annot = page['/Annots'][j].getObject()
+            if writer_annot.get('/T') in sol_field_names:
+                writer_annot.update({
+                    NameObject("/T"): createStringObject(prefix + writer_annot.get('/T'))
+                })
+
+
 IrActionsReport._render_qweb_pdf_prepare_streams = _render_qweb_pdf_prepare_streams
+if not hasattr(IrActionsReport, '_prefix_sol_form_fields'):
+    IrActionsReport._prefix_sol_form_fields = _prefix_sol_form_fields
