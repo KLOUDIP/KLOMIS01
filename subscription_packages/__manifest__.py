@@ -17,7 +17,8 @@ Add subscription package option to the website invoice preview
         'sale_subscription',
         'account_accountant',
         'sale_management',
-        'sale_pdf_quote_builder'
+        'sale_pdf_quote_builder',
+        'sale_renting'
     ],
     "data": [
         'security/ir.model.access.csv',
