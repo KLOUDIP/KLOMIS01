@@ -9,7 +9,7 @@ class SaleOrder(models.Model):
         res = super(SaleOrder, self).action_confirm()
         epc = self.order_line.filtered(lambda x: x.product_id.is_epc == True)
         for order in self:
-            if order.partner_id.type == 'invoice':
+            if order.partner_invoice_id.type == 'invoice':
                 order.create_epc_transaction(epc)
         return res
 
@@ -21,7 +21,7 @@ class SaleOrder(models.Model):
             'state': 'confirm',
             'order_id': self.id,
         }
-        self.partner_id.write({
+        self.partner_invoice_id.write({
             'transaction_ids': [(0, 0, data)],
             'last_updated_epc_amount': epc.product_uom_qty
         })
