@@ -254,6 +254,7 @@ class ActiveUnits(models.Model):
                     })
                     # update contract fios active units available field
                     contracts.update({'fios_active_unit_available': True})
+                    contracts.update({'parent_id': contracts.sale_id.partner_invoice_id.id if contracts.sale_id.partner_invoice_id else False})
         if active_units_data:
             for x in active_units_data:
                 existing_active_unit = self.search([('partner_id', '=', x['partner_id']), '|', ('unit_serial', '=', x['unit_serial']), ('plate_no', '=', x['plate_no'])], limit=1)
