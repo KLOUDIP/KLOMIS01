@@ -98,7 +98,7 @@ class ResPartner(models.Model):
     def scheduler_for_fios(self):
         """Schedule action for get active units for the partners"""
         for rec in self.search([('type', '=', 'invoice'), ('fios_token', '!=', False)]):
-            if self.env['sale.subscription'].search([('partner_id', '=', rec.id)]):  # check subscriptions available
+            if self.env['sale.order'].search([('partner_id', '=', rec.id)]):  # check subscriptions available
                 eid = rec.env['active.units'].get_eid(rec.fios_token)
                 response = rec.env['active.units'].get_response_from_fios_api(eid)
                 rec.env['active.units'].get_active_units(rec, response, eid)

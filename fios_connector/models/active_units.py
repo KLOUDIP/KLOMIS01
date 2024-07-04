@@ -243,6 +243,9 @@ class ActiveUnits(models.Model):
                     contracts_with_serial_and_vehicle = self.env['fleet.vehicle.log.contract'].search([('vehicle_id', '=', fleet_vehicle.id), ('state', '!=', 'closed')]).filtered(lambda contract: contract.x_lot_id == lot_serial)
                     # check with partners
                     contracts = contracts_with_serial_and_vehicle.filtered(lambda y: y.partner_id.id == env.id)
+                    if not contracts:
+                        contracts_with_serial_and_vehicle.update({'partner_id': contracts_with_serial_and_vehicle.sale_id.partner_invoice_id.id if contracts_with_serial_and_vehicle.sale_id.filtered(lambda x: x.partner_invoice_id.type == 'invoice') else False})
+                        contracts = contracts_with_serial_and_vehicle.filtered(lambda y: y.partner_id.id == env.id)
                     active_units_data.append({
                         'fleet_vehicle_id': fleet_vehicle.id,
                         'lot_id': lot_serial.id,
@@ -254,7 +257,7 @@ class ActiveUnits(models.Model):
                     })
                     # update contract fios active units available field
                     contracts.update({'fios_active_unit_available': True})
-                    contracts.update({'partner_id': contracts.sale_id.partner_invoice_id.id if contracts.sale_id.partner_invoice_id else False})
+                    # contracts.update({'partner_id': contracts.sale_id.partner_invoice_id.id if contracts.sale_id.partner_invoice_id else False})
         if active_units_data:
             for x in active_units_data:
                 existing_active_unit = self.search([('partner_id', '=', x['partner_id']), '|', ('unit_serial', '=', x['unit_serial']), ('plate_no', '=', x['plate_no'])], limit=1)
