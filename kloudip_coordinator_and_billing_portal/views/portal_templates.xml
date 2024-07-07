@@ -23,11 +23,24 @@
     </template>
 
     <template id="portal_contact" inherit_id="portal.portal_contact">
-        <xpath expr="//div[@class='fa fa-phone fa-fw me-1']" position="after">
+        <xpath expr="//div[@class='d-flex align-items-center mb-1']" position="after">
             <div class="d-flex flex-nowrap align-items-center mb-1">
                 <div class="fa fa-mobile fa-fw me-1"></div>
                 <span t-esc="sales_user.mobile"/>
             </div>
+        </xpath>
+
+        <xpath expr="//span[@t-esc='sales_user.phone']" position="attributes">
+            <attribute name="t-attf-class">#{'d-none'}</attribute>
+        </xpath>
+         <xpath expr="//span[@t-esc='sales_user.city']" position="attributes">
+            <attribute name="t-attf-class">#{'d-none'}</attribute>
+        </xpath>
+        <xpath expr="//div[@class='fa fa-phone fa-fw me-1']" position="attributes">
+            <attribute name="t-attf-class">#{'d-none'}</attribute>
+        </xpath>
+         <xpath expr="//div[@class='fa fa-map-marker fa-fw me-1']" position="attributes">
+            <attribute name="t-attf-class">#{'d-none'}</attribute>
         </xpath>
     </template>
 </odoo>
