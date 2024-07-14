@@ -38,6 +38,8 @@
                     <field name="select_user"/>
                     <field name="template_id"/>
                     <field name="fleet_id"/>
+                    <field name="project_id"/>
+                    <field name="worksheet_date"/>
                     <field name="expense_id"/>
                     <field name="is_telematics_technicians" invisible="1"/>
                     <field name="done_mark" invisible="is_telematics_technicians == True"/>
