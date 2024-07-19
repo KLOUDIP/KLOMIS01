@@ -11,6 +11,8 @@ class WorksheetTemplateLine(models.Model):
     select_user = fields.Many2one('res.users', string='Assigned to', required=True)
     fleet_id = fields.Many2one('fleet.vehicle', string='Fleet Code')
     project_task_id = fields.Many2one('project.task', string="Project Task")
+    project_id = fields.Many2one('project.project', string="Project")
+    worksheet_date = fields.Date(string="Worksheet Date", compute="_compute_worksheet_date", store=True)
     done_mark = fields.Boolean('Mark as Done')
     select_vals = fields.Boolean('Select')
     food = fields.Boolean('Mark as Done')
@@ -49,6 +51,16 @@ class WorksheetTemplateLine(models.Model):
     def _user_error(self):
         if self.line_add:
             raise UserError(_("This worksheet cannot change, you have already add this, if you want to change this, delete and add a new item "))
+
+    @api.depends('project_task_id', 'worksheet_id', 'template_id')
+    def _compute_worksheet_date(self):
+        for rec in self:
+            template_id = rec.template_id
+            worksheet_date = self.env[template_id.model_id.model].sudo().search([('x_studio_line_id', '=', rec.id)])
+            if worksheet_date:
+                rec.worksheet_date = worksheet_date[0].x_studio_date_time.date() if worksheet_date[0].x_studio_date_time else False
+            else:
+                rec.worksheet_date = False
 
     def action_fsm_worksheet_template(self):
         template_id = self.template_id
@@ -92,7 +104,8 @@ class WorksheetTemplateLine(models.Model):
         new_id = self.env['worksheet.template.line'].search([('id', '=', get_line_id)])
         new_id.write({
             'line_add': True,
-            'worksheet_id': worksheet.id if worksheet else False
+            'worksheet_id': worksheet.id if worksheet else False,
+            'project_id': worksheet.x_project_task_id.project_id.id
         })
 
         return action
