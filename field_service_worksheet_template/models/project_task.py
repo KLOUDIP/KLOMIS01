@@ -201,7 +201,7 @@ class ProjectTaskLine(models.Model):
 
         }
 
-    def action_to_vendor_bill(self):
+    def action_to_create_vendor_bill(self):
         return {
             'name': _('Vendor Bill'),
             'view_mode': 'form',

@@ -58,7 +58,7 @@
                             <button type="object" class="btn btn-primary" string='OP2' name="action_to_create_expense_other" context="{'product_val': 'other_2'}"
                                     invisible="template_id == False or other_2 != False" groups="field_service_worksheet_template.group_coordinator_fsm,industry_fsm.group_fsm_manager"/>
 
-                            <button type="object" class="btn btn-primary" string='SP1' name="action_to_vendor_bill" context="{'product_val': 'other_3'}"
+                            <button type="object" class="btn btn-primary" string='SP1' name="action_to_create_vendor_bill" context="{'product_val': 'other_3'}"
                                     invisible="template_id == False or other_3 != False" groups="field_service_worksheet_template.group_coordinator_fsm,industry_fsm.group_fsm_manager"/>
                         </tree>
                     </field>
