@@ -303,7 +303,7 @@ class WorksheetTemplateLine(models.Model):
                 'default_partner_id': self.select_user.partner_id.id,
                 'default_expense_id_worksheet_line': self.id,
                 'default_move_type': 'in_invoice',
-                'default_task_id': self.project_task_id.id,
+                'default_worksheet_task_id': self.project_task_id.id,
             },
             'flags': {'form': {'action_buttons': False}}
 
