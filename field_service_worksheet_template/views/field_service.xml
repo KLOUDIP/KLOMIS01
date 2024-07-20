@@ -46,7 +46,7 @@
                             <button type="object" class="btn btn-primary" string='OP2' name="action_to_create_expense_other" context="{'product_val': 'other_2'}"
                                     attrs="{'invisible': ['|', ('template_id', '=', False), ('other_2', '!=', False)]}"/>
 
-                            <button type="object" class="btn btn-primary" string='SP1' name="action_to_create_expense_other" context="{'product_val': 'other_3'}"
+                            <button type="object" class="btn btn-primary" string='SP1' name="action_to_vendor_bill" context="{'product_val': 'other_3'}"
                                     attrs="{'invisible': ['|', ('template_id', '=', False), ('other_3', '!=', False)]}"/>
                         </tree>
                     </field>

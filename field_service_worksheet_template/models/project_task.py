@@ -169,6 +169,39 @@ class ProjectTaskLine(models.Model):
         }
 
     def action_to_create_expense_other(self):
+
+        pro_id = False
+        # get_pro_id = self.env['product.product'].search([('name', '=', 'Other')])
+        # if get_pro_id:
+        #     pro_id = get_pro_id.id
+
+        return {
+            'name': _('EXPENSE view'),
+            'view_mode': 'form',
+            'view_id': False,
+            'edit': False,
+            'view_type': 'form',
+            'res_model': 'hr.expense',
+            'res_id': False,
+            'type': 'ir.actions.act_window',
+            'nodestroy': True,
+            'target': 'current',
+            'domain': '[]',
+            'context': {
+                # 'product_val': 'other',
+                'product_val': self._context.get('product_val', False),
+                'default_employee_id': self.select_user.employee_id.id,
+                'default_employee': self.select_user.employee_id.id,
+                'default_product_id': pro_id,
+                'default_expense_id_worksheet_line': self.id,
+                'default_task_id_rec': self.project_task_id.id,
+
+            },
+            'flags': {'form': {'action_buttons': False}}
+
+        }
+
+    def action_to_vendor_bill(self):
         return {
             'name': _('Vendor Bill'),
             'view_mode': 'form',
