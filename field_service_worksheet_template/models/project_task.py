@@ -168,6 +168,25 @@ class ProjectTaskLine(models.Model):
             'res_id': self.helpdesk_ticket_id.id,
         }
 
+    def action_to_create_expense_other(self):
+        return {
+            'name': _('Vendor Bill'),
+            'view_mode': 'form',
+            'view_id': self.env.ref('account.view_move_form').id,
+            'view_type': 'form',
+            'res_model': 'account.move',
+            'type': 'ir.actions.act_window',
+            'target': 'current',
+            'context': {
+                'default_partner_id': self.select_user.partner_id.id,
+                'default_expense_id_worksheet_line': self.id,
+                'default_move_type': 'in_invoice',
+                'default_task_id': self.project_task_id.id,
+            },
+            'flags': {'form': {'action_buttons': False}}
+
+        }
+
     def action_view_vendor_bill(self):
         vendor_bill = self.env['account.move'].search([('worksheet_task_id', '=', self.id)])
         if vendor_bill:
