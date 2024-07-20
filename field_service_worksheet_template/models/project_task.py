@@ -167,3 +167,13 @@ class ProjectTaskLine(models.Model):
             'view_mode': 'form',
             'res_id': self.helpdesk_ticket_id.id,
         }
+
+    def action_view_vendor_bill(self):
+        vendor_bill = self.env['account.move'].search([('worksheet_task_id', '=', self.id)])
+        if vendor_bill:
+            return {
+                'type': 'ir.actions.act_window',
+                'res_model': 'account.move',
+                'view_mode': 'form',
+                'res_id': vendor_bill.id,
+            }
