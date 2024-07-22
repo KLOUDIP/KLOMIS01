@@ -290,6 +290,25 @@ class WorksheetTemplateLine(models.Model):
 
         }
 
+    def action_to_create_vendor_bill(self):
+        return {
+            'name': _('Vendor Bill'),
+            'view_mode': 'form',
+            'view_id': self.env.ref('account.view_move_form').id,
+            'view_type': 'form',
+            'res_model': 'account.move',
+            'type': 'ir.actions.act_window',
+            'target': 'current',
+            'context': {
+                'default_partner_id': self.select_user.partner_id.id,
+                'default_expense_id_worksheet_line': self.id,
+                'default_move_type': 'in_invoice',
+                'default_worksheet_task_id': self.project_task_id.id,
+            },
+            'flags': {'form': {'action_buttons': False}}
+
+        }
+
     def action_open_worksheet_line_view(self):
         return {
             'name': _('Worksheet Lines'),

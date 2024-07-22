@@ -15,6 +15,7 @@
         'views/hr_expenses.xml',
         'views/worksheet_template_line_form.xml',
         'views/helpdesk_ticket.xml',
+        'views/account_move_views.xml',
         'report/worksheet_custom_report_templates.xml',
         'report/worksheet_custom_reports.xml',
         'report/hr_expense_report.xml',
