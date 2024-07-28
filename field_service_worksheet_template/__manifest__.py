@@ -14,6 +14,7 @@
         'views/project_portal_templates.xml',
         'views/hr_expenses.xml',
         'views/worksheet_template_line_form.xml',
+        'views/purchase_order_views.xml',
         'views/helpdesk_ticket.xml',
         'report/worksheet_custom_report_templates.xml',
         'report/worksheet_custom_reports.xml',
