@@ -122,26 +122,6 @@
             <field name="model">project.task</field>
             <field name="inherit_id" ref="project.view_task_form2"/>
             <field name="arch" type="xml">
-                <xpath expr="//div[@name='button_box']" position="inside">
-                    <field string="Tickets" name="helpdesk_ticket_id" invisible="1" />
-                    <field name="is_tech_team_user" invisible="1" />
-                    <button
-                            string="Intervention ticket"
-                            class="oe_stat_button"
-                            name="action_view_ticket"
-                            type="object"
-                            icon="fa-life-ring"
-                            invisible="helpdesk_ticket_id == False"
-                            groups="helpdesk.group_helpdesk_user"
-                            help="Ticket from this task"/>
-
-                    <button
-                            string="Purchase Order"
-                            class="oe_stat_button"
-                            name="action_view_purchase_order"
-                            type="object"
-                            icon="fa-life-ring"/>
-                </xpath>
 
                 <xpath expr="//div[@class='d-flex justify-content-end o_state_container']" position="replace">
                     <div class="d-flex justify-content-end o_state_container" invisible="not active or not is_tech_team_user">
@@ -237,6 +217,26 @@
                     <field name="name" class="o_task_name text-truncate" placeholder="Task Title..." default_focus="1" invisible="is_technician == True"/>
                 </xpath>
 
+                <xpath expr="//div[@name='button_box']" position="inside">
+                    <field string="Tickets" name="helpdesk_ticket_id" invisible="1" />
+                    <field name="is_tech_team_user" invisible="1" />
+                    <button
+                            string="Intervention ticket"
+                            class="oe_stat_button"
+                            name="action_view_ticket"
+                            type="object"
+                            icon="fa-life-ring"
+                            invisible="helpdesk_ticket_id == False"
+                            groups="helpdesk.group_helpdesk_user"
+                            help="Ticket from this task"/>
+
+                    <button
+                            string="Purchase Order"
+                            class="oe_stat_button"
+                            name="action_view_purchase_order"
+                            type="object"
+                            icon="fa-life-ring"/>
+                </xpath>
             </field>
         </record>
     </data>
