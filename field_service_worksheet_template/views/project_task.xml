@@ -122,7 +122,6 @@
             <field name="model">project.task</field>
             <field name="inherit_id" ref="project.view_task_form2"/>
             <field name="arch" type="xml">
-
                 <xpath expr="//div[@name='button_box']" position="inside">
                     <field string="Tickets" name="helpdesk_ticket_id" invisible="1" />
                     <field name="is_tech_team_user" invisible="1" />
@@ -141,8 +140,7 @@
                             class="oe_stat_button"
                             name="action_view_purchase_order"
                             type="object"
-                            icon="fa-life-ring"
-                            invisible="helpdesk_ticket_id == False"/>
+                            icon="fa-life-ring"/>
                 </xpath>
 
                 <xpath expr="//div[@class='d-flex justify-content-end o_state_container']" position="replace">
