@@ -58,7 +58,7 @@
                             <button type="object" class="btn btn-primary" string='OP2' name="action_to_create_expense_other" context="{'product_val': 'other_2'}"
                                     invisible="template_id == False or other_2 != False" groups="field_service_worksheet_template.group_coordinator_fsm,industry_fsm.group_fsm_manager"/>
 
-                            <button type="object" class="btn btn-primary" string='SP1' name="action_to_create_vendor_bill" context="{'product_val': 'other_3'}"
+                            <button type="object" class="btn btn-primary" string='SP1' name="action_to_create_purchase_order" context="{'product_val': 'other_3'}"
                                     invisible="template_id == False or other_3 != False" groups="field_service_worksheet_template.group_coordinator_fsm,industry_fsm.group_fsm_manager"/>
                         </tree>
                     </field>
@@ -137,13 +137,12 @@
                             help="Ticket from this task"/>
 
                     <button
-                            string="Vendor Bill"
+                            string="Purchase Order"
                             class="oe_stat_button"
-                            name="action_view_vendor_bill"
+                            name="action_view_purchase_order"
                             type="object"
                             icon="fa-life-ring"
-                            invisible="helpdesk_ticket_id == False"
-                            help="Vendor Bill from this Task"/>
+                            invisible="helpdesk_ticket_id == False"/>
                 </xpath>
 
                 <xpath expr="//div[@class='d-flex justify-content-end o_state_container']" position="replace">

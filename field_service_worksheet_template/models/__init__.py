@@ -4,5 +4,6 @@ from . import worksheet_template
 from . import helpdesk_ticket
 from . import project_task
 from . import fleet_vehicle
-from . import account_move
+from . import purchase_order
+
 

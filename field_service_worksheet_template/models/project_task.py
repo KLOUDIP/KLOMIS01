@@ -201,7 +201,7 @@ class ProjectTaskLine(models.Model):
 
         }
 
-    def action_to_create_vendor_bill(self):
+    def action_to_create_purchase_order(self):
         return {
             'name': _('Vendor Bill'),
             'view_mode': 'form',
@@ -220,12 +220,12 @@ class ProjectTaskLine(models.Model):
 
         }
 
-    def action_view_vendor_bill(self):
-        vendor_bill = self.env['account.move'].search([('worksheet_task_id', '=', self.id)])
-        if vendor_bill:
+    def action_view_purchase_order(self):
+        purchase_order = self.env['purchase.order'].search([('worksheet_task_id', '=', self.id)])
+        if purchase_order:
             return {
                 'type': 'ir.actions.act_window',
-                'res_model': 'account.move',
+                'res_model': 'purchase.order',
                 'view_mode': 'form',
-                'res_id': vendor_bill.id,
+                'res_id': purchase_order.id,
             }
