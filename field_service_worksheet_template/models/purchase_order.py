@@ -2,15 +2,15 @@
 from odoo import models, fields, api
 
 
-class AccountMove(models.Model):
-    _inherit = 'account.move'
+class PurchaseOrder(models.Model):
+    _inherit = 'purchase.order'
 
     expense_id_worksheet_line = fields.Many2one('worksheet.template.line', 'Worksheet Id')
     worksheet_task_id = fields.Many2one('project.task', 'Task Id')
 
     @api.model
     def create(self, vals):
-        res = super(AccountMove, self).create(vals)
+        res = super(PurchaseOrder, self).create(vals)
         if res.expense_id_worksheet_line:
             res.expense_id_worksheet_line.write({'other_3': True})
         return res

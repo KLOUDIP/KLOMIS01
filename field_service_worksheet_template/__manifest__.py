@@ -14,8 +14,8 @@
         'views/project_portal_templates.xml',
         'views/hr_expenses.xml',
         'views/worksheet_template_line_form.xml',
+        'views/purchase_order_views.xml',
         'views/helpdesk_ticket.xml',
-        'views/account_move_views.xml',
         'report/worksheet_custom_report_templates.xml',
         'report/worksheet_custom_reports.xml',
         'report/hr_expense_report.xml',
@@ -25,6 +25,6 @@
         'security/ir.model.access.csv',
 
     ],
-    'depends': ['project', 'fleet', 'industry_fsm_report', 'web_studio', 'industry_fsm', 'industry_fsm_sale', 'hr_expense', 'helpdesk', 'helpdesk_fsm'],
+    'depends': ['project', 'fleet', 'industry_fsm_report', 'web_studio', 'industry_fsm', 'industry_fsm_sale', 'hr_expense', 'helpdesk', 'helpdesk_fsm', 'purchase'],
     'installable': True,
 }

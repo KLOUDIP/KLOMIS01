@@ -290,19 +290,18 @@ class WorksheetTemplateLine(models.Model):
 
         }
 
-    def action_to_create_vendor_bill(self):
+    def action_to_create_purchase_order(self):
         return {
-            'name': _('Vendor Bill'),
+            'name': _('Purchase Order'),
             'view_mode': 'form',
-            'view_id': self.env.ref('account.view_move_form').id,
+            'view_id': self.env.ref('purchase.purchase_order_form').id,
             'view_type': 'form',
-            'res_model': 'account.move',
+            'res_model': 'purchase.order',
             'type': 'ir.actions.act_window',
             'target': 'current',
             'context': {
                 'default_partner_id': self.select_user.partner_id.id,
                 'default_expense_id_worksheet_line': self.id,
-                'default_move_type': 'in_invoice',
                 'default_worksheet_task_id': self.project_task_id.id,
             },
             'flags': {'form': {'action_buttons': False}}
