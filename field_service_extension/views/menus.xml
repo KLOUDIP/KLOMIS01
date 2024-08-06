@@ -10,7 +10,10 @@
         <field name="domain">[('is_fsm', '=', True), ('project_id', '!=', False), ('display_in_project', '=', True), ('user_ids', '=', uid)]</field>
         <field name="context">{'fsm_mode': True,'search_default_my_tasks': True,'search_default_planned_future': True,'search_default_planned_today': True,'default_user_ids': [(4, uid)],'default_scale': 'day'}
         </field>
-        <field name="view_ids" eval="[(5, 0, 0), (0, 0, {'view_mode': 'form', 'view_id': ref('field_service_extension.view_task_form_technician')})]"/>
+        <field name="view_ids" eval="[
+        (5, 0, 0),
+        (0, 0, {'view_mode': 'tree'}),
+        (0, 0, {'view_mode': 'form', 'view_id': ref('field_service_extension.view_task_form_technician')})]"/>
         <field name="help" type="html">
             <p class='o_view_nocontent_smiling_face'>No tasks found. Let's create one!</p>
             <p>Find here your tasks planned for the following days.</p>
