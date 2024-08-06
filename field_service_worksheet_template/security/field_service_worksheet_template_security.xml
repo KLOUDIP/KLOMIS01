@@ -7,6 +7,12 @@
             <field name="implied_ids" eval="[(4, ref('industry_fsm.group_fsm_user'))]"/>
         </record>
 
+        <record id="group_technician_fsm" model="res.groups">
+            <field name="category_id" ref="base.module_category_operations_field_service"/>
+            <field name="name">Technician</field>
+            <field name="implied_ids" eval="[(4, ref('industry_fsm.group_fsm_user'))]"/>
+        </record>
+
         <record id="group_visible_delivery" model="res.groups">
             <field name="name">Delivery Visibility</field>
         </record>

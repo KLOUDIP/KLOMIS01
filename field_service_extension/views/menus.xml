@@ -6,10 +6,8 @@
         <field name="res_model">project.task</field>
         <field name="view_mode">kanban,calendar,tree,form,activity</field>
         <field name="search_view_id" ref="industry_fsm.project_task_view_search_fsm"/>
-        <field name="domain">[('is_fsm', '=', True),('display_project_id', '!=', False),('user_ids', 'in', uid)]</field>
-        <field name="context">{
-            'fsm_mode': True,
-            }
+        <field name="domain">[('is_fsm', '=', True), ('project_id', '!=', False), ('display_in_project', '=', True), ('user_ids', '=', uid)]</field>
+        <field name="context">{'fsm_mode': True,'search_default_my_tasks': True,'search_default_planned_future': True,'search_default_planned_today': True,'default_user_ids': [(4, uid)],'default_scale': 'day'}
         </field>
         <field name="help" type="html">
             <p class='o_view_nocontent_smiling_face'>No tasks found. Let's create one!</p>
@@ -18,22 +16,22 @@
     </record>
 
 
-    <record id="project_task_action_fsm_view_kanban_technicians" model="ir.actions.act_window.view">
-        <field name="sequence" eval="5"/>
-        <field name="view_mode">kanban</field>
-        <field name="view_id" ref="industry_fsm.project_task_view_kanban_fsm"/>
-        <field name="act_window_id" ref="field_service_extension.project_task_action_fsm_technicians"/>
-    </record>
+<!--    <record id="project_task_action_fsm_view_kanban_technicians" model="ir.actions.act_window.view">-->
+<!--        <field name="sequence" eval="5"/>-->
+<!--        <field name="view_mode">kanban</field>-->
+<!--        <field name="view_id" ref="industry_fsm.project_task_view_kanban_fsm"/>-->
+<!--        <field name="act_window_id" ref="field_service_extension.project_task_action_fsm_technicians"/>-->
+<!--    </record>-->
 
     <menuitem id="fsm_menu_tasks_kanban_technician"
               name="Technician Tasks"
               action="field_service_extension.project_task_action_fsm_technicians"
               sequence="10"
               parent="industry_fsm.fsm_tasks_menu"
-              groups="field_service_extension.group_fsm_technical_user"/>
+              groups="field_service_extension.group_fsm_technician"/>
 
     <record model='ir.ui.menu' id='industry_fsm.fsm_menu_tasks_kanban'>
-        <field name="groups_id" eval="[(4,ref('field_service_extension.group_fsm_basic_user'))]"/>
+        <field name="groups_id" eval="[(4,ref('field_service_worksheet_template.group_coordinator_fsm')), (4,ref('field_service_extension.group_fsm_tech_team')), (4,ref('field_service_extension.group_fsm_basic_user')), (3,ref('industry_fsm.group_fsm_user'))]"/>
     </record>
 
     <record model='ir.ui.menu' id='industry_fsm.fsm_menu_tasks_map'>

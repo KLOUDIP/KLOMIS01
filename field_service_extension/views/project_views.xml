@@ -16,23 +16,17 @@
         </field>
     </record>
 
-<!--    <record id="view_task_form2_field_service_extension" model="ir.ui.view">-->
-<!--        <field name="name">project.task.view.form.holidays</field>-->
+<!--    <record id="project_task_view_form_service_extension" model="ir.ui.view">-->
+<!--        <field name="name">project.task.view.form.service.extension</field>-->
 <!--        <field name="model">project.task</field>-->
-<!--        <field name="inherit_id" ref="project_enterprise.project_task_view_form"/>-->
+<!--        <field name="inherit_id" ref="timesheet_grid.project_task_view_form"/>-->
 <!--        <field name="arch" type="xml">-->
-<!--            <xpath expr="//label[@for='planned_date_begin']" position="replace">-->
-<!--                <label for="planned_date_begin" string="Planned Date"/>-->
+<!--            <xpath expr="//button[@invisible='not display_timer_start_primary or encode_uom_in_days']" position="attributes">-->
+<!--                <attribute name="groups">hr_timesheet.group_hr_timesheet_user,industry_fsm.group_fsm_user</attribute>-->
 <!--            </xpath>-->
-<!--            <xpath expr="//div[@class='w-100']" position="replace">-->
-<!--                <div class="w-100">-->
-<!--                    <div class="o_row">-->
-<!--                        <field name="planned_date_begin" widget="daterange" options="{'related_end_date': 'planned_date_end'}"/>-->
-<!--                        <i class="fa fa-long-arrow-right mx-2 oe_edit_only" aria-label="Arrow icon" title="Arrow"/>-->
-<!--                        <i class="fa fa-long-arrow-right mx-2 oe_read_only" aria-label="Arrow icon" title="Arrow"/>-->
-<!--                        <field name="planned_date_end" widget="daterange" options="{'related_start_date': 'planned_date_begin'}"/>-->
-<!--                    </div>-->
-<!--                </div>-->
+
+<!--            <xpath expr="//button[@invisible='not display_timer_start_secondary or encode_uom_in_days']" position="attributes">-->
+<!--                <attribute name="groups">hr_timesheet.group_hr_timesheet_user,industry_fsm.group_fsm_user</attribute>-->
 <!--            </xpath>-->
 <!--        </field>-->
 <!--    </record>-->

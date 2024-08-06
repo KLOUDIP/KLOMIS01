@@ -13,5 +13,5 @@
         'security/ir.model.access.csv',
         'views/menus.xml'
     ],
-    'depends': ['industry_fsm', 'project', 'project_enterprise'],
+    'depends': ['industry_fsm', 'project', 'project_enterprise', 'field_service_worksheet_template'],
 }
