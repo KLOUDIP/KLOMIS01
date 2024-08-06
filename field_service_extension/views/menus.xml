@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+
     <!-- My Tasks: kanban action -->
     <record id="project_task_action_fsm_technicians" model="ir.actions.act_window">
         <field name="name">My Tasks</field>
@@ -9,19 +10,12 @@
         <field name="domain">[('is_fsm', '=', True), ('project_id', '!=', False), ('display_in_project', '=', True), ('user_ids', '=', uid)]</field>
         <field name="context">{'fsm_mode': True,'search_default_my_tasks': True,'search_default_planned_future': True,'search_default_planned_today': True,'default_user_ids': [(4, uid)],'default_scale': 'day'}
         </field>
+        <field name="view_ids" eval="[(5, 0, 0), (0, 0, {'view_mode': 'form', 'view_id': ref('field_service_extension.view_task_form_technician')})]"/>
         <field name="help" type="html">
             <p class='o_view_nocontent_smiling_face'>No tasks found. Let's create one!</p>
             <p>Find here your tasks planned for the following days.</p>
         </field>
     </record>
-
-
-<!--    <record id="project_task_action_fsm_view_kanban_technicians" model="ir.actions.act_window.view">-->
-<!--        <field name="sequence" eval="5"/>-->
-<!--        <field name="view_mode">kanban</field>-->
-<!--        <field name="view_id" ref="industry_fsm.project_task_view_kanban_fsm"/>-->
-<!--        <field name="act_window_id" ref="field_service_extension.project_task_action_fsm_technicians"/>-->
-<!--    </record>-->
 
     <menuitem id="fsm_menu_tasks_kanban_technician"
               name="Technician Tasks"

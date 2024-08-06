@@ -16,18 +16,16 @@
         </field>
     </record>
 
-<!--    <record id="project_task_view_form_service_extension" model="ir.ui.view">-->
-<!--        <field name="name">project.task.view.form.service.extension</field>-->
-<!--        <field name="model">project.task</field>-->
-<!--        <field name="inherit_id" ref="timesheet_grid.project_task_view_form"/>-->
-<!--        <field name="arch" type="xml">-->
-<!--            <xpath expr="//button[@invisible='not display_timer_start_primary or encode_uom_in_days']" position="attributes">-->
-<!--                <attribute name="groups">hr_timesheet.group_hr_timesheet_user,industry_fsm.group_fsm_user</attribute>-->
-<!--            </xpath>-->
-
-<!--            <xpath expr="//button[@invisible='not display_timer_start_secondary or encode_uom_in_days']" position="attributes">-->
-<!--                <attribute name="groups">hr_timesheet.group_hr_timesheet_user,industry_fsm.group_fsm_user</attribute>-->
-<!--            </xpath>-->
-<!--        </field>-->
-<!--    </record>-->
+    <record id="view_task_form_technician" model="ir.ui.view">
+        <field name='name'>task.view</field>
+        <field name="model">project.task</field>
+        <field name="mode">primary</field>
+        <field name="priority">32</field>
+        <field name="inherit_id" ref="project.view_task_form2"/>
+        <field name="arch" type="xml">
+            <xpath expr="//form" position="attributes">
+                <attribute name="edit">0</attribute>
+            </xpath>
+        </field>
+    </record>
 </odoo>
