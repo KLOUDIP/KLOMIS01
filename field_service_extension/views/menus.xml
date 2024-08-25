@@ -12,6 +12,7 @@
         </field>
         <field name="view_ids" eval="[
         (5, 0, 0),
+        (0, 0, {'view_mode': 'kanban', 'view_id': ref('industry_fsm.project_task_action_fsm_no_quick_create')}),
         (0, 0, {'view_mode': 'tree'}),
         (0, 0, {'view_mode': 'form', 'view_id': ref('field_service_extension.view_task_form_technician')})]"/>
         <field name="help" type="html">

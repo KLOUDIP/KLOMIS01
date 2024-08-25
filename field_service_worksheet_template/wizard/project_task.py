@@ -37,7 +37,6 @@ class FreightWizard(models.TransientModel):
                         'template_id': rec.template_id.id,
                         'select_user': rec.select_user.id,
                         'fleet_id': rec.fleet_id.id,
-                        'x_studio_line_id': rec.id,
                         'name': worksheet.x_worksheet_no
                     })],
                 })
