@@ -14,6 +14,7 @@ class ProjectTaskLine(models.Model):
     extra_minutes = fields.Boolean("Extra Minutes")
     is_technician = fields.Boolean(string="Is Technician", compute="_check_technician_group")
     is_tech_team_user = fields.Boolean(string="Is Tech Team", compute='_compute_is_tech_team_user')
+    task_status = fields.Selection([('one_time', 'One Time Placement'), ('late', 'Late Placement')], string="Project Status")
 
     def _check_technician_group(self):
         """Written this type of code because this group was already created by front end"""

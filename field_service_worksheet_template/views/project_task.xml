@@ -4,7 +4,6 @@
             <field name='name'>task.view</field>
             <field name="model">project.task</field>
             <field name="inherit_id" ref="industry_fsm_report.view_task_form2_inherit"/>
-            <!--            <field name="inherit_id" ref="industry_fsm_report.project_task_view_form_inherit"/>-->
             <field name="arch" type="xml">
                 <field name='description' position="before">
                     <field name="worksheet_template_lines" context="{'get_license':True}">
@@ -201,6 +200,7 @@
                 <xpath expr="(//field[@name='project_id'])[2]" position="after">
                     <field name="extra_minutes" invisible="1"/>
                     <field name="tech_team_member_id"/>
+                    <field name="task_status" readonly="is_technician or accessible"/>
                     <field name="is_technician" invisible="1"/>
                     <field name="accessible" invisible="1"/>
                     <label for="get_extra_minutes_expenses" invisible="tech_team_member_id == False or extra_minutes != False"/>
