@@ -14,7 +14,7 @@ class ProjectTaskLine(models.Model):
     extra_minutes = fields.Boolean("Extra Minutes")
     is_technician = fields.Boolean(string="Is Technician", compute="_check_technician_group")
     is_tech_team_user = fields.Boolean(string="Is Tech Team", compute='_compute_is_tech_team_user')
-    is_coordinator = fields.Boolean(string="Is Coordinator", compute='_compute_is_coordinator')
+    is_manager = fields.Boolean(compute='_compute_is_is_manager')
     task_status = fields.Selection([('one_time', 'One Time Placement'), ('late', 'Late Placement')], string="Task Status")
 
     def _check_technician_group(self):
@@ -41,12 +41,12 @@ class ProjectTaskLine(models.Model):
             else:
                 i.accessible = False
 
-    def _compute_is_coordinator(self):
+    def _compute_is_is_manager(self):
         for i in self:
-            if i.env.user.has_group('field_service_worksheet_template.group_coordinator_fsm'):
-                i.is_coordinator = True
+            if i.env.user.has_group('project.group_project_manager'):
+                i.is_manager = True
             else:
-                i.is_coordinator = False
+                i.is_manager = False
 
     def _compute_ticket_ids(self):
         ids = self.env['helpdesk.ticket'].sudo().search([('help_desk_ticket_id', '=', self.id)])
