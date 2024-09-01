@@ -10,10 +10,12 @@ class ProjectTaskLine(models.Model):
     related_task = fields.Many2one('project.task')
     tech_team_member_id = fields.Many2one("res.users", "TECH Team Member")
     count = fields.Boolean()
-    accessible = fields.Boolean(string="Is Coordinator", compute='_compute_cordinator_group')
+    accessible = fields.Boolean(string="Is Accessible", compute='_compute_cordinator_group')
     extra_minutes = fields.Boolean("Extra Minutes")
     is_technician = fields.Boolean(string="Is Technician", compute="_check_technician_group")
     is_tech_team_user = fields.Boolean(string="Is Tech Team", compute='_compute_is_tech_team_user')
+    is_manager = fields.Boolean(compute='_compute_is_is_manager')
+    task_status = fields.Selection([('on_time', 'On Time Placement'), ('late', 'Late Placement')], string="Task Status")
 
     def _check_technician_group(self):
         """Written this type of code because this group was already created by front end"""
@@ -38,6 +40,13 @@ class ProjectTaskLine(models.Model):
                 i.accessible = True
             else:
                 i.accessible = False
+
+    def _compute_is_is_manager(self):
+        for i in self:
+            if i.env.user.has_group('project.group_project_manager'):
+                i.is_manager = True
+            else:
+                i.is_manager = False
 
     def _compute_ticket_ids(self):
         ids = self.env['helpdesk.ticket'].sudo().search([('help_desk_ticket_id', '=', self.id)])

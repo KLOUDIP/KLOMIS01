@@ -3,11 +3,11 @@ import itertools
 from itertools import groupby
 
 from odoo import api, fields, models, _, Command
-from odoo.exceptions import AccessError, ValidationError, UserError
+from odoo.exceptions import AccessError, UserError
 from odoo.addons.sale.models.sale_order import SaleOrder as SaleOrderBase
 from odoo.addons.sale.models.sale_order_line import SaleOrderLine as SaleOrderLineBase
 from collections import defaultdict
-
+from odoo.tools.float_utils import float_is_zero
 
 def _create_invoices(self, grouped=False, final=False, date=None):
         """ Create invoice(s) for the given Sales Order(s).
@@ -651,5 +651,36 @@ class SaleOrder(models.Model):
                 points -= 1
         points = coupon.currency_id.round(points)
         return points
+
+    def _get_claimable_rewards(self, forced_coupons=None):
+        self.ensure_one()
+        all_coupons = forced_coupons or (
+                    self.coupon_point_ids.coupon_id | self.order_line.coupon_id | self.applied_coupon_ids)
+        has_payment_reward = any(line.reward_id.program_id.is_payment_program for line in self.order_line)
+        total_is_zero = float_is_zero(self.amount_total, precision_digits=2)
+        result = defaultdict(lambda: self.env['loyalty.reward'])
+        global_discount_reward = self._get_applied_global_discount()
+        active_products_domain = self.env['loyalty.reward']._get_active_products_domain()
+        for coupon in all_coupons:
+            points = self._get_real_points_for_coupon(coupon)
+            for reward in coupon.program_id.reward_ids:
+                if reward.is_global_discount and global_discount_reward and global_discount_reward.discount >= reward.discount:
+                    continue
+                # Discounts are not allowed if the total is zero unless there is a payment reward, in which case we allow discounts.
+                # If the total is 0 again without the payment reward it will be removed.
+                is_discount = reward.reward_type == 'discount'
+                is_payment_program = reward.program_id.is_payment_program
+                if is_discount and total_is_zero and (not has_payment_reward or is_payment_program):
+                    continue
+                # Skip discount that has already been applied if not part of a payment program
+                # if is_discount and not is_payment_program and reward in self.order_line.reward_id:
+                #     continue
+                if reward.reward_type == 'product' and not reward.filtered_domain(
+                        active_products_domain
+                ):
+                    continue
+                if points >= reward.required_points:
+                    result[coupon] |= reward
+        return result
 
 
