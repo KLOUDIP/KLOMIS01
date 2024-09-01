@@ -200,9 +200,10 @@
                 <xpath expr="(//field[@name='project_id'])[2]" position="after">
                     <field name="extra_minutes" invisible="1"/>
                     <field name="tech_team_member_id"/>
-                    <field name="task_status" readonly="is_technician or accessible"/>
+                    <field name="task_status" readonly="is_technician or is_coordinator"/>
                     <field name="is_technician" invisible="1"/>
                     <field name="accessible" invisible="1"/>
+                    <field name="is_coordinator" invisible="1"/>
                     <label for="get_extra_minutes_expenses" invisible="tech_team_member_id == False or extra_minutes != False"/>
                     <div invisible="tech_team_member_id == False or extra_minutes != False">
                         <button type="object"

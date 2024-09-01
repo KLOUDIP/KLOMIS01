@@ -10,11 +10,12 @@ class ProjectTaskLine(models.Model):
     related_task = fields.Many2one('project.task')
     tech_team_member_id = fields.Many2one("res.users", "TECH Team Member")
     count = fields.Boolean()
-    accessible = fields.Boolean(string="Is Coordinator", compute='_compute_cordinator_group')
+    accessible = fields.Boolean(string="Is Accessible", compute='_compute_cordinator_group')
     extra_minutes = fields.Boolean("Extra Minutes")
     is_technician = fields.Boolean(string="Is Technician", compute="_check_technician_group")
     is_tech_team_user = fields.Boolean(string="Is Tech Team", compute='_compute_is_tech_team_user')
-    task_status = fields.Selection([('one_time', 'One Time Placement'), ('late', 'Late Placement')], string="Project Status")
+    is_coordinator = fields.Boolean(string="Is Coordinator", compute='_compute_is_coordinator')
+    task_status = fields.Selection([('one_time', 'One Time Placement'), ('late', 'Late Placement')], string="Task Status")
 
     def _check_technician_group(self):
         """Written this type of code because this group was already created by front end"""
@@ -33,12 +34,19 @@ class ProjectTaskLine(models.Model):
             else:
                 rec.is_tech_team_user = False
 
-    def _compute_cordinator_group(self):
+    def _compute_is_coordinator(self):
         for i in self:
             if i.env.user.has_group('field_service_worksheet_template.group_coordinator_fsm') or i.env.user.has_group('industry_fsm.group_fsm_manager'):
                 i.accessible = True
             else:
                 i.accessible = False
+
+    def _compute_cordinator_group(self):
+        for i in self:
+            if i.env.user.has_group('field_service_worksheet_template.group_coordinator_fsm'):
+                i.is_coordinator = True
+            else:
+                i.is_coordinator = False
 
     def _compute_ticket_ids(self):
         ids = self.env['helpdesk.ticket'].sudo().search([('help_desk_ticket_id', '=', self.id)])
