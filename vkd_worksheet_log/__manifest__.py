@@ -1,6 +1,6 @@
 {
     'name': 'Worksheet Log',
-    'version': '17.0.1.0.0',
+    'version': '17.0.1.0.1',
     'summary': 'Worksheet Log',
     'description': """Create worksheet log when add,edit or delete worksheet template line""",
     'category': 'Operations/Field Service',

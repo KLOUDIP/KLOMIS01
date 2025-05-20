@@ -1,12 +1,18 @@
+import pytz
 import datetime
 from ast import literal_eval
 from odoo import models, fields, api, _
 from odoo.exceptions import UserError
 
 
-
 class WorksheetTemplateLine(models.Model):
     _inherit = 'worksheet.template.line'
+
+    def _get_sri_lanka_time(self):
+        sri_lanka_tz = pytz.timezone('Asia/Colombo')
+        utc_now = datetime.datetime.utcnow()
+        local_time = pytz.utc.localize(utc_now).astimezone(sri_lanka_tz)
+        return local_time.strftime("%Y-%m-%d %H:%M:%S")
 
     @api.model
     def create(self, vals):
@@ -19,20 +25,19 @@ class WorksheetTemplateLine(models.Model):
 
         if result.project_task_id:
             current_user = self.env.user.name
-            current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            current_time = self._get_sri_lanka_time()
             worksheet_number = result.name or 'Unknown'
 
             log_message = _("Added worksheet number: %s At Date/time: %s By user: %s") % (
                 worksheet_number, current_time, current_user
             )
-
             result.project_task_id.message_post(body=log_message, message_type='comment')
 
         return result
 
     def write(self, vals):
         skip_fields = {'line_add', 'worksheet_id', '__last_update', 'access_token',
-                       'access_url', 'fsm_is_sent', 'project_id'}
+                       'access_url', 'fsm_is_sent', 'project_id', 'customer_signature'}
 
         has_meaningful_changes = False
         for key in vals:
@@ -52,7 +57,6 @@ class WorksheetTemplateLine(models.Model):
                                 old_value = old_value.id
                             if old_value != new_value:
                                 record_changes[field] = (old_value, new_value)
-
                     if record_changes:
                         changes_to_log[record.id] = record_changes
 
@@ -62,17 +66,14 @@ class WorksheetTemplateLine(models.Model):
             for record in self:
                 if record.id in changes_to_log and changes_to_log[record.id]:
                     current_user = self.env.user.name
-                    current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                    current_time = self._get_sri_lanka_time()
                     worksheet_number = record.name or 'Unknown'
 
-                    # Format changed fields for display
                     changed_fields = []
                     for field, (old_val, new_val) in changes_to_log[record.id].items():
-                        # Try to get readable field names
                         field_obj = record._fields.get(field)
                         field_display = field_obj.string if field_obj else field
 
-                        # For many2one fields, try to get the display name
                         if field_obj and field_obj.type == 'many2one' and new_val:
                             model = field_obj.comodel_name
                             try:
@@ -101,7 +102,7 @@ class WorksheetTemplateLine(models.Model):
         for record in self:
             if record.project_task_id:
                 current_user = self.env.user.name
-                current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                current_time = self._get_sri_lanka_time()
                 worksheet_number = record.name or 'Unknown'
 
                 log_data.append({
@@ -121,7 +122,7 @@ class WorksheetTemplateLine(models.Model):
     def action_form_worksheet_template(self):
         if self.project_task_id:
             current_user = self.env.user.name
-            current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            current_time = self._get_sri_lanka_time()
             worksheet_number = self.name or 'Unknown'
 
             log_message = _("Opened worksheet number: %s At Date/time: %s By user: %s") % (
@@ -148,13 +149,12 @@ class WorksheetTemplateLine(models.Model):
 
                 return action
             else:
-                raise UserError(_(
-                    "This Template has no worksheet "))
+                raise UserError(_("This Template has no worksheet "))
 
     def action_fsm_worksheet_template(self):
         if self.project_task_id:
             current_user = self.env.user.name
-            current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            current_time = self._get_sri_lanka_time()
             worksheet_number = self.name or 'Unknown'
 
             log_message = _("Clicked UPDATE button for worksheet number: %s At Date/time: %s By user: %s") % (
