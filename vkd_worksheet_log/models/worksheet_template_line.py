@@ -37,7 +37,7 @@ class WorksheetTemplateLine(models.Model):
 
     def write(self, vals):
         skip_fields = {'line_add', 'worksheet_id', '__last_update', 'access_token',
-                       'access_url', 'fsm_is_sent', 'project_id', 'customer_signature'}
+                       'access_url', 'fsm_is_sent', 'project_id', 'customer_signature', 'technician_signature'}
 
         has_meaningful_changes = False
         for key in vals:
