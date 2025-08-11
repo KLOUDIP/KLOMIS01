@@ -72,7 +72,7 @@ class ProjectTaskLine(models.Model):
             'target': 'new',
         }
 
-    def action_fsm_validate(self):
+    def action_fsm_validate(self, stop_running_timers=False):
         """ Moves Task to next stage.
             If allow billable on task, timesheet product set on project and user has privileges :
             Create SO confirmed with time and material.
