@@ -89,7 +89,8 @@ class FiosMatchingLine(models.Model):
             # set fios_active_unit_available field to false
             unit_serials.mapped('contract_ids').update({'fios_active_unit_available': False})
             # unlink
-            unit_serials.unlink()
+            for unit_serial_rec in unit_serials:
+                unit_serial_rec.unlink()
         return True
 
     def unmatch_serial(self):
@@ -101,7 +102,8 @@ class FiosMatchingLine(models.Model):
             # set fios_active_unit_available field to false
             unit_serials.mapped('contract_ids').update({'fios_active_unit_available': False})
             # unlink
-            unit_serials.unlink()
+            for unit_serial_rec in unit_serials:
+                unit_serial_rec.unlink()
         return True
 
     def remove_matching_line(self):
