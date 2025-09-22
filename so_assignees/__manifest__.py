@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'SO Assignees',
-    'version': '1.0.1',
+    'version': '1.0.2',
     'summary': 'Assign coordinator to the SO',
     'description': """
 ================

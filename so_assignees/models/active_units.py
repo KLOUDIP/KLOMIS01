@@ -84,7 +84,7 @@ class ActiveUnits(models.Model):
                     })
                     
     def unlink(self):
-        if self.coordinator_id:
+        if self.coordinator_id and self.contract_ids:
             self.update_monthly_rec(self.contract_ids[0], -1)
             self.update_coordinator_unit_line(self.contract_ids[0])
         return super(ActiveUnits, self).unlink()
