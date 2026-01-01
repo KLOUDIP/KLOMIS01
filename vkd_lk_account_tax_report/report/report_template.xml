@@ -114,23 +114,41 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <t t-foreach="o.invoice_line_ids" t-as="line">
-                        <tr t-if="line.display_type">
-                            <td>
-                                <span t-field="line.product_id.default_code"/>
-                            </td>
-                            <td>
-                                <span t-field="line.name"/>
-                            </td>
-                            <td class="text-right">
-                                <span t-field="line.quantity"/>
-                            </td>
-                            <td class="text-right">
-                                <span t-field="line.price_unit"/>
-                            </td>
-                            <td class="text-right">
-                                <span t-field="line.price_subtotal"/>
-                            </td>
+                    <t t-set="lines"
+                       t-value="o.invoice_line_ids.sorted(key=lambda l: (-l.sequence, l.date, l.move_name, -l.id), reverse=True)"/>
+                    <t t-foreach="lines" t-as="line">
+                        <tr t-att-class="'bg-200 fw-bold o_line_section' if line.display_type == 'line_section' else 'fst-italic o_line_note' if line.display_type == 'line_note' else ''">
+                            <t t-if="line.display_type == 'product'" name="account_invoice_line_accountable">
+                                <td>
+                                    <span t-field="line.product_id.default_code"/>
+                                </td>
+                                <td>
+                                    <span t-field="line.name"/>
+                                </td>
+                                <td class="text-right">
+                                    <span t-field="line.quantity"/>
+                                </td>
+                                <td class="text-right">
+                                    <span t-field="line.price_unit"/>
+                                </td>
+                                <td class="text-right">
+                                    <span t-field="line.price_subtotal"/>
+                                </td>
+                            </t>
+                            <t t-elif="line.display_type == 'line_section'">
+                                <td colspan="99">
+                                    <span t-field="line.name" t-options="{'widget': 'text'}">A section title</span>
+                                </td>
+                                <t t-set="current_section" t-value="line"/>
+                                <t t-set="current_subtotal" t-value="0"/>
+                            </t>
+                            <t t-elif="line.display_type == 'line_note'">
+                                <td colspan="99">
+                                    <span t-field="line.name" t-options="{'widget': 'text'}">A note, whose content
+                                        usually applies to the section or product above.
+                                    </span>
+                                </td>
+                            </t>
                         </tr>
                     </t>
                     <tr>
