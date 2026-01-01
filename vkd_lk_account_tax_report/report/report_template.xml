@@ -24,7 +24,7 @@
             </div>
             <div class="row mt-2">
                 <div class="col-6">
-                    <div class="lk-box-left" style="height: 200px;">
+                    <div class="lk-box-left" style="height: 210px;">
                         <div>
                             <span>Supplier's TIN:</span>
                             <span t-field="o.company_id.vat"/>
@@ -47,13 +47,15 @@
                 </div>
 
                 <div class="col-6">
-                    <div class="lk-box-right" style="height: 200px;">
+                    <div class="lk-box-right" style="height: 210px;">
                         <div>
                             <span>Purchaser's TIN:</span>
                             <span t-field="o.partner_id.vat"/>
                         </div>
                         <div>
                             <span>Purchaser's Name:</span>
+                            <t t-if="o.partner_id.parent_id"><span t-field="o.partner_id.parent_id.name"/>, </t>
+                            <t t-if="o.partner_id.company_name"><span t-field="o.partner_id.company_name"/>, </t>
                             <span t-field="o.partner_id.name"/>
                         </div>
                         <div>
