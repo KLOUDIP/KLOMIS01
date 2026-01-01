@@ -1,0 +1,46 @@
+    .lk-invoice {
+    /* remove unwanted space */
+    margin-top: -70px !important;
+    padding-top: -70px !important;
+    }
+    .lk-box {
+    border: 1px solid black;
+    padding: 5px;
+    margin-left:5px;
+    margin-right:5px;
+    margin-bottom: 5px;
+
+    }
+    .lk-box-left {
+    border: 1px solid black;
+    padding: 5px;
+    margin-left:5px;
+    margin-right:3px;
+    margin-bottom: 5px;
+    }
+    .lk-box-right {
+    border: 1px solid black;
+    padding: 5px;
+    margin-left:3px;
+    margin-right:5px;
+    margin-bottom: 5px;
+
+    }
+    .lk-table {
+    border-collapse: collapse;
+    margin-top: 10px;
+    margin-left: 5px;
+    margin-right: 5px;
+    }
+    .lk-table th, .lk-table td {
+    border: 1px solid black;
+    padding: 8px;
+
+    }
+    .lk-table th{
+    text-align: center;
+    }
+
+    .lk-header-center {
+    text-align: center;
+    }
