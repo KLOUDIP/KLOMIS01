@@ -4,7 +4,8 @@
         <div class="page lk-invoice">
             <center>
                 <h2 style="border: 2px solid black; display: inline-block; padding: 10px 30px;">
-                    <span>Tax Invoice</span>
+                    <span t-if="o.move_type == 'out_invoice'">Tax Invoice</span>
+                    <span t-if="o.move_type == 'out_refund'">Tax Credit Note</span>
                 </h2>
             </center>
             <div class="row">
