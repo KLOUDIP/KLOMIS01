@@ -93,10 +93,11 @@
                     </div>
                 </div>
             </div>
+            <t t-set="display_discount" t-value="any(l.discount for l in o.invoice_line_ids)"/>
             <table class="lk-table mt-4">
                 <thead style="display:table-row-group">
                     <tr>
-                        <th style="width: 15%;">
+                        <th style="width: 10%;">
                             <span>Reference</span>
                         </th>
                         <th style="width: 40%;">
@@ -105,8 +106,11 @@
                         <th style="width: 10%;">
                             <span>Quantity</span>
                         </th>
-                        <th style="width: 15%;">
+                        <th style="width: 10%;">
                             <span>Unit Price</span>
+                        </th>
+                        <th name="th_discount" t-if="display_discount" style="width: 10%;">
+                            <span>Disc.%</span>
                         </th>
                         <th style="width: 20%;">
                             <span>Amount Excluding VAT (Rs.)</span>
@@ -114,6 +118,7 @@
                     </tr>
                 </thead>
                 <tbody>
+                    <t t-set="total_colspan" t-value="5 if display_discount else 4"/>
                     <t t-set="lines"
                        t-value="o.invoice_line_ids.sorted(key=lambda l: (-l.sequence, l.date, l.move_name, -l.id), reverse=True)"/>
                     <t t-foreach="lines" t-as="line">
@@ -130,6 +135,9 @@
                                 </td>
                                 <td class="text-right">
                                     <span t-field="line.price_unit"/>
+                                </td>
+                                <td name="td_discount" t-if="display_discount">
+                                    <span class="text-nowrap" t-field="line.discount"/>
                                 </td>
                                 <td class="text-right">
                                     <span t-field="line.price_subtotal"/>
@@ -152,7 +160,7 @@
                         </tr>
                     </t>
                     <tr>
-                        <td colspan="4">
+                        <td t-att-colspan="total_colspan">
                             <span>Total Value of Supply:</span>
                         </td>
                         <td class="text-right">
@@ -170,7 +178,7 @@
                     <!-- Display each tax separately with formatted amount -->
                     <t t-foreach="o.get_tax_breakdown_list()" t-as="tax">
                         <tr>
-                            <td colspan="4">
+                            <td t-att-colspan="total_colspan">
                                 <span t-esc="tax['name']"/>
                             </td>
                             <td class="text-right">
@@ -179,7 +187,7 @@
                         </tr>
                     </t>
                     <tr>
-                        <td colspan="4">
+                        <td t-att-colspan="total_colspan">
                             <span>Total Taxes Amount</span>
                         </td>
                         <td class="text-right">
@@ -187,7 +195,7 @@
                         </td>
                     </tr>
                     <tr>
-                        <td colspan="4">
+                        <td t-att-colspan="total_colspan">
                             <span>Total Amount including VAT:</span>
                         </td>
                         <td class="text-right">
