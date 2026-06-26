@@ -1,6 +1,6 @@
 {
     'name': "Sri Lankan Tax Invoice Report",
-    'version': '17.0.1.0.1',
+    'version': '17.0.1.2.0',
     'category': 'Accounting',
     'summary': 'Sri Lankan Tax Invoice Report Customization',
     'description': """

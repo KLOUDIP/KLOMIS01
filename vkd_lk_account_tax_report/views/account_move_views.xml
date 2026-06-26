@@ -12,6 +12,10 @@
             <xpath expr="//page[@name='other_info']" position="inside">
                 <field name="additional_info" placeholder="Additional Information"/>
             </xpath>
+            <xpath expr="//page[@name='other_info']//field[@name='delivery_date']" position="after">
+                <field name="available_payment_method_ids" invisible="1"/>
+                <field name="payment_method_id"/>
+            </xpath>
         </field>
     </record>
 </odoo>

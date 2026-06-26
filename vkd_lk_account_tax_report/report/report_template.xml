@@ -12,12 +12,14 @@
                 <div class="col-6">
                     <div class="lk-box-left">
                         <span>Date of Invoice:</span>
-                        <span t-field="o.invoice_date"/>
+                        <span t-esc="o.invoice_date.strftime('%m/%d/%Y') if o.invoice_date else ''"/>
+<!--                        <span t-if="o.move_type == 'out_refund'" t-esc="o.invoice_date.strftime('%d/%m/%Y') if o.invoice_date else ''"/>-->
                     </div>
                 </div>
                 <div class="col-6">
                     <div class="lk-box-right">
-                        <span>Tax Invoice No.:</span>
+                        <span t-if="o.move_type == 'out_invoice'">Tax Invoice No.:</span>
+                        <span t-if="o.move_type == 'out_refund'">Tax Credit Note No.:</span>
                         <span t-field="o.name"/>
                     </div>
                 </div>
@@ -54,8 +56,10 @@
                         </div>
                         <div>
                             <span>Purchaser's Name:</span>
-                            <t t-if="o.partner_id.parent_id"><span t-field="o.partner_id.parent_id.name"/>, </t>
-                            <t t-if="o.partner_id.company_name"><span t-field="o.partner_id.company_name"/>, </t>
+                            <t t-if="o.partner_id.parent_id"><span t-field="o.partner_id.parent_id.name"/>,
+                            </t>
+                            <t t-if="o.partner_id.company_name"><span t-field="o.partner_id.company_name"/>,
+                            </t>
                             <span t-field="o.partner_id.name"/>
                         </div>
                         <div>
@@ -75,13 +79,13 @@
                 <div class="col-6">
                     <div class="lk-box-left">
                         <span>Date of Delivery:</span>
-                        <span t-field="o.delivery_date"/>
+                        <span t-esc="o.delivery_date.strftime('%m/%d/%Y') if o.delivery_date else ''"/>
                     </div>
                 </div>
                 <div class="col-6">
                     <div class="lk-box-right">
                         <span>Place of Supply:</span>
-                        <span t-field="o.company_id.city"/>
+                        <span t-field="o.partner_shipping_id" t-options='{"widget": "contact", "fields": ["address"], "no_marker": True}'/>
                     </div>
                 </div>
             </div>
@@ -167,15 +171,6 @@
                             <span t-field="o.amount_untaxed"/>
                         </td>
                     </tr>
-<!--                    <tr>-->
-<!--                        <td colspan="4">-->
-<!--                            <span>VAT Amount (Total Value of Supply @ 18%)</span>-->
-<!--                        </td>-->
-<!--                        <td class="text-right">-->
-<!--                            <span t-field="o.vat_18_amount"/>-->
-<!--                        </td>-->
-<!--                    </tr>-->
-                    <!-- Display each tax separately with formatted amount -->
                     <t t-foreach="o.get_tax_breakdown_list()" t-as="tax">
                         <tr>
                             <td t-att-colspan="total_colspan">
@@ -186,14 +181,14 @@
                             </td>
                         </tr>
                     </t>
-                    <tr>
-                        <td t-att-colspan="total_colspan">
-                            <span>Total Taxes Amount</span>
-                        </td>
-                        <td class="text-right">
-                            <span t-field="o.amount_tax"/>
-                        </td>
-                    </tr>
+                    <!--                    <tr>-->
+                    <!--                        <td t-att-colspan="total_colspan">-->
+                    <!--                            <span>Total Taxes Amount</span>-->
+                    <!--                        </td>-->
+                    <!--                        <td class="text-right">-->
+                    <!--                            <span t-field="o.amount_tax"/>-->
+                    <!--                        </td>-->
+                    <!--                    </tr>-->
                     <tr>
                         <td t-att-colspan="total_colspan">
                             <span>Total Amount including VAT:</span>
@@ -202,6 +197,31 @@
                             <span t-field="o.amount_total"/>
                         </td>
                     </tr>
+                    <!-- Payments + Amount Due (mirrors standard Odoo; honors the print_with_payments flag) -->
+                    <t t-if="print_with_payments and o.payment_state != 'invoicing_legacy'">
+                        <t t-set="payments_vals"
+                           t-value="o.sudo().invoice_payments_widget and o.sudo().invoice_payments_widget['content'] or []"/>
+                        <t t-foreach="payments_vals" t-as="payment_vals">
+                            <tr t-if="payment_vals['is_exchange'] == 0">
+                                <td t-att-colspan="total_colspan">
+                                    <span>Paid on</span>
+                                    <span t-out="payment_vals['date']" t-options='{"widget": "date"}'/>
+                                </td>
+                                <td class="text-right">
+                                    <span t-out="payment_vals['amount']"
+                                          t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                                </td>
+                            </tr>
+                        </t>
+                        <tr t-if="len(payments_vals) > 0">
+                            <td t-att-colspan="total_colspan">
+                                <span>Amount Due (Rs.):</span>
+                            </td>
+                            <td class="text-right">
+                                <span t-field="o.amount_residual"/>
+                            </td>
+                        </tr>
+                    </t>
                 </tbody>
             </table>
             <div class="row mt-3">
@@ -210,15 +230,36 @@
                         <span>Total Amount in words:</span>
                         <span t-esc="o.currency_id.amount_to_text(o.amount_total)"/>
                     </div>
+                    <div class="lk-box" t-if="o.move_type == 'out_invoice'">
+                        <span>Payment Terms:</span>
+                        <span t-field="o.invoice_payment_term_id.name"/>
+                    </div>
                     <div class="lk-box">
                         <span>Mode of Payment:</span>
-                        <span t-field="o.invoice_payment_term_id.name"/>
+                        <span t-field="o.payment_method_id.name"/>
                     </div>
                 </div>
             </div>
             <div class="row mt-3">
                 <div class="col-12">
+                    <t t-if="o.move_type == 'out_refund' and o.reversed_entry_id">
+                        <div class="lk-box">
+                            <span>Invoice No.:</span>
+                            <span t-field="o.reversed_entry_id.name"/>
+                        </div>
+                    </t>
+                </div>
+            </div>
+            <div class="row mt-3">
+                <div class="col-12">
                     <span t-field="o.narration"/>
+                </div>
+            </div>
+            <div class="row mt-3">
+                <div class="col-12">
+                    <span style="padding-top: 5px; display: block;">
+                        This is a computer generated document and no signature is required.
+                    </span>
                 </div>
             </div>
         </div>

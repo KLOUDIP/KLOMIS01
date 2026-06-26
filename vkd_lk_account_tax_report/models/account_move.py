@@ -25,6 +25,28 @@ class AccountMove(models.Model):
         help="JSON string containing tax breakdown information"
     )
 
+    available_payment_method_ids = fields.Many2many(
+        comodel_name='account.payment.method',
+        compute='_compute_available_payment_method_ids',
+    )
+    payment_method_id = fields.Many2one(
+        comodel_name='account.payment.method',
+        string='Payment Method',
+        domain="[('id', 'in', available_payment_method_ids)]",
+    )
+
+    @api.depends('company_id')
+    def _compute_available_payment_method_ids(self):
+        methods = self.env['account.payment.method'].search([])
+        unique = self.env['account.payment.method']
+        seen = set()
+        for method in methods:
+            if method.name not in seen:
+                seen.add(method.name)
+                unique |= method
+        for move in self:
+            move.available_payment_method_ids = unique
+
     @api.depends('journal_id.is_sri_lankan_taxable')
     def _compute_is_sri_lankan_invoice(self):
         """Compute whether the invoice should use Sri Lankan format"""
