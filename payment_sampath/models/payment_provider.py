@@ -25,6 +25,20 @@ class PaymentProvider(models.Model):
     sampath_auth_token = fields.Char(
         string="Auth Token", help="Auth token for confirm the transaction", required_if_provider='sampath')
 
+    # === COMPUTE METHODS === #
+
+    def _compute_feature_support_fields(self):
+        """ Override of `payment` to enable tokenization support.
+
+        Required for the provider to pass `_get_compatible_providers()` when the
+        order contains recurring (subscription) products, which force-filter on
+        `allow_tokenization`.
+        """
+        super()._compute_feature_support_fields()
+        self.filtered(lambda p: p.code == 'sampath').update({
+            'support_tokenization': True,
+        })
+
     def _sampath_get_api_url(self):
         """ sampath URLS """
 
