@@ -54,6 +54,7 @@ class AccountMove(models.Model):
 
     def send_coupon_email(self):
         """Send email for the customer notifying generated coupons"""
+        self.ensure_one()
         for coupon in self.coupon_ids:
             subject = '%s, a coupon has been generated for you' % (self.partner_id.name,)
 
@@ -79,50 +80,59 @@ class AccountMove(models.Model):
         return True
 
     def action_post(self):
-        """Override core method for create coupons and sending emails about the created coupons"""
+        """Override core method for create coupons and sending emails about the created coupons.
+
+        NOTE: action_post() is called on multi-record sets (e.g. the bank statement
+        line cron posts a whole batch at once), so every access to move-level fields
+        must be done per record, never on ``self``.
+        """
         res = super(AccountMove, self).action_post()
 
-        account_move_line_ids = self.invoice_line_ids.filtered(
-            lambda x: (x.display_type not in ('line_section', 'line_note') and x.price_unit > 0)
-                      and x.product_id and x.product_id.is_coupon_product
-        )
+        for move in self:
+            # only customer invoices need to create coupons
+            if move.move_type != 'out_invoice':
+                continue
 
-        # check account move type (only invoice type invoices need to create coupons)
-        account_move_line_ids = account_move_line_ids if self.move_type == 'out_invoice' else self.env[
-            'account.move.line']
-        all_coupons = []
-
-        for line in account_move_line_ids:
-            # loop through move line quantities
-            coupons = []
-            for i in range(int(line.quantity)):
-                # generate coupon
-                coupon = self.env['loyalty.card'].create({
-                    'program_id': line.product_id.coupon_program_id.id,
-                    'partner_id': False,
-                    'invoice_partner_id': self.partner_id.id,
-                    'coupon_product_id': line.product_id.id,
-                    'points': 1,
-                    'order_id': line.sale_line_ids.mapped('order_id')[0].id if line.sale_line_ids else False,
-                    'invoice_id': self.id
-                })
-                coupons.append(coupon)
-                # writing values to coupon_ids field
-                self.update({'coupon_ids': [Command.link(coupon.id)]})
-
-            # sort data for the post message
-            all_coupons.append({'product': line.product_id, 'coupons': coupons})
-
-        # post message to chatter with linked coupon
-        if all_coupons:
-            self.message_post_with_source(
-                'kloudip_coupon_customizations.coupon_created_message',
-                render_values={
-                    'data': all_coupons,
-                    'partner_generate_email_for_coupons': False
-                },
-                subtype_xmlid='mail.mt_note'
+            account_move_line_ids = move.invoice_line_ids.filtered(
+                lambda x: (x.display_type not in ('line_section', 'line_note') and x.price_unit > 0)
+                          and x.product_id and x.product_id.is_coupon_product
             )
+            if not account_move_line_ids:
+                continue
+
+            all_coupons = []
+            for line in account_move_line_ids:
+                # loop through move line quantities
+                coupons = self.env['loyalty.card']
+                for _i in range(int(line.quantity)):
+                    # generate coupon
+                    coupon = self.env['loyalty.card'].create({
+                        'program_id': line.product_id.coupon_program_id.id,
+                        'partner_id': False,
+                        'invoice_partner_id': move.partner_id.id,
+                        'coupon_product_id': line.product_id.id,
+                        'points': 1,
+                        'order_id': line.sale_line_ids.mapped('order_id')[0].id if line.sale_line_ids else False,
+                        'invoice_id': move.id
+                    })
+                    coupons |= coupon
+
+                if coupons:
+                    # writing values to coupon_ids field
+                    move.coupon_ids = [Command.link(c.id) for c in coupons]
+                    # sort data for the post message
+                    all_coupons.append({'product': line.product_id, 'coupons': coupons})
+
+            # post message to chatter with linked coupon
+            if all_coupons:
+                move.message_post_with_source(
+                    'kloudip_coupon_customizations.coupon_created_message',
+                    render_values={
+                        'data': all_coupons,
+                        'partner_generate_email_for_coupons': False
+                    },
+                    subtype_xmlid='mail.mt_note'
+                )
         return res
 
     def unlink(self):
