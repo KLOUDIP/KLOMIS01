@@ -2,7 +2,7 @@
 {
     'name': 'KLOUDIP Coupon Customizations',
     'summary': "Coupon Customizations for KLOUDIP",
-    'description': """Setting coupon again to valid state, when sale order returned""",
+    'description': """Setting coupon again to valid state, when sale order returned.""",
     'version': '19.0.1.0.0',
     'category': 'Sale',
     'author': "VK DATA ApS",
