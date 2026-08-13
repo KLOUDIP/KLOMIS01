@@ -4,9 +4,9 @@
     'description': '',
     'category': 'helpdesk',
     'summary': '',
-    'version': '19.0.2.0.0',
-    'author': "VK Data ApS",
-    'website': "https://vkdata.dk",
+    'version': '1.0.12',
+    'author': 'Nisus Solutions(pvt) Ltd.',
+    'website': 'https://www.nisus.lk',
     'data': [
         'security/field_service_worksheet_template_security.xml',
         'views/project_task.xml',
@@ -26,6 +26,5 @@
 
     ],
     'depends': ['project', 'fleet', 'industry_fsm_report', 'web_studio', 'industry_fsm', 'industry_fsm_sale', 'hr_expense', 'helpdesk', 'helpdesk_fsm', 'purchase'],
-    'license': 'OPL-1',
     'installable': True,
 }

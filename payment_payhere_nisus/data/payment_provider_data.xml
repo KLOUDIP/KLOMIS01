@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <record id="payment_method_payhere" model="payment.method">
+        <field name="name">PayHere</field>
+        <field name="code">payhere_nisus</field>
+        <field name="sequence">1000</field>
+        <field name="active">False</field>
+        <field name="image" type="base64" file="payment_payhere_nisus/static/src/img/payhere_icon.png"/>
+        <field name="support_tokenization">False</field>
+        <field name="support_express_checkout">False</field>
+    </record>
+
+    <record id="payment_provider_payhere" model="payment.provider">
+        <field name="name">PayHere</field>
+        <field name="code">payhere_nisus</field>
+        <field name="image_128" type="base64" file="payment_payhere_nisus/static/src/img/payhere_icon.png"/>
+        <field name="redirect_form_view_id" ref="redirect_form"/>
+        <field name="module_id" ref="base.module_payment_payhere_nisus"/>
+        <field name="payment_method_ids" eval="[Command.set([ref('payment_payhere_nisus.payment_method_payhere'), ref('payment.payment_method_card')])]"/>
+    </record>
+</odoo>

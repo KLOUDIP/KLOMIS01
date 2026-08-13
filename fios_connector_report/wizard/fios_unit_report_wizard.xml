@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="fios_unit_report_wizard_view" model="ir.ui.view">
+            <field name="name">fios.unit.report.wizard.tree.view</field>
+            <field name="model">fios.unit.report.wizard</field>
+            <field name="arch" type="xml">
+                <form string="FIOS Active Units Report">
+                    <group>
+                        <group>
+                            <field name="billing_month"/>
+                        </group>
+                        <footer>
+                            <button type="object" name="send_email" string="Send" class="oe_highlight"/>
+                            <button type="object" name="print_report" string="Print" class="oe_highlight"/>
+                            <button special="cancel" string="Cancel"/>
+                        </footer>
+                    </group>
+                </form>
+            </field>
+        </record>
+    </data>
+</odoo>

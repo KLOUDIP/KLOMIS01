@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <record id="project_task_form_inherit_extension" model="ir.ui.view">
-        <field name="name">project.task.form.inherit.field_service_extension</field>
+        <field name="name">project.task.form.inherit.extension</field>
         <field name="model">project.task</field>
         <field name="inherit_id" ref="industry_fsm.view_task_form2_inherit"/>
         <field name="arch" type="xml">
@@ -17,7 +17,7 @@
     </record>
 
     <record id="view_task_form_technician" model="ir.ui.view">
-        <field name='name'>task.view.form.inherit.field_service_extension</field>
+        <field name='name'>task.view</field>
         <field name="model">project.task</field>
         <field name="mode">primary</field>
         <field name="priority">32</field>

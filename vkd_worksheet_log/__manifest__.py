@@ -1,6 +1,6 @@
 {
     'name': 'Worksheet Log',
-    'version': '19.0.1.0.0',
+    'version': '17.0.1.0.1',
     'summary': 'Worksheet Log',
     'description': """Create worksheet log when add,edit or delete worksheet template line""",
     'category': 'Operations/Field Service',
@@ -9,8 +9,7 @@
     'depends': ['field_service_worksheet_template'],
     'data': [
     ],
-    'license': 'OPL-1',
-    'application': False,
     'installable': True,
-    'auto_install': False,
+    "license": "OPL-1",
+    'auto_install': False
 }

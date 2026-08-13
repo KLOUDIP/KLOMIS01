@@ -4,7 +4,6 @@ from odoo.exceptions import ValidationError
 
 class FreightWizard(models.TransientModel):
     _name = 'task.wizard'
-    _description = 'Field Service Task Wizard'
 
     def _default_task_tmpl(self):
         return self.env['project.task'].browse(self._context.get('active_id'))

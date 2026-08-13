@@ -3,28 +3,14 @@
     <record id="view_production_lot_form_inherit_kloudip_stock" model="ir.ui.view">
         <field name="name">stock.production.lot.form.inherit.kloudip.stock</field>
         <field name="model">stock.lot</field>
-        <field name="inherit_id" ref="stock.view_production_lot_form"/>
+        <field name="inherit_id" ref="stock.view_production_lot_form" />
         <field name="arch" type="xml">
             <xpath expr="//field[@name='name']" position="after">
-                <field name="is_manager" invisible="not is_manager"/>
+                <field name="is_manager" invisible="1"/>
             </xpath>
             <xpath expr="//field[@name='name']" position="attributes">
-                <attribute name="readonly">not is_manager</attribute>
+                <attribute name="readonly">is_manager != True</attribute>
             </xpath>
         </field>
     </record>
-
-    <!-- <record id="view_stock_move_line_detailed_operation_tree_kip" model="ir.ui.view">
-        <field name="name">stock.move.line.operations.tree.kip</field>
-        <field name="model">stock.move.line</field>
-        <field name="inherit_id" ref="stock.view_stock_move_line_detailed_operation_tree"/>
-        <field name="arch" type="xml">
-            <field name="package_id" position="attributes">
-                <attribute name="column_invisible">False</attribute>
-            </field>
-            <field name="lot_id" position="attributes">
-                <attribute name="column_invisible">parent.has_tracking == 'none' or not parent.show_lots_m2o</attribute>
-            </field>
-        </field>
-    </record> -->
 </odoo>

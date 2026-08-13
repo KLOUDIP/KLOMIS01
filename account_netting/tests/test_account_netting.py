@@ -6,9 +6,8 @@
 from datetime import datetime
 
 import odoo.tests.common as common
-from odoo import Command
 from odoo.exceptions import UserError
-from odoo.tests import tagged
+from odoo.tests import Form, tagged
 
 
 @tagged("post_install", "-at_install")
@@ -20,11 +19,7 @@ class TestAccountNetting(common.TransactionCase):
         res_users_account_manager = cls.env.ref("account.group_account_manager")
         partner_manager = cls.env.ref("base.group_partner_manager")
         cls.env.user.write(
-            {
-                "group_ids": [
-                    Command.set([res_users_account_manager.id, partner_manager.id])
-                ]
-            }
+            {"groups_id": [(6, 0, [res_users_account_manager.id, partner_manager.id])]}
         )
         cls.company = cls.env.ref("base.main_company")
         # only adviser can create an account
@@ -53,7 +48,7 @@ class TestAccountNetting(common.TransactionCase):
             {
                 "name": "Product Test",
                 "list_price": 10,
-                "taxes_id": [Command.set([cls.account_tax.id])],
+                "taxes_id": [(6, 0, [cls.account_tax.id])],
             }
         )
         out_invoice_partner1 = cls._create_move(cls, "out_invoice", cls.partner1, 100)
@@ -89,7 +84,7 @@ class TestAccountNetting(common.TransactionCase):
         return self.aa_model.search(
             [
                 ("account_type", "=", account_type),
-                ("company_ids", "in", self.company.id),
+                ("company_id", "=", self.company.id),
             ],
             limit=1,
         )
@@ -104,23 +99,19 @@ class TestAccountNetting(common.TransactionCase):
         )
 
     def _create_move(self, move_type, partner, price):
-        vals = {
-            "company_id": self.company.id,
-            "move_type": move_type,
-            "partner_id": partner.id,
-            "invoice_line_ids": [
-                Command.create(
-                    {
-                        "product_id": self.product.id,
-                        "price_unit": price,
-                    }
-                )
-            ],
-        }
-        if move_type in ("in_invoice", "in_refund"):
-            vals["invoice_date"] = datetime.now()
-        move = self.env["account.move"].create(vals)
-        return move
+        move_form = Form(
+            self.env["account.move"]
+            .with_company(self.company.id)
+            .with_context(
+                default_move_type=move_type,
+            )
+        )
+        move_form.partner_id = partner
+        move_form.invoice_date = datetime.now()
+        with move_form.invoice_line_ids.new() as line_form:
+            line_form.product_id = self.product
+            line_form.price_unit = price
+        return move_form.save()
 
     def test_compensation(self):
         # Test raise if 1 account.move.line selected
@@ -130,7 +121,7 @@ class TestAccountNetting(common.TransactionCase):
         with self.assertRaises(UserError):
             wizard = obj.create(
                 {
-                    "move_line_ids": [Command.set([self.move_line_1.id])],
+                    "move_line_ids": [(6, 0, [self.move_line_1.id])],
                     "journal_id": self.miscellaneous_journal.id,
                 }
             )
@@ -142,7 +133,7 @@ class TestAccountNetting(common.TransactionCase):
             wizard = obj.create(
                 {
                     "move_line_ids": [
-                        Command.set([self.move_line_1.id, self.move_line_3.id])
+                        (6, 0, [self.move_line_1.id, self.move_line_3.id])
                     ],
                     "journal_id": self.miscellaneous_journal.id,
                 }
@@ -155,7 +146,7 @@ class TestAccountNetting(common.TransactionCase):
             wizard = obj.create(
                 {
                     "move_line_ids": [
-                        Command.set([self.move_line_4.id, self.move_line_5.id])
+                        (6, 0, [self.move_line_4.id, self.move_line_5.id])
                     ],
                     "journal_id": self.miscellaneous_journal.id,
                 }
@@ -172,7 +163,7 @@ class TestAccountNetting(common.TransactionCase):
             wizard = obj.create(
                 {
                     "move_line_ids": [
-                        Command.set([self.move_line_4.id, self.move_line_5.id])
+                        (6, 0, [self.move_line_4.id, self.move_line_5.id])
                     ],
                     "journal_id": self.miscellaneous_journal.id,
                 }
@@ -185,7 +176,7 @@ class TestAccountNetting(common.TransactionCase):
             wizard = obj.create(
                 {
                     "move_line_ids": [
-                        Command.set([self.move_line_1.id, self.move_line_6.id])
+                        (6, 0, [self.move_line_1.id, self.move_line_6.id])
                     ],
                     "journal_id": self.miscellaneous_journal.id,
                 }
@@ -195,9 +186,7 @@ class TestAccountNetting(common.TransactionCase):
         )
         wizard = obj.create(
             {
-                "move_line_ids": [
-                    Command.set([self.move_line_1.id, self.move_line_2.id])
-                ],
+                "move_line_ids": [(6, 0, [self.move_line_1.id, self.move_line_2.id])],
                 "journal_id": self.miscellaneous_journal.id,
             }
         )

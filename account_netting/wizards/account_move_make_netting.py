@@ -2,9 +2,8 @@
 # Copyright 2017 Tecnativa - Vicent Cubells
 # License AGPL-3 - See http://www.gnu.org/licenses/agpl-3.0.html
 
-from odoo import Command, api, fields, models
+from odoo import _, api, fields, models
 from odoo.exceptions import UserError
-from odoo.fields import Domain
 
 
 class AccountMoveMakeNetting(models.TransientModel):
@@ -22,7 +21,6 @@ class AccountMoveMakeNetting(models.TransientModel):
     move_line_ids = fields.Many2many(
         comodel_name="account.move.line",
         check_company=True,
-        string="Journal Items to Compensate",
     )
     partner_id = fields.Many2one("res.partner", readonly=True)
     company_currency_id = fields.Many2one(related="company_id.currency_id")
@@ -31,69 +29,59 @@ class AccountMoveMakeNetting(models.TransientModel):
         selection=[("pay", "To pay"), ("receive", "To receive")],
         readonly=True,
     )
-    ref = fields.Char(string="Reference")
-    date = fields.Date(required=True)
 
     @api.model
     def default_get(self, fields_list):
         if len(self.env.context.get("active_ids", [])) < 2:
-            raise UserError(self.env._("You should select at least 2 journal items."))
+            raise UserError(_("You should compensate at least 2 journal items."))
         move_lines = self.env["account.move.line"].browse(
             self.env.context["active_ids"]
         )
         partners = self.env["res.partner"]
         for line in move_lines:
             if line.parent_state != "posted":
-                raise UserError(
-                    self.env._("Line '%(line)s' is not posted.", line=line.display_name)
-                )
+                raise UserError(_("Line '%s' is not posted.") % line.display_name)
             if line.account_id.account_type not in (
                 "liability_payable",
                 "asset_receivable",
             ):
                 raise UserError(
-                    self.env._(
+                    _(
                         "Line '%(line)s' has account '%(account)s' which is not "
-                        "a payable nor a receivable account.",
-                        line=line.display_name,
-                        account=line.account_id.display_name,
+                        "a payable nor a receivable account."
                     )
+                    % {
+                        "line": line.display_name,
+                        "account": line.account_id.display_name,
+                    }
                 )
             if line.reconciled:
                 raise UserError(
-                    self.env._(
-                        "Line '%(line)s' is already reconciled.",
-                        line=line.display_name,
-                    )
+                    _("Line '%s' is already reconciled.") % line.display_name
                 )
             if not line.partner_id:
                 raise UserError(
-                    self.env._(
-                        "Line '%(line)s' doesn't have a partner.",
-                        line=line.display_name,
-                    )
+                    _("Line '%s' doesn't have a partner.") % line.display_name
                 )
             partners |= line.partner_id
 
         if len(move_lines.account_id) == 1:
             raise UserError(
-                self.env._(
+                _(
                     "The 'Compensate' function is intended to balance "
                     "operations on different accounts for the same partner. "
-                    "The selected journal items have the same "
-                    "account '%(account)s', so you should use the"
-                    "'Reconcile' function instead.",
-                    account=move_lines.account_id.display_name,
+                    "In this case all selected entries belong to the same "
+                    "account '%s'. Use the 'Reconcile' function instead."
                 )
+                % move_lines.account_id.display_name
             )
-
         if len(partners) != 1:
             raise UserError(
-                self.env._(
-                    "The selected journal items have different partners: %(partners)s. "
-                    "All the selected journal items must have the same partner.",
-                    partners=", ".join(p.display_name for p in partners),
+                _(
+                    "The selected journal items have different partners: %s. "
+                    "The partner must be the same for all the selected journal items."
                 )
+                % ", ".join([p.display_name for p in partners])
             )
         res = super().default_get(fields_list)
         company = self.env.company
@@ -113,27 +101,26 @@ class AccountMoveMakeNetting(models.TransientModel):
                 "company_id": company.id,
                 "move_line_ids": move_lines.ids,
                 "partner_id": partners.id,
-                "date": fields.Date.context_today(self),
-                "ref": self.env._("AR/AP netting"),
             }
         )
         return res
 
     def _prepare_account_move(self):
         # Group amounts by account
-        account_groups = self.env["account.move.line"]._read_group(
-            Domain("id", "in", self.move_line_ids.ids),
-            groupby=["account_id"],
-            aggregates=["amount_residual:sum"],
+        account_groups = self.move_line_ids.read_group(
+            [("id", "in", self.move_line_ids.ids)],
+            ["account_id", "amount_residual"],
+            ["account_id"],
         )
         debtors = []
         creditors = []
         total_debtors = 0.0
         total_creditors = 0.0
         ccur = self.company_id.currency_id
-        for account, balance in account_groups:
+        for account_group in account_groups:
+            balance = account_group["amount_residual"]
             group_vals = {
-                "account_id": account.id,
+                "account_id": account_group["account_id"][0],
                 "balance": abs(balance),
             }
             if ccur.compare_amounts(balance, 0) > 0:
@@ -154,13 +141,12 @@ class AccountMoveMakeNetting(models.TransientModel):
                     "partner_id": self.partner_id.id,
                     "account_id": account_group["account_id"],
                 }
-                move_lines.append(Command.create(move_line_vals))
+                move_lines.append((0, 0, move_line_vals))
                 available_amount -= account_group["balance"]
                 if ccur.compare_amounts(available_amount, 0) <= 0:
                     break
         vals = {
-            "date": self.date,
-            "ref": self.ref,
+            "ref": _("AR/AP netting"),
             "journal_id": self.journal_id.id,
             "company_id": self.company_id.id,
             "line_ids": move_lines,
@@ -175,7 +161,7 @@ class AccountMoveMakeNetting(models.TransientModel):
         # Make reconciliation
         for move_line in move.line_ids:
             to_reconcile = move_line + self.move_line_ids.filtered(
-                lambda x, move_line=move_line: x.account_id == move_line.account_id
+                lambda x: x.account_id == move_line.account_id
             )
             to_reconcile.reconcile()
         # Open created move

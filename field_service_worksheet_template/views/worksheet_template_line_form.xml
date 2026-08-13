@@ -33,7 +33,7 @@
             <field name="name">cites.tree.view</field>
             <field name="model">worksheet.template.line</field>
             <field name="arch" type="xml">
-                <list string="Status">
+                <tree string="Status">
                     <field name="name" placeholder="Name"/>
                     <field name="select_user"/>
                     <field name="template_id"/>
@@ -43,14 +43,14 @@
                     <field name="expense_id"/>
                     <field name="is_telematics_technicians" invisible="1"/>
                     <field name="done_mark" invisible="is_telematics_technicians == True"/>
-                </list>
+                </tree>
             </field>
         </record>
 
         <record model="ir.actions.act_window" id="line_create">
             <field name="name">Template</field>
             <field name="res_model">worksheet.template.line</field>
-            <field name="view_mode">list,form</field>
+            <field name="view_mode">tree,form</field>
         </record>
 
         <menuitem id="worksheet"

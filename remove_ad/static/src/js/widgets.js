@@ -1,31 +1,29 @@
-/** @odoo-module **/
+odoo.define('remove_ad.document_signing_extend', function(require) {
+    'use strict';
 
-import { patch } from "@web/core/utils/patch";
-import { ThankYouDialog } from "@sign/dialogs/thank_you_dialog";
+    var core = require('web.core');
+    var document_signing = require('sign.document_signing');
 
-/**
- * Patch ThankYouDialog to:
- *  1. Remove the Odoo "Sign Up for free" advertisement shown to non-logged-in users.
- *  2. Reload the page on close instead of redirecting to odoo.com/app/sign.
- */
-patch(ThankYouDialog.prototype, {
-    /**
-     * Override: always return false so the sign-up ad block is never rendered.
-     * Original: return !user.userId  (shows ad for non-authenticated users)
-     */
-    get suggestSignUp() {
-        return false;
-    },
+    var _t = core._t;
 
-    /**
-     * Override: reload the current page on close instead of the default
-     * odoo.com redirect that fires when suggestSignUp was true.
-     */
-    onClickClose() {
-        if (this.env.isSmall !== undefined && !this.suggestSignUp) {
-            // Fall through to normal backend/frontend close logic
-            return super.onClickClose(...arguments);
-        }
-        window.location.reload();
-    },
+    document_signing.ThankYouDialog.include({
+        template: "sign.no_pub_thank_you_dialog",
+        init: function(parent, RedirectURL, RedirectURLText, requestID, options) {
+            options = (options || {});
+            options.title = options.title || _t("Thank You !");
+            options.subtitle = options.subtitle || _t("Your signature has been saved.");
+            options.size = options.size || "medium";
+            options.technical = false;
+            options.buttons = [];
+            this.RedirectURL = RedirectURL;
+            this.RedirectURLText = RedirectURLText;
+            this.requestID = requestID;
+            this._super(parent, options);
+
+            this.on('closed', this, this.on_closed);
+        },
+        on_closed: function () {
+            window.location.reload();
+        },
+    });
 });

@@ -1,18 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+
+    <!-- sale order form view customizations-->
     <record id="sale_order_view_form" model="ir.ui.view">
-        <field name="name">sale.order.view.form.inherit.kloudip_so</field>
+        <field name="name">sale.order.view.form.inherit.kloudip_so_coordinator_and_billing_responsible</field>
         <field name="model">sale.order</field>
         <field name="inherit_id" ref="sale.view_order_form"/>
         <field name="arch" type="xml">
+
+            <!--adding billing by and coordination by fields-->
             <field name="team_id" position="after">
                 <field name="coordination_by_id"/>
                 <field name="billing_by_id"/>
             </field>
 
-            <xpath expr="//field[@name='next_invoice_date']" position="attributes">
-                <attribute name="groups">sales_team.group_sale_manager,account.group_account_invoice</attribute>
-            </xpath>
         </field>
     </record>
 
@@ -21,50 +22,64 @@
         <field name="model">sale.order</field>
         <field name="inherit_id" ref="sale_stock.view_order_form_inherit_sale_stock"/>
         <field name="arch" type="xml">
+
+            <!--adding billing by and coordination by fields-->
             <xpath expr="//button[@name='action_view_delivery']" position="attributes">
                 <attribute name="groups">stock.group_stock_user,field_service_worksheet_template.group_visible_delivery</attribute>
             </xpath>
+
         </field>
     </record>
 
+    <!--sale order search view customizations-->
     <record id="sale_order_view_search" model="ir.ui.view">
-        <field name="name">sale.order.view.search.inherit.kloudip_so</field>
+        <field name="name">sale.order.view.search.inherit.kloudip_so_coordinator_and_billing_responsible</field>
         <field name="model">sale.order</field>
         <field name="inherit_id" ref="sale.sale_order_view_search_inherit_quotation"/>
         <field name="arch" type="xml">
-            <xpath expr="//filter[@name='salesperson']" position="after">
-                <filter string="Coordination By" name="coordination_by" domain="[]"
-                        context="{'group_by': 'coordination_by_id'}"/>
+
+            <!--adding coordinator and billing responsible to groupings-->
+            <group position="inside">
+                <filter string="Coordination By" name="coordination_by" domain="[]" context="{'group_by': 'coordination_by_id'}"/>
                 <filter string="Billing By" name="billing_by" domain="[]" context="{'group_by': 'billing_by_id'}"/>
-            </xpath>
+            </group>
+
         </field>
     </record>
 
+    <!--sale order tree view customizations-->
     <record id="view_order_tree" model="ir.ui.view">
-        <field name="name">sale.order.tree.inherit.kloudip_so</field>
+        <field name="name">sale.order.tree.inherit.kloudip_so_coordinator_and_billing_responsible</field>
         <field name="model">sale.order</field>
         <field name="inherit_id" ref="sale.view_order_tree"/>
         <field name="arch" type="xml">
+
+            <!--adding billing by and coordination by fields to tree view-->
             <field name="partner_id" position="after">
-                <field name="coordination_by_id" optional="show"/>
-                <field name="billing_by_id" optional="show"/>
+                <field name="coordination_by_id"/>
+                <field name="billing_by_id"/>
             </field>
+
         </field>
     </record>
 
+    <!--quotation tree view customizations-->
     <record id="view_quotation_tree" model="ir.ui.view">
-        <field name="name">sale.quotation.tree.inherit.kloudip_so</field>
+        <field name="name">sale.order.tree.inherit.kloudip_so_coordinator_and_billing_responsible</field>
         <field name="model">sale.order</field>
         <field name="inherit_id" ref="sale.view_quotation_tree"/>
         <field name="arch" type="xml">
+
+            <!--adding billing by and coordination by fields to tree view-->
             <field name="partner_id" position="after">
-                <field name="coordination_by_id" optional="show"/>
-                <field name="billing_by_id" optional="show"/>
+                <field name="coordination_by_id"/>
+                <field name="billing_by_id"/>
             </field>
+
         </field>
     </record>
 
-        <!--quotation tree view customizations-->
+    <!--quotation tree view customizations-->
     <record id="sale_subscription_order_view_form_inherit" model="ir.ui.view">
         <field name="name">sale.subscription.order.view.form.inherit.kloudip_so_coordinator_and_billing_responsible</field>
         <field name="model">sale.order</field>

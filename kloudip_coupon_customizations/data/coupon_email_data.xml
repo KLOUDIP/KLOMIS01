@@ -1,150 +1,111 @@
 <?xml version="1.0" ?>
 <odoo>
-    <data noupdate="0">
-        <!-- 1. Define our Custom Odoo 19 Compliant Template -->
-        <record id="mail_template_loyalty_card_custom" model="mail.template">
-            <field name="name">KloudIP Voucher Information</field>
-            <field name="model_id" ref="loyalty.model_loyalty_card"/>
-            <field name="subject">Your Voucher at {{ object.program_id.company_id.name }}</field>
-            <field name="email_from">{{ (object.program_id.company_id.email_formatted or user.email_formatted) }}
-            </field>
-            <field name="email_to">{{ object.invoice_partner_id.email_formatted or object.partner_id.email_formatted
-                }}
-            </field>
-            <field name="description">Sent to customers with a generated voucher</field>
-            <field name="body_html" type="html">
-                <table border="0" cellpadding="0" cellspacing="0" style="width:100%; margin:0px auto;">
-                    <tbody>
-                        <tr>
-                            <td valign="top" style="text-align: center; font-size: 14px;">
-                                <t t-set="reward"
-                                   t-value="object.program_id.reward_ids[0] if object.program_id.reward_ids else object.env['loyalty.reward']"/>
-                                <t t-set="rule"
-                                   t-value="object.program_id.rule_ids[0] if object.program_id.rule_ids else object.env['loyalty.rule']"/>
 
-                                <t t-if="object.partner_id.name">
-                                    Congratulations
-                                    <t t-out="object.partner_id.name"/>
-                                    <br/>
-                                </t>
-                                <t t-elif="object.invoice_partner_id.name">
-                                    Congratulations
-                                    <t t-out="object.invoice_partner_id.name"/>
-                                    <br/>
-                                </t>
 
-                                Here is your reward from<t t-out="object.program_id.company_id.name"/>.
-                                <br/>
+    <!-- Find the record and set noupdate False-->
+    <function model="ir.model.data" name="write">
+        <value model="ir.model.data" eval="obj().search([('module', '=', 'loyalty'), ('name', '=', 'mail_template_loyalty_card')]).id"/>
+        <value eval="{'noupdate': False}" />
+    </function>
 
-                                <t t-if="reward.reward_type == 'discount'">
-                                    <t t-if="reward.discount_mode != 'percent'">
-                                        <span style="font-size: 50px; color: #875A7B; font-weight: bold;">
-                                            <t t-out="format_amount(reward.discount, reward.currency_id)"/>
-                                        </span>
-                                        <br/>
-                                        <strong style="font-size: 24px;">off on your next order</strong>
-                                        <br/>
-                                    </t>
-                                    <t t-else="">
-                                        <span style="font-size: 50px; color: #875A7B; font-weight: bold;">
-                                            <t t-out="reward.discount"/>
-                                            %
-                                        </span>
+    <!-- modify the body_html field of the record -->
+    <record id="loyalty.mail_template_loyalty_card" model="mail.template">
+        <field name="body_html" type="html">
+            <table border="0" cellpadding="0" cellspacing="0" style="width:100%; margin:0px auto;"><tbody>
+                <tr><td valign="top" style="text-align: center; font-size: 14px;">
+                    % if object.partner_id.name:
+                    Congratulations ${object.partner_id.name},<br/>
+                    % elif object.invoice_partner_id.name:
+                    Congratulations ${object.invoice_partner_id.name},<br/>
+                    % endif
 
-                                        <t t-if="reward.discount_applicability == 'specific'">
-                                            <br/>
-                                            <t t-if="len(reward.discount_product_ids) != 1">
-                                                <t t-set="display_specific_products" t-value="True"/>
-                                                <strong style="font-size: 24px;">on some products*</strong>
-                                            </t>
-                                            <t t-else="">
-                                                <strong style="font-size: 24px;">
-                                                    on
-                                                    <t t-out="reward.discount_product_ids.name"/>
-                                                </strong>
-                                            </t>
-                                        </t>
-                                        <t t-elif="reward.discount_applicability == 'cheapest'">
-                                            <br/>
-                                            <strong style="font-size: 24px;">off on the cheapest product</strong>
-                                        </t>
-                                        <t t-else="">
-                                            <br/>
-                                            <strong style="font-size: 24px;">off on your next order</strong>
-                                        </t>
-                                        <br/>
-                                    </t>
-                                </t>
-                                <t t-elif="reward.reward_type == 'product'">
-                                    <span style="font-size: 36px; color: #875A7B; font-weight: bold;">
-                                        get
-                                        <t t-out="reward.reward_product_qty"/>
-                                        free
-                                        <t t-out="reward.reward_product_id.name"/>
-                                    </span>
-                                    <br/>
-                                    <strong style="font-size: 24px;">on your next order</strong>
-                                    <br/>
-                                </t>
-                                <t t-elif="reward.reward_type == 'shipping'">
-                                    <span style="font-size: 36px; color: #875A7B; font-weight: bold;">get free
-                                        shipping
-                                    </span>
-                                    <br/>
-                                    <strong style="font-size: 24px;">on your next order</strong>
-                                    <br/>
-                                </t>
-                            </td>
-                        </tr>
-                        <tr style="margin-top: 16px">
-                            <td valign="top" style="text-align: center; font-size: 14px;">
-                                Use this promo code
-                                <t t-if="object.expiration_date">
-                                    before
-                                    <t t-out="object.expiration_date"/>
-                                </t>
-                                <p style="margin-top: 16px;">
-                                    <strong style="padding: 16px 8px 16px 8px; border-radius: 3px; background-color: #F1F1F1;">
-                                        <t t-out="object.code"/>
-                                    </strong>
-                                </p>
-                                <t t-if="rule.minimum_qty not in [0, 1]">
-                                    <span style="font-size: 14px;">
-                                        Minimum purchase of
-                                        <t t-out="rule.minimum_qty"/>
-                                        products
-                                    </span>
-                                    <br/>
-                                </t>
-                                <t t-if="rule.minimum_amount != 0.00">
-                                    <span style="font-size: 14px;">
-                                        Valid for purchase above
-                                        <t t-out="rule.currency_id.symbol"/>
-                                        <t t-out="'%0.2f' % rule.minimum_amount"/>
-                                    </span>
-                                    <br/>
-                                </t>
-                                <t t-if="display_specific_products">
-                                    <span>
-                                        *Valid for following products:
-                                        <t t-out="', '.join(reward.discount_product_ids.mapped('name'))"/>
-                                    </span>
-                                    <br/>
-                                </t>
-                                <br/>
-                                Thank you,
-                                <t t-if="object.order_id.user_id.signature">
-                                    <br/>
-                                    <t t-out="object.order_id.user_id.signature"/>
-                                </t>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </field>
-        </record>
+                    Here is your reward from ${object.program_id.company_id.name}.<br />
 
-        <!-- 2. Call the python function to permanently swap the templates dynamically -->
-        <function model="loyalty.program" name="_swap_mail_templates"/>
-    </data>
+                    % if object.program_id.reward_type == 'discount':
+                    % if object.program_id.discount_type == 'fixed_amount':
+                    <span style="font-size: 50px; color: #875A7B; font-weight: bold;">
+                        ${'%s' % format_amount(object.program_id.discount_fixed_amount, object.program_id.currency_id)}
+                    </span><br />
+                    <strong style="font-size: 24px;">off on your next order</strong><br />
+                    %else
+                    <span style="font-size: 50px; color: #875A7B; font-weight: bold;">
+                        ${object.program_id.discount_percentage} %
+                    </span>
+                    % if object.program_id.discount_apply_on == 'specific_products'
+                    <br />
+                    % if len(object.program_id.discount_specific_product_ids) != 1
+                    % set display_specific_products = True
+                    <strong style="font-size: 24px;">
+                        on some products*
+                    </strong>
+                    % else
+                    <strong style="font-size: 24px;">
+                        ${'on %s' % object.program_id.discount_specific_product_ids.name}
+                    </strong>
+                    % endif
+                    % elif object.program_id.discount_apply_on == 'cheapest_product':
+                    <br /><strong style="font-size: 24px;">
+                    off on the cheapest product
+                </strong>
+                    % else
+                    <br /><strong style="font-size: 24px;">
+                    off on your next order
+                </strong>
+                    % endif
+                    <br />
+                    % endif
+                    % elif object.program_id.reward_type == 'product':
+                    <span style="font-size: 36px; color: #875A7B; font-weight: bold;">
+                        ${'get %s free %s' % (object.program_id.reward_product_quantity, object.program_id.reward_product_id.name)}
+                    </span><br />
+                    <strong style="font-size: 24px;">on your next order</strong><br />
+                    % elif object.program_id.reward_type == 'free_shipping':
+                    <span style="font-size: 36px; color: #875A7B; font-weight: bold;">
+                        get free shipping
+                    </span><br />
+                    <strong style="font-size: 24px;">on your next order</strong><br />
+                    % endif
+                </td></tr>
+                <tr style="margin-top: 16px"><td valign="top" style="text-align: center; font-size: 14px;">
+                    Use this promo code
+                    % if object.expiration_date:
+                    before ${object.expiration_date}
+                    % endif
+                    <p style="margin-top: 16px;">
+                        <strong style="padding: 16px 8px 16px 8px; border-radius: 3px; background-color: #F1F1F1;">
+                            ${object.code}
+                        </strong>
+                    </p>
+                    % if object.program_id.rule_min_quantity not in [0, 1]
+                    <span style="font-size: 14px;">
+                        Minimum purchase of ${object.program_id.rule_min_quantity} products
+                    </span><br />
+                    % endif
+                    % if object.program_id.rule_minimum_amount != 0.00
+                    <span style="font-size: 14px;">
+                        Valid for purchase above ${object.program_id.company_id.currency_id.symbol}${'%0.2f' % object.program_id.rule_minimum_amount |float}
+                    </span><br />
+                    % endif
+                    % if display_specific_products
+                    <span>
+                        *Valid for following products: ${', '.join(object.program_id.discount_specific_product_ids.mapped('name'))}
+                    </span><br />
+                    % endif
+                    <br/>
+                    Thank you,
+                    % if object.order_id.user_id.signature:
+                    <br />
+                    ${object.order_id.user_id.signature | safe}
+                    % endif
+                </td></tr>
+            </tbody></table>
+        </field>
+    </record>
+
+    <!--set the previously noupdate False to True again -->
+    <function model="ir.model.data" name="write">
+        <value model="ir.model.data" eval="obj().search([('module', '=', 'coupon'), ('name', '=', 'mail_template_sale_coupon')]).id"/>
+        <value eval="{'noupdate': True}" />
+    </function>
+
 </odoo>

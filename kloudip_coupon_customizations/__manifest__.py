@@ -1,12 +1,15 @@
 # -*- encoding: utf-8 -*-
+
 {
     'name': 'KLOUDIP Coupon Customizations',
     'summary': "Coupon Customizations for KLOUDIP",
-    'description': """Setting coupon again to valid state, when sale order returned""",
-    'version': '19.0.1.0.0',
+    'description': """
+Setting coupon again to valid state, when sale order returned
+    """,
+    'version': '2.0.12',
     'category': 'Sale',
-    'author': "VK DATA ApS",
-    'website': "https://vkdata.dk",
+    'author': 'Nisus Solutions (Pvt) Ltd',
+    'website': 'http://www.nisus.lk',
     'depends': [
         'account',
         'loyalty',
@@ -15,8 +18,7 @@
         'sale_management',
         'product',
         'mail',
-        'sale_subscription',
-        'sales_team'
+        'sale_subscription'
     ],
     'data': [
         'security/coupon_security.xml',
@@ -37,5 +39,4 @@
     'installable': True,
     'application': False,
     'auto_install': False,
-    'license': 'OPL-1',
 }

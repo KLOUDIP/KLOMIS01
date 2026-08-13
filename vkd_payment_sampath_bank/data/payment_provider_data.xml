@@ -1,35 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo noupdate="1">
-
-    <!-- v17+ requires a payment.method (the customer-facing method model) so the
-         provider can surface a selectable payment method. The old `payment_icon_ids`
-         field and the payment.payment_icon_* records were removed in Odoo 16. -->
-    <record id="payment_method_sampathbank" model="payment.method">
-        <field name="name">Sampath Bank</field>
-        <field name="code">sampathbank</field>
-        <field name="sequence">1000</field>
-        <field name="support_tokenization">False</field>
-        <field name="support_express_checkout">False</field>
-    </record>
-
     <record id="payment_provider_sampathbank" model="payment.provider">
         <field name="name">Sampath Bank</field>
-<!--        <field name="display_as">Credit Card (powered by Sampath Bank)</field>-->
+        <field name="display_as">Credit Card (powered by Sampath Bank)</field>
         <field name="code">sampathbank</field>
         <field name="redirect_form_view_id" ref="redirect_form"/>
         <!-- <field name="image_128" type="base64" file="vkd_payment_sampath_bank/static/description/icon.png"/> -->
         <field name="module_id" ref="base.module_vkd_payment_sampath_bank"/>
-        <field name="payment_method_ids"
-               eval="[Command.set([
-                    ref('vkd_payment_sampath_bank.payment_method_sampathbank'),
-                    ref('payment.payment_method_card'),
+        <field name="payment_icon_ids"
+               eval="[(6, 0, [
+                    ref('payment.payment_icon_cc_mastercard'),
+                    ref('payment.payment_icon_cc_visa'),
+                    ref('payment.payment_icon_cc_american_express'),
                ])]"/>
     </record>
 
-    <!-- NOTE (v19 migration): in the modern payment framework, providers are
-         linked to their accounting payment method automatically. This explicit
-         account.payment.method record is legacy; keep it only if your accounting
-         flow depends on it, and verify it does not conflict on v19. -->
     <record id="account_payment_method_sampathbank" model="account.payment.method">
         <field name="name">Sampathbank</field>
         <field name="code">sampathbank</field>

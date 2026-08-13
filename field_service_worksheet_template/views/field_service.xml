@@ -7,7 +7,7 @@
             <field name="arch" type="xml">
                 <field name='description' position="before">
                     <field name="worksheet_template_lines">
-                        <list editable="bottom">
+                        <tree editable="bottom">
                             <field name="name" readonly="1" force_save="1"/>
                             <field name="template_id" string="Worksheet Template"/>
                             <field name="select_user"/>
@@ -48,7 +48,7 @@
 
                             <button type="object" class="btn btn-primary" string='SP1' name="action_to_create_purchase_order" context="{'product_val': 'other_3'}"
                                     attrs="{'invisible': ['|', ('template_id', '=', False), ('other_3', '!=', False)]}"/>
-                        </list>
+                        </tree>
                     </field>
 
                 </field>

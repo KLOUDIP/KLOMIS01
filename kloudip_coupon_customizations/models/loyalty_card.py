@@ -6,13 +6,11 @@ from odoo.exceptions import ValidationError
 
 _logger = logging.getLogger(__name__)
 
-
 class LoyaltyCard(models.Model):
     _inherit = 'loyalty.card'
 
     invoice_id = fields.Many2one('account.move', string='Invoice')
-    credit_note_id = fields.Many2one('account.move', string='Credit Note',
-                                     help='When refunded credit note will create for 1 quantity.')
+    credit_note_id = fields.Many2one('account.move', string='Credit Note', help='When refunded credit note will create for 1 quantity.')
     coupon_product_id = fields.Many2one('product.product', string='Coupon Product')
     # when adding coupons from sale order, we need to load coupons that are created for parent company also. so we
     # added new field to not disturb core functionality
@@ -38,8 +36,7 @@ class LoyaltyCard(models.Model):
         journals = self.env['account.move'].browse(self.invoice_id.ids).journal_id.filtered(lambda x: x.active)
         # raise ValidationError(journals[0])
         """create credit note for assigned invoice id"""
-        move_action = self.env['account.move.reversal'].with_context(active_id=self.invoice_id.id,
-                                                                     active_ids=self.invoice_id.ids).create({
+        move_action = self.env['account.move.reversal'].with_context(active_id=self.invoice_id.id, active_ids=self.invoice_id.ids).create({
             'move_ids': self.env['account.move'].browse(self.invoice_id.ids),
             'journal_id': journals[0].id if journals else None
         })

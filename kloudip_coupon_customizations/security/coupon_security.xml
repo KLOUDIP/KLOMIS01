@@ -4,12 +4,12 @@
     <record id="group_allow_cancel_coupons" model="res.groups">
         <field name="name">Allow Cancel Coupons</field>
         <field name="comment">Enabling this will allow user to cancel coupons</field>
-        <field name="privilege_id" ref="sales_team.res_groups_privilege_sales"/>
+        <field name="category_id" ref="base.module_category_hidden"/>
     </record>
-
     <!--access to vouchers-->
     <record id="group_access_vouchers" model="res.groups">
         <field name="name">Voucher Access</field>
-        <field name="privilege_id" ref="sales_team.res_groups_privilege_sales"/>
+        <field name="category_id" ref="base.module_category_hidden"/>
     </record>
+
 </odoo>

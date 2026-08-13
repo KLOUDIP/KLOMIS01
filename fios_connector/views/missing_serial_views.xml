@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!--missing serial view tree-->
+    <record id="missing_serial_view_tree" model="ir.ui.view">
+        <field name="name">missing.serial.view.tree</field>
+        <field name="model">missing.serial</field>
+        <field name="arch" type="xml">
+            <tree string="Missing Serial" create="false">
+                <field name="partner_id"/>
+                <field name="unit_serial"/>
+                <field name="state"/>
+            </tree>
+        </field>
+    </record>
+
+    <!--missing serials view search-->
+    <record id="missing_serial_view_search" model="ir.ui.view">
+        <field name="name">missing.serial.search.view</field>
+        <field name="model">missing.serial</field>
+        <field name="arch" type="xml">
+            <search string="Missing Serial">
+                <field name="partner_id"/>
+                <filter name="updated" string="Updated" domain="[('state' ,'=', 'updated')]"/>
+                <filter name="not_updated" string="Not Updated" domain="[('state', '=', 'not_updated')]"/>
+                <separator/>
+                <group expand="0" string="Group By" colspan="10" col="8">
+                    <filter string="Partner" name="partner" domain="[]" context="{'group_by' : 'partner_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!--action view missing serial -->
+    <record id="action_view_missing_serial" model="ir.actions.act_window">
+        <field name="name">Missing Serial</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">missing.serial</field>
+        <field name="view_mode">tree</field>
+        <field name="search_view_id" ref="missing_serial_view_search"/>
+        <field name="context">{'search_default_partner': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_empty_folder">
+                No Missing Serial Numbers Found!
+            </p>
+        </field>
+    </record>
+
+    <!--menuitem missing fleets-->
+    <menuitem id="menu_missing_serial" parent="fios_connector.menu_fios_missing" name="Serials" action="action_view_missing_serial" sequence="1"/>
+
+</odoo>

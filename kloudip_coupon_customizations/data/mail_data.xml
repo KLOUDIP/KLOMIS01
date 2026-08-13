@@ -1,26 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+
+    <!--log message-->
     <template id="coupon_created_message">
         <p>
+            <!--checking emails sending option for customer is enabled and change log message-->
             <t t-if="partner_generate_email_for_coupons">
-                <t>Coupons created as following and Emails sent to the customer regarding created coupons:</t>
-                <br/>
+                <t>Coupons created as following and Emails sent to the customer regarding created coupons:</t><br/>
             </t>
             <t t-else="">
                 <t>Following coupons created for the invoice customer:</t>
             </t>
             <t t-foreach="data" t-as="o">
-                <t t-out="o['product'].name"/>
-                -
+                <t t-esc="o['product'].name"/> -
                 <t t-foreach="o['coupons']" t-as="x">
-                    <a href="#" t-att-data-oe-model="x._name" t-att-data-oe-id="x.id">
-                        <t t-out="x.display_name"/>
-                    </a>
-                    <!-- Fix: Compare the ID directly instead of using list slicing -->
-                    <span t-if="x != o['coupons'][-1]">,</span>
-                </t>
-                <br/>
+                    <a href="#" t-att-data-oe-model="x._name" t-att-data-oe-id="x.id"> <t t-esc="x.display_name"/></a><span t-if="o['coupons'][-1:] != x.ids">, </span>
+                </t><br/>
             </t>
         </p>
     </template>
+
 </odoo>

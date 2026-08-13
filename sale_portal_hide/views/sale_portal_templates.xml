@@ -1,7 +1,8 @@
-<?xml version="1.0" encoding="utf-8"?>
 <odoo>
+
     <record id="sale.portal_my_home_sale" model="ir.ui.view">
         <field name="customize_show" eval="True" />
         <field name="active" eval="False" />
     </record>
+
 </odoo>

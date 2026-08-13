@@ -21,35 +21,27 @@
 
 {
     'name': 'Odoo remove sign ad custo',
-    'version': '19.0.1.0.0',
-    'summary': 'Removes the Odoo sign-up advertisement from the Sign Thank You dialog',
+    'version': '0.1',
+    'summary': 'Odoo Kloudip remove sign ad custo',
     'sequence': '19',
     'category': 'Tools',
     'complexity': 'easy',
     'description':
         """
-Odoo Remove Sign Ad
-===================
-Removes the "Sign Up for free" / "Need to sign documents?" Odoo promotion
-banner that is shown to non-authenticated users after they complete signing
-a document.
+Odoo Customizable WMS Barcode interface
+=======================================
+Manage field to be editable on package in the WMS interface
         """,
-    'author': "VK Data ApS",
-    'website': "https://vkdata.dk",
-    'data': [],
+    'data': [
+    ],
     'depends': ['sign'],
-    'license': 'OPL-1',
-    'application': False,
+    'qweb': [],
     'installable': True,
     'auto_install': False,
+    'application': True,
 
     'assets': {
-        # Backend users signing documents
-        'web.assets_backend': [
-            'remove_ad/static/src/js/widgets.js',
-        ],
-        # Public / portal users signing documents (non-authenticated - where ad appears)
-        'sign.assets_public_sign': [
+        'sign.assets_common': [
             'remove_ad/static/src/js/widgets.js',
         ],
     },

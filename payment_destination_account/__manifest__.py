@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'Payment Destination Account',
-    "summary": "This module allows selecting a destination account on the payment screen",
-    "description": "This module allows selecting a destination account on the payment screen",
+    "summary": "This module allow to select destination account on payment screen",
+    "description": "This module allow to select destination account on payment screen",
     'category': 'Account',
-    'version': '19.0.1.0.1',
+    'version': '1.0.2',
     "author": "BitbrainHub",
     "email": "bitbrainhub@gmail.com",
     'depends': [
@@ -16,5 +16,5 @@
     'installable': True,
     'application': True,
     'auto_install': False,
-    'license': 'OPL-1',
+    'licence': 'LGPL-3',
 }
