@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--Inherit core view-->
+    <record id="fleet_vehicle_log_contract_view_form" model="ir.ui.view">
+        <field name="name">fleet.vehicle.log.contract.view.form.inherit.fios_connector</field>
+        <field name="model">fleet.vehicle.log.contract</field>
+        <field name="inherit_id" ref="fleet.fleet_vehicle_log_contract_view_form"/>
+        <field name="arch" type="xml">
+
+            <field name="ins_ref" position="after">
+                <field name="fios_active_unit_available" readonly="1"/>
+            </field>
+
+        </field>
+    </record>
+
+<!--    &lt;!&ndash;inherit view in fleet contract management&ndash;&gt;-->
+<!--    <record id="fleet_vehicle_log_contract_view_form_inherit_contract" model="ir.ui.view">-->
+<!--        <field name="name">fleet.vehicle.log_contract.form.inherit.contract.fios_connector</field>-->
+<!--        <field name="model">fleet.vehicle.log.contract</field>-->
+<!--        <field name="inherit_id" ref="fleet_contract_management.fleet_vehicle_log_contract_view_form_inherit_contract"/>-->
+<!--        <field name="arch" type="xml">-->
+
+<!--            <field name="partner_id" position="attributes">-->
+<!--                <attribute name="domain">[('parent_id', '=', driver_company_id), ('subscription_count', '>', 0)]</attribute>-->
+<!--            </field>-->
+
+<!--        </field>-->
+<!--    </record>-->
+
+</odoo>

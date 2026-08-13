@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!--action view odoo unmatched fleets -->
+    <record id="action_view_odoo_unmatched_fleets" model="ir.actions.act_window">
+        <field name="name">Odoo Unmatched Fleets</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">fleet.vehicle</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('fios_plate_no_updated','=',False)]</field>
+        <field name="context">{'search_default_driver': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_empty_folder">
+                No Odoo Unmatched Fleets Found!
+            </p>
+        </field>
+    </record>
+
+    <!--adding filter changes to odoo unmatched fleets-->
+    <record id="fleet_vehicle_view_search" model="ir.ui.view">
+        <field name="name">fleet.vehicle.search.inherit.fios_connector</field>
+        <field name="model">fleet.vehicle</field>
+        <field name="inherit_id" ref="fleet.fleet_vehicle_view_search"/>
+        <field name="arch" type="xml">
+
+            <xpath expr="//group" position="inside">
+                <filter string="Driver" name="driver" context="{'group_by': 'driver_id'}"/>
+            </xpath>
+
+        </field>
+    </record>
+
+    <!--menuitem odoo unmatched fleets-->
+    <menuitem id="menu_odoo_unmatched_fleets" parent="fios_connector.menu_fios_odoo_unmatched" name="Fleets" action="action_view_odoo_unmatched_fleets" sequence="2"/>
+
+</odoo>

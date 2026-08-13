@@ -1,0 +1,32 @@
+<odoo>
+    <data>
+        <record id="sale_view_form" model="ir.ui.view">
+            <field name='name'>sale order</field>
+            <field name="model">sale.order</field>
+            <field name="inherit_id" ref="sale.view_order_form"/>
+            <field name="arch" type="xml">
+                <field name='date_order' position="after">
+                    <field name="tickets" widget="many2many_tags"  domain="[('partner_id', 'child_of', partner_id)]"/>
+                </field>
+            </field>
+        </record>
+
+        <record id="sale_view_form_add_button" model="ir.ui.view">
+            <field name='name'>sale order</field>
+            <field name="model">sale.order</field>
+            <field name="inherit_id" ref="sale_timesheet.view_order_form_inherit_sale_timesheet"/>
+            <field name="arch" type="xml">
+                <xpath expr="//button[@name='action_view_project_ids']" position="after">
+                    <field name="count" class="o_stat_value" invisible="1"/>
+                    <button class="oe_stat_button" type="object"
+                            name="action_view_tickets_ids" icon="fa-life-ring">
+                        <div class="o_stat_info">
+                            <field name="helpdesk_ticket_ids_cou" class="o_stat_value"/>
+                            <span class="o_stat_text"> HelpDesk Tickets</span>
+                        </div>
+                    </button>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

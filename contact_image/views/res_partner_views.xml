@@ -5,7 +5,7 @@
         <field name="model">res.partner</field>
         <field name="inherit_id" ref="base.view_partner_form"/>
         <field name="arch" type="xml">
-            <xpath expr="//page[@name='contact_addresses']//form//div[hasclass('d-flex') and hasclass('align-items-center') and hasclass('gap-3')]" position="after">
+            <xpath expr="//page[@name='contact_addresses']//form//hr" position="after">
                 <field name="avatar_128" invisible="1"/>
                 <field name="image_1920" widget="image" class="oe_avatar" options="{&quot;preview_image&quot;: &quot;avatar_128&quot;}"/>
             </xpath>

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <data>
+
         <template id="print_check_top" inherit_id="l10n_us_check_printing.print_check_top">
             <xpath expr="//div" position="replace">
                 <div class="page">
@@ -75,5 +76,6 @@
                 </div>
             </xpath>
         </template>
+
     </data>
 </odoo>

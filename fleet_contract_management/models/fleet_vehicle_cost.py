@@ -9,16 +9,15 @@ class FleetVehicleLogContract(models.Model):
     is_activated = fields.Boolean(string="Activated", tracking=True)
     activated_time = fields.Datetime(string='Activated Time')
     driver_company_id = fields.Many2one('res.partner', string="Driver Company", compute='_compute_company', store=False)
+    # invoice_id = fields.Many2one('account.move', string="Invoice", compute='_get_related_invoice')
     sale_id = fields.Many2one('sale.order', string="Sale Order", compute='_get_related_so')
 
-    user_id = fields.Many2one(default=lambda self: self._default_contract_user())
-
-    def _default_contract_user(self):
-        active_id = self.env.context.get('active_id')
-        vehicle = self.env['fleet.vehicle']
-        if isinstance(active_id, int) and self.env.context.get('active_model') == 'fleet.vehicle':
-            vehicle = vehicle.browse(active_id).exists()
-        return vehicle.manager_id or self.env.user
+    # @api.depends('x_lot_id')
+    # def _get_related_invoice(self):
+    #     for rec in self:
+    #         so = rec.x_lot_id.sale_order_ids[0] if rec.x_lot_id.sale_order_ids else False
+    #         invoice_ids = so.invoice_ids.ids
+    #         rec.invoice_id = rec.invoice_id
 
     @api.depends()
     def _get_related_so(self):
@@ -44,10 +43,8 @@ class FleetVehicleLogContract(models.Model):
             vals.update({'activated_time': fields.Datetime.now()})
         return super(FleetVehicleLogContract, self).write(vals)
 
-    @api.model_create_multi
-    def create(self, vals_list):
+    def create(self, vals):
         """Override core method to write activated time, if contract activated when creating"""
-        for vals in vals_list:
-            if vals.get('is_activated'):
-                vals.update({'activated_time': fields.Datetime.now()})
-        return super().create(vals_list)
+        if vals.get('is_activated'):
+            vals.update({'activated_time': fields.Datetime.now()})
+        return super(FleetVehicleLogContract, self).create(vals)

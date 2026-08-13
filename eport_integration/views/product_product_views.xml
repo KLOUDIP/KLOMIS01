@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <record id="product_normal_form_view_eport" model="ir.ui.view">
-        <field name="name">product.template.view.form.inherit.eport_integration</field>
+        <field name="name">product.product.view.form.inherit.eport</field>
         <field name="model">product.template</field>
         <field name="inherit_id" ref="product.product_template_form_view"/>
         <field name="arch" type="xml">

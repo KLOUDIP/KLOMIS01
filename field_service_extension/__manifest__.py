@@ -4,9 +4,9 @@
     "summary": "This module allow to add v13 features to v14",
     "description": "This module allow to add v13 features to v14",
     'category': 'Operations/Field Service',
-    'version': '19.0.1.0.0',
-    'author': "VK Data ApS",
-    'website': "https://vkdata.dk",
+    'version': '1.0.2',
+    "author": "Nisus Solutions (Pvt) Ltd",
+    "website": "https://nisus.lk/",
     'data': [
         'views/project_views.xml',
         'security/fsm_security.xml',
@@ -14,8 +14,4 @@
         'views/menus.xml'
     ],
     'depends': ['industry_fsm', 'project', 'project_enterprise', 'field_service_worksheet_template'],
-    'license': 'OPL-1',
-    'application': False,
-    'installable': True,
-    'auto_install': False,
 }

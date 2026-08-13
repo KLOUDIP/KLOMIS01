@@ -1,37 +1,25 @@
-<?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <data>
-
-        <!-- Fleet contract FORM view -->
-        <record model="ir.ui.view" id="contract_fleet_view_inherited_kloudip">
-            <field name="name">fleet.vehicle.log.contract.form.inherit.vehicle_delivery</field>
+	<data>
+		<record model="ir.ui.view" id="contract_fleet_view_inherited_kloudip">
+            <field name="name">fleet.vehicle.log.contract.form.inherited</field>
             <field name="model">fleet.vehicle.log.contract</field>
             <field name="inherit_id" ref="fleet.fleet_vehicle_log_contract_view_form"/>
             <field name="arch" type="xml">
-                <!--
-                    In Odoo 17-19, 'purchaser_id' was removed from fleet.vehicle.log.contract.
-                    Target a stable field instead — 'vehicle_id' is always present.
-                    If your Odoo 19 still has purchaser_id, you can revert this xpath.
-                -->
-                <xpath expr="//field[@name='vehicle_id']" position="after">
-                    <field name="x_lot_id" readonly="1"/>
-                </xpath>
+                <field name="purchaser_id" position="after">
+                	<field name="x_lot_id" readonly="1"/>
+                </field>
             </field>
         </record>
-
-        <!-- Fleet contract LIST/TREE view -->
         <record model="ir.ui.view" id="contract_fleet_view_tree_inherited_kloudip">
-            <field name="name">fleet.vehicle.log.contract.tree.inherit.vehicle_delivery</field>
+            <field name="name">fleet.vehicle.log.contract.tree.inherited</field>
             <field name="model">fleet.vehicle.log.contract</field>
             <field name="inherit_id" ref="fleet.fleet_vehicle_log_contract_view_tree"/>
             <field name="arch" type="xml">
-                <xpath expr="//field[@name='vehicle_id']" position="after">
-                    <field name="x_lot_id"/>
-                    <!-- Add purchaser_id only if it still exists in your Odoo 19 fleet module -->
-                    <!-- <field name="purchaser_id"/> -->
-                </xpath>
+                <field name="vehicle_id" position="after">
+                	<field name="x_lot_id"/>
+                	<field name="purchaser_id"/>
+                </field>
             </field>
         </record>
-
-    </data>
+	</data>
 </odoo>

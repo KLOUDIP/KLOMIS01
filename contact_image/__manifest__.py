@@ -1,18 +1,21 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'Contact Image',
-    "summary": "Add image field to res partner contact address form",
+    "summary": "This module allow add image field to res partner contact address form",
     "description": "This module allow add image field to res partner contact address form",
-    'category': 'Contacts',
-    'version': '19.0.2.0.0',
+    'category': 'Contact',
+    'version': '1.0.1',
     "author": "BitbrainHub",
     "email": "bitbrainhub@gmail.com",
-    'depends': ['base', 'contacts'],
+    'depends': [
+        'base',
+        'contacts'
+    ],
     'data': [
         'views/res_partner_views.xml',
     ],
     'installable': True,
     'application': True,
     'auto_install': False,
-    'license': 'OPL-1',
+    'licence': 'LGPL-3',
 }

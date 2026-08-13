@@ -13,7 +13,7 @@ _logger = logging.getLogger(__name__)
 
 class EportController(http.Controller):
 
-    @http.route('/v1/epc/create_transaction', methods=['POST'], type='jsonrpc', auth='public', csrf=False)
+    @http.route('/v1/epc/create_transaction', methods=['POST'], type='json', auth='public', csrf=False)
     def api_get_employee(self, **kw):
         try:
             data = json.loads(request.httprequest.data)

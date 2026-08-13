@@ -33,40 +33,36 @@ class PaymentTransaction(models.Model):
             return res
 
         return {
-            'payment_transaction_id': self.id,  # We are redirecting to another page to get the payment gateway specific values, but because we need to send json, we can not do as the other providers.
+            'payment_transaction_id': self.id, # We are rediration to another page to get the payment gateway specific values, but because we need to send json, we can not do as the other providers.
         }
+        # return self.get_sampathbank_payment_init_url(self.id)
 
-    def _search_by_reference(self, provider_code, payment_data):
+    def _get_tx_from_notification_data(self, provider_code, notification_data):
         """ Override of payment to find the transaction based on Sampath Bank data.
 
-        Odoo 19 renamed `_get_tx_from_notification_data` -> `_search_by_reference`
-        and the `notification_data` argument -> `payment_data`.
-
         :param str provider_code: The code of the provider that handled the transaction
-        :param dict payment_data: The payment data sent by the provider
+        :param dict notification_data: The notification data sent by the provider
         :return: The transaction if found
         :rtype: recordset of `payment.transaction`
         :raise: ValidationError if inconsistent data were received
         :raise: ValidationError if the data match no transaction
         """
-        tx = super()._search_by_reference(provider_code, payment_data)
+        tx = super()._get_tx_from_notification_data(provider_code, notification_data)
         if provider_code != 'sampathbank':
             return tx
 
-        return self.search([('sampathbank_reqid', '=', payment_data.get('reqid'))])
+        return self.search([('sampathbank_reqid', '=', notification_data.get('reqid'))])
 
-    def _apply_updates(self, payment_data):
-        """ Override of payment to update the transaction based on Sampath Bank data.
-
-        Odoo 19 renamed `_process_notification_data` -> `_apply_updates`.
+    def _process_notification_data(self, notification_data):
+        """ Override of payment to process the transaction based on Adyen data.
 
         Note: self.ensure_one()
 
-        :param dict payment_data: The payment data sent by the provider
+        :param dict notification_data: The notification data sent by the provider
         :return: None
         :raise: ValidationError if inconsistent data were received
         """
-        super()._apply_updates(payment_data)
+        super()._process_notification_data(notification_data)
         if self.provider_code != 'sampathbank':
             return
 
@@ -85,13 +81,14 @@ class PaymentTransaction(models.Model):
             json=data,
             headers=self._get_sampath_bank_headers())
 
-        # `response.content` is raw bytes; parse the JSON body to read the result.
-        response_data = response.json().get('responseData', {})
-        if response_data.get('responseCode') == '00':
-            self._set_done()
+        write_vals = {}
+        if response.content['responseData']['responseCode'] == '00':
+            write_vals['state'] = 'done'
         else:
-            self._set_canceled()
+            write_vals['state'] = 'cancel'
 
+        self.write(write_vals)
+    
     ############################
     # Sampath specific methods #
     # ##########################
@@ -106,7 +103,7 @@ class PaymentTransaction(models.Model):
             # 'HMAC': self.provider_id.sampathbank_hmac_secret,
         }
         return vals
-
+    
     @api.model
     def _get_base_url(self):
         return self.env['ir.config_parameter'].sudo().get_param('web.base.url')
@@ -115,13 +112,18 @@ class PaymentTransaction(models.Model):
         # if self.reference != reference:
         if self.id != reference:
             ValidationError("Sampath Bank: " + _("Received tampered payment request data!"))
-
+            
         url = self.provider_id._get_sampathbank_url()
         data = self._get_sampathbank_payment_init_vals()
 
+        # headers = {
+        #     'AUTHTOKEN': self.provider_id.sampathbank_authtoken,
+        #     'HMAC': self.provider_id.sampathbank_hmac_secret,
+        # }
+
         response = requests.post(
-            url + '/rest/service/proxy',
-            json=data,
+            url + '/rest/service/proxy', 
+            json=data, 
             headers=self._get_sampath_bank_headers()
         ).text
         response = json.loads(response)
@@ -130,6 +132,7 @@ class PaymentTransaction(models.Model):
             'sampathbank_reqid': response['responseData']['reqid'],
         })
 
+        # x = urllib.parse.quote_plus(response['responseData']['paymentPageUrl'])
         return response['responseData']['paymentPageUrl']
 
     def _get_sampathbank_return_url(self):
@@ -143,10 +146,12 @@ class PaymentTransaction(models.Model):
 
     def _get_sampathbank_payment_init_vals(self):
         base_url = self._get_base_url()
+        # base_url = self.provider_id.get_base_url()
         data = {
             'version': '1.5',
             'msgId': 'AD32B8FC-0D72-41D3-8F6B-51FB2107835E',
             'operation': 'PAYMENT_INIT',
+            # 'requestDate': datetime.datetime.now(),
             'requestDate': str(datetime.datetime.now()),
             'validateOnly': False,
             'requestData': {
@@ -165,7 +170,7 @@ class PaymentTransaction(models.Model):
                 'returnMethod': 'GET'
                 # 'returnUrl': '%s' % urljoin(base_url, SampathbankPaymentProvider.AcceptUrl),
             },
-            'clientRef': self.reference,  # Change it to something else, if it makes sense to use maybe the transaction id instead.
+            'clientRef': self.reference, # Change it to something else, if it makes sence to use maybe the transaction id instead.
             'tokenize': False,
         }
 

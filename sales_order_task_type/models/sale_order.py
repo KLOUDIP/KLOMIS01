@@ -7,6 +7,6 @@ class SaleOrder(models.Model):
     task_type_id = fields.Many2one("project.project", string="Task Type")
 
     def _prepare_invoice(self):
-        inv = super()._prepare_invoice()
+        inv = super(SaleOrder, self)._prepare_invoice()
         inv.update({"task_type_id": self.task_type_id.id})
         return inv

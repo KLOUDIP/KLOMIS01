@@ -1,4 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Assets are now registered via __manifest__.py 'assets' section (Odoo 17+).
-     This file is kept for reference only and is NOT loaded in data[]. -->
-<odoo/>
+<openerp>
+    <data>
+        <template id="assets_backend" name="sign assets" inherit_id="sign.assets_common">
+            <xpath expr="//script[last()]" position="after">
+                <script type="text/javascript" src="/remove_ad/static/src/js/widgets.js"></script>
+            </xpath>
+        </template>
+    </data>
+</openerp>

@@ -4,7 +4,7 @@
     "summary": "This module allow integrate the Odoo with EPORT",
     "description": "This module allow integrate the Odoo with EPORT",
     'category': 'Contact',
-    'version': '19.0.2.0.0',
+    'version': '1.0.3',
     "author": "BitbrainHub",
     "email": "bitbrainhub@gmail.com",
     'depends': [
@@ -20,8 +20,8 @@
         'views/res_partner_views.xml',
         'views/product_product_views.xml',
     ],
-    'license': 'OPL-1',
-    'application': False,
     'installable': True,
+    'application': True,
     'auto_install': False,
+    'licence': 'LGPL-3',
 }

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+	<template id="redirect_form">
+		<form t-att-action="api_url" method="post">
+			<input type="hidden" name="data_set" t-att-data-action-url="tx_url" data-remove-me=""/>
+			<input type="hidden" name="merchant_id" t-att-value="merchant_id"/>    <!-- Replace your Merchant ID -->
+			<input type="hidden" name="return_url" t-att-value="return_url"/>
+			<input type="hidden" name="cancel_url" t-att-value="cancel_url"/>
+			<input type="hidden" name="notify_url" t-att-value="notify_url"/>
+			<input type="text" name="order_id" t-att-value="order_id"/>
+			<input type="text" name="items" t-att-value="items"/><br/>
+			<input type="text" name="currency" t-att-value="currency"/>
+			<input type="text" name="amount" t-att-value="amount"/>
+			<input type="text" name="first_name" t-att-value="first_name"/>
+			<input type="text" name="last_name" t-att-value="last_name"/><br/>
+			<input type="text" name="email" t-att-value="email"/>
+			<input type="text" name="phone" t-att-value="phone"/><br/>
+			<input type="text" name="address" t-att-value="address"/>
+			<input type="text" name="city" t-att-value="city"/>
+			<input type="hidden" name="country" t-att-value="country"/>
+			<input type="hidden" name="hash" t-att-value="hash" />
+		</form>
+	</template>
+</odoo>

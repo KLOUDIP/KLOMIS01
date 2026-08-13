@@ -4,9 +4,9 @@
     "summary": "This module allow to add billing contact to contract view",
     "description": "This module allow to add billing contact to contract view",
     'category': 'fleet',
-    'version': '19.0.1.0.0',
-    'author': "VK Data ApS",
-    'website': "https://vkdata.dk",
+    'version': '2.0.0',
+    "author": "Nisus Solutions (Pvt) Ltd",
+    "website": "https://nisus.lk/",
     'data': [
         'views/fleet_vehicle_cost_views.xml',
         'views/res_partner_views.xml',
@@ -17,5 +17,5 @@
         'account',
         'sale'
     ],
-    'license': 'OPL-1',
+    'license': 'LGPL-3',
 }

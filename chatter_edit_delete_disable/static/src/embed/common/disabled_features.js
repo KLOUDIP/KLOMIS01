@@ -1,15 +1,22 @@
-/** @odoo-module */
+/* @odoo-module */
 
 import { messageActionsRegistry } from "@mail/core/common/message_actions";
+import { threadActionsRegistry } from "@mail/core/common/thread_actions";
+import { Thread } from "@mail/core/common/thread_model";
+import { ThreadService } from "@mail/core/common/thread_service";
 
-// Re-register "delete" action with condition = false to hide it
-messageActionsRegistry.add("delete", {
-    ...messageActionsRegistry.get("delete"),
-    condition: () => false,
-}, { force: true });
+import { patch } from "@web/core/utils/patch";
 
-// Re-register "edit" action with condition = false to hide it
-messageActionsRegistry.add("edit", {
-    ...messageActionsRegistry.get("edit"),
-    condition: () => false,
-}, { force: true });
+const deleteAction = messageActionsRegistry.get("delete");
+patch(deleteAction, {
+    condition(component) {
+        return false;
+    },
+});
+
+const editAction = messageActionsRegistry.get("edit");
+patch(editAction, {
+    condition(component) {
+        return false;
+    },
+});

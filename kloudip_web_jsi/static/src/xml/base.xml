@@ -1,17 +1,10 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<templates id="template" xml:space="preserve">
-
-    <t t-inherit="web_enterprise.HomeMenu" t-inherit-mode="extension" owl="1">
-
-        <xpath expr="//div[hasclass('o_home_menu')]" position="inside">
-
-            <div class="d-flex justify-content-center align-items-end p-4 w-100 position-absolute bottom-0 start-0"
-                 style="z-index: 0; pointer-events: none;">
-                <img alt="Kloudip Logo" src="/kloudip_web_jsi/static/src/img/logo.png"
-                     style="max-height: 50px; object-fit: contain; pointer-events: auto;"/>
+<?xml version="1.0"?>
+<template id="template" xml:space="preserve">
+    <t t-extend="HomeMenu.Content">
+        <t t-jquery=".o_home_menu_footer" t-operation="replace">
+            <div class="o_home_menu_footer">
+                <img alt="Logo" src="/kloudip_web_jsi/static/src/img/logo.png"/>
             </div>
-
-        </xpath>
+        </t>
     </t>
-
-</templates>
+</template>

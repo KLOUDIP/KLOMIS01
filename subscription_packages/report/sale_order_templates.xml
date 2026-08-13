@@ -4,10 +4,6 @@
         <xpath expr="//div[@name='so_total_summary']" position="after">
             <div class="oe_structure"></div>
             <t t-if="doc.sale_order_recurring_ids">
-                <!-- display_discount is set from the order lines by the core
-                     template; recompute it here from the recurring lines. -->
-                <t t-set="display_discount"
-                   t-value="any(line.discount > 0 for line in doc.sale_order_recurring_ids)"/>
                 <h5 class="mt-4">
                     <span>Subscription Products</span>
                 </h5>
@@ -64,10 +60,8 @@
                         <div t-attf-class="#{'col-6' if report_type != 'html' else 'col-sm-7 col-md-6'} ms-auto">
                             <table class="table table-sm table-borderless">
                                 <!-- Tax totals -->
-                                <t t-call="sale.document_tax_totals">
-                                    <t t-set="tax_totals" t-value="doc.sub_tax_totals"/>
-                                    <t t-set="currency" t-value="doc.currency_id"/>
-                                </t>
+                                <t t-set="tax_totals" t-value="doc.sub_tax_totals"/>
+                                <t t-call="sale.document_tax_totals"/>
                             </table>
                         </div>
                     </div>

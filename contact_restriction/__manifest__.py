@@ -4,7 +4,7 @@
     "summary": "This module allow block/unblock contacts",
     "description": "This module allow block/unblock contacts",
     'category': 'Contact',
-    'version': '19.0.2.0.0',
+    'version': '1.0.2',
     "author": "BitbrainHub",
     "email": "bitbrainhub@gmail.com",
     'depends': [
@@ -15,8 +15,8 @@
     'data': [
         'views/res_partner_views.xml',
     ],
-    'license': 'OPL-1',
-    'application': False,
     'installable': True,
+    'application': True,
     'auto_install': False,
+    'licence': 'LGPL-3',
 }

@@ -2,7 +2,7 @@
 
 {
     'name': 'Payment Provider: Sampath Bank',
-    'version': '19.0.1.0.0',
+    'version': '1.1.0',
     "author": "Ranga Dharmapriya",
     "email": "rangadharmapriya@gmail.com",
     'category': 'Accounting/Payment Providers',
@@ -13,7 +13,9 @@
     "description": """
 A Sri Lankan payment provider powered by Sampath Bank
 """,
-    'depends': ['payment'],
+    'depends': [
+        'payment'
+    ],
     'data': [
         'views/payment_provider_views.xml',
         'views/payment_sampath_templates.xml',

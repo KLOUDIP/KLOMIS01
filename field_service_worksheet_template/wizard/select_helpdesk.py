@@ -4,7 +4,6 @@ from odoo import api, fields, models, _
 
 class FreightWizard(models.TransientModel):
     _name = 'ticket.wizard'
-    _description = 'Field Service Helpdesk Ticket Wizard'
 
     def _default_task_tmpl(self):
         return self.env['project.task'].browse(self._context.get('active_id'))

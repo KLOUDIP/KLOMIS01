@@ -1,6 +1,6 @@
 {
     'name': 'Payment Provider: Sampath Bank',
-    'version': '19.0.3.0.0',
+    'version': '2.0.1',
     'category': 'Accounting/Payment Providers',
     'summary': 'An payment provider',
     'description': '''''',
@@ -12,6 +12,12 @@
         'views/payment_transaction_views.xml',
         'views/payment_templates.xml',
         'data/payment_provider_data.xml',
+    ],
+    'demo': [
+
+    ],
+    'qweb' : [
+
     ],
     'assets': {
         'web.assets_frontend': [

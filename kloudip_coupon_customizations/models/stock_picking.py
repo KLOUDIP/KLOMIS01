@@ -5,7 +5,6 @@ from odoo.exceptions import ValidationError
 
 _logger = logging.getLogger(__name__)
 
-
 class StockPicking(models.Model):
     _inherit = 'stock.picking'
 
@@ -20,7 +19,7 @@ class StockPicking(models.Model):
             if len(program_id) > 1:
                 raise ValidationError(_('Multiple coupon programs found for sale order'))
             else:
-                coupon_program_product_lines = self.move_ids.filtered(lambda x: x.product_id.id in program_id.reward_ids.discount_product_ids.ids)
+                coupon_program_product_lines = self.move_ids_without_package.filtered(lambda x: x.product_id.id in program_id.reward_ids.discount_product_ids.ids)
                 # check multiple product lines available with coupon product ids
                 if len(coupon_program_product_lines) > 1:
                     raise ValidationError(_('Multiple coupon product lines found.'))

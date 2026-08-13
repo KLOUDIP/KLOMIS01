@@ -1,17 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+
     <record id="view_hr_expense_sheet_form" model="ir.ui.view">
-        <field name="name">hr.expense.list.inherit.hr.expense.extend</field>
-        <field name="model">hr.expense</field>
-        <field name="inherit_id" ref="hr_expense.hr_expense_view_expenses_analysis_tree"/>
+        <field name="name">hr.expense.sheet.form.inherit.hr.expense.extend</field>
+        <field name="model">hr.expense.sheet</field>
+        <field name="inherit_id" ref="hr_expense.view_hr_expense_sheet_form"/>
         <field name="arch" type="xml">
-            <xpath expr="//list/field[@name='name']" position="after">
-                <button name="action_open_expense_form"
-                        type="object"
-                        icon="fa-external-link"
-                        title="Open Expense"
-                        string=""/>
+            <xpath expr="//form/sheet/notebook/page[@name='expenses']/field[@name='expense_line_ids']/tree/field[@name='date']" position="before">
+                <button name="action_open_expense_form" type="object" icon="fa-external-link"/>
             </xpath>
+
         </field>
     </record>
 </odoo>

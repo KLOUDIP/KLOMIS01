@@ -116,8 +116,7 @@
                         <h1>Worksheet Report</h1>
                         <hr/>
                         <t t-set="doc" t-value="sheet"/>
-<!--                        <div t-call="field_service_worksheet_template.worksheet_custom_page_report"/>-->
-                        <t t-call="field_service_worksheet_template.worksheet_custom_page_report"/>
+                        <div t-call="field_service_worksheet_template.worksheet_custom_page_report"/>
                     </div>
 
 

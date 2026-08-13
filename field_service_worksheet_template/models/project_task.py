@@ -16,30 +16,13 @@ class ProjectTaskLine(models.Model):
     is_tech_team_user = fields.Boolean(string="Is Tech Team", compute='_compute_is_tech_team_user')
     is_manager = fields.Boolean(compute='_compute_is_is_manager')
     task_status = fields.Selection([('on_time', 'On Time Placement'), ('late', 'Late Placement'), ('priority', 'Priority Placement')], string="Task Status")
-    partner_mobile = fields.Char(
-        string='Customer Mobile',
-        compute='_compute_partner_mobile',
-        inverse='_inverse_partner_mobile',
-        store=True,
-        readonly=False
-    )
-
-    @api.depends('partner_id.phone')
-    def _compute_partner_mobile(self):
-        for task in self:
-            task.partner_mobile = task.partner_id.phone or False
-
-    def _inverse_partner_mobile(self):
-        for task in self:
-            if task.partner_id:
-                task.partner_id.phone = task.partner_mobile
 
     def _check_technician_group(self):
         """Written this type of code because this group was already created by front end"""
         group = self.env['res.groups'].search([("name", "=", "Technicians")])
         uid = self.env.uid
         for i in self:
-            if uid in group.user_ids.ids:
+            if uid in group.users.ids:
                 i['is_technician'] = True
             else:
                 i['is_technician'] = False
