@@ -1,20 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-
-    <!--Payment provider form view customizations-->
     <record id="payment_provider_view_form" model="ir.ui.view">
         <field name="name">payment.provider.view.form.inherit.payment_sampath</field>
         <field name="model">payment.provider</field>
         <field name="inherit_id" ref="payment.payment_provider_form"/>
         <field name="arch" type="xml">
+            <!-- Inject fields into the provider credentials group -->
             <group name="provider_credentials" position='inside'>
-                <group required="code != 'sampath'" password="True">
-                    <field name="sampath_client_id" string="ClientID" required="code == 'sampath' and state != 'disabled'"/>
-                    <field name="sampath_auth_token" required="code == 'sampath' and state != 'disabled'" password="True"/>
-                    <field name="sampath_hmac_secret" required="code == 'sampath' and state != 'disabled'" password="True"/>
+                <!-- Use invisible to hide this group if the provider code is not 'sampath' -->
+                <group name="sampath_credentials" invisible="code != 'sampath'">
+                    <field name="sampath_client_id"
+                           string="ClientID"
+                           required="code == 'sampath' and state != 'disabled'"/>
+
+                    <field name="sampath_auth_token"
+                           required="code == 'sampath' and state != 'disabled'"
+                           password="True"/>
+
+                    <field name="sampath_hmac_secret"
+                           required="code == 'sampath' and state != 'disabled'"
+                           password="True"/>
                 </group>
             </group>
         </field>
     </record>
-
 </odoo>

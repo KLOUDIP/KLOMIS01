@@ -8,77 +8,63 @@
         <field name="inherit_id" ref="sale.view_order_form"/>
         <field name="arch" type="xml">
 
-            <page name="optional_products" position="after">
+            <!-- The "optional_products" page no longer exists in Odoo 19:
+                 optional products became the is_optional flag on the order
+                 lines, so this page is anchored after "order_lines". -->
+            <page name="order_lines" position="after">
                 <page string="Subscription Products" name="recurring_products">
                     <group>
                         <group>
                             <field name="custom_plan_id" options="{'no_create': True}"/>
                         </group>
                     </group>
-                    <field name="sale_order_recurring_ids" mode="tree,kanban" readonly="state in ['cancel', 'sale']">
+                    <field name="sale_order_recurring_ids" mode="list,kanban" readonly="state in ['cancel', 'sale']">
                         <form string="Subscription Products">
                             <group>
-                                <field name="product_id" domain="[('sale_ok', '=', True), '|', ('company_id', '=', False), ('company_id', '=', parent.company_id)]"/>
+                                <field name="product_id"
+                                       domain="[('sale_ok', '=', True), '|', ('company_id', '=', False), ('company_id', '=', parent.company_id)]"/>
                                 <field name="name"/>
                                 <field name="quantity" force_save="1"/>
-                                <field name="product_uom_category_id" invisible="1"/>
+                                <field name="allowed_uom_ids" invisible="1"/>
                                 <field name="uom_id" groups="uom.group_uom"/>
                                 <field name="price_unit" force_save="1"/>
                                 <field name="tax_ids" widget="many2many_tags"/>
                                 <field name="discount" groups="product.group_discount_per_so_line"/>
-                                <field name="is_present" />
+                                <field name="is_present"/>
                                 <field name="currency_id" invisible="1"/>
                                 <field name="price_subtotal"/>
                                 <field name="price_total"/>
                             </group>
                         </form>
                         <kanban class="o_kanban_mobile">
-                            <field name="product_id"/>
-                            <field name="quantity"/>
-                            <field name="uom_id" groups="uom.group_uom"/>
-                            <field name="price_unit"/>
-                            <field name="is_present" />
                             <templates>
-                                <t t-name="kanban-box">
-                                    <div class="oe_kanban_card oe_kanban_global_click">
-                                        <div class="row">
-                                            <div class="col-10">
-                                                <strong>
-                                                    <span>
-                                                        <t t-out="record.product_id.value"/>
-                                                    </span>
-                                                </strong>
-                                            </div>
-                                            <div class="col-2">
-                                                <button name="button_add_to_order"
-                                                        class="btn btn-link oe_link fa fa-shopping-cart"
-                                                        title="Add to order lines"
-                                                        type="object"
-                                                        invisible="is_present"/>
-                                            </div>
+                                <t t-name="card">
+                                    <div class="row">
+                                        <div class="col-10">
+                                            <field name="product_id" class="fw-bold"/>
                                         </div>
-                                        <div class="row">
-                                            <div class="col-12 text-muted">
-                                                <span>
-                                                    Quantity:
-                                                    <t t-out="record.quantity.value"/>
-                                                    <t t-out="record.uom_id.value" groups="uom.group_uom"/>
-                                                </span>
-                                            </div>
-                                        </div>
-                                        <div class="row">
-                                            <div class="col-12 text-muted">
-                                                <span>
-                                                    Unit Price:
-                                                    <t t-out="record.price_unit.value"/>
-                                                </span>
-                                            </div>
+                                        <div class="col-2">
+                                            <button name="button_add_to_order"
+                                                    class="btn btn-link oe_link fa fa-shopping-cart"
+                                                    title="Add to order lines"
+                                                    type="object"
+                                                    invisible="is_present"/>
                                         </div>
                                     </div>
+                                    <div class="text-muted">
+                                        Quantity:
+                                        <field name="quantity"/>
+                                        <field name="uom_id" groups="uom.group_uom"/>
+                                    </div>
+                                    <div class="text-muted">
+                                        Unit Price:
+                                        <field name="price_unit"/>
+                                    </div>
+                                    <field name="is_present" invisible="1"/>
                                 </t>
                             </templates>
                         </kanban>
-                        <tree string="Sales Quotation Template Lines"
+                        <list string="Subscription Products"
                               editable="bottom"
                               decoration-success="is_present == True">
                             <control>
@@ -89,25 +75,19 @@
                                    domain="[('sale_ok', '=', True), '|', ('company_id', '=', False), ('company_id', '=', parent.company_id)]"/>
                             <field name="name" optional="show"/>
                             <field name="quantity"/>
+                            <field name="allowed_uom_ids" column_invisible="True"/>
                             <field name="uom_id" string="UoM" groups="uom.group_uom" optional="show"/>
-                            <field name="product_uom_category_id" column_invisible="True"/>
                             <field name="price_unit"/>
                             <field name="tax_ids" widget="many2many_tags"/>
                             <field name="discount"
                                    string="Disc.%"
                                    groups="product.group_discount_per_so_line"
                                    optional="show"/>
-                            <field name="is_present" column_invisible="True" />
+                            <field name="is_present" column_invisible="True"/>
                             <field name="price_subtotal"/>
                             <field name="price_total" optional="hide"/>
-                            <button name="button_add_to_order"
-                                    type="object"
-                                    class="oe_link"
-                                    icon="fa-shopping-cart"
-                                    title="Add to order lines"
-                                    invisible="is_present" column_invisible="1"/>
-                            <field name="currency_id" column_invisible="1"/>
-                        </tree>
+                            <field name="currency_id" column_invisible="True"/>
+                        </list>
                     </field>
 
                     <group name="note_group" col="6" class="mt-2 mt-md-0">

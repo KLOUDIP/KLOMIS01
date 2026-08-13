@@ -16,7 +16,7 @@ class UserExtensionController(http.Controller):
 
     @http.route(
         '/get/user/extension',
-        type='json',
+        type='jsonrpc',
         auth="public",
         methods=['GET', 'POST'],
         csrf=False

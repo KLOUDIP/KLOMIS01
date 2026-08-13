@@ -6,7 +6,9 @@
 
         <xpath expr="//section[@id='signature']" position="after">
             <t t-if="sale_order.sale_order_recurring_ids">
-                <section class="subscription_packages" t-att-sale-id="sale_order.id">
+                <section class="subscription_packages"
+                         t-att-data-sale-id="sale_order.id"
+                         t-att-data-access-token="sale_order.access_token">
                     <hr/>
                     <h3>Subscription Package</h3>
                     <div class="alert alert-success" role="alert">
@@ -99,8 +101,10 @@
 
     <template id="sale_order_portal_content_subscription_totals_table">
         <table class="table table-sm">
-            <t t-set="tax_totals" t-value="sale_order.sub_tax_totals"/>
-            <t t-call="sale.document_tax_totals"/>
+            <t t-call="sale.document_tax_totals">
+                <t t-set="tax_totals" t-value="sale_order.sub_tax_totals"/>
+                <t t-set="currency" t-value="sale_order.currency_id"/>
+            </t>
         </table>
     </template>
 </odoo>

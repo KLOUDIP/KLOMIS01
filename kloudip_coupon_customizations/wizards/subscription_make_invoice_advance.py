@@ -5,6 +5,7 @@ from odoo.exceptions import UserError
 
 class SubscriptionAdvancePaymentInv(models.TransientModel):
     _name = "subscription.advance.payment.inv"
+    _description = "Subscription Advance Payment Invoice Wizard"
 
     currency_id = fields.Many2one(
         comodel_name='res.currency',

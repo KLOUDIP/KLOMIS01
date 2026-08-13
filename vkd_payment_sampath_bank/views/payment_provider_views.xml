@@ -7,7 +7,7 @@
             <field name="inherit_id" ref="payment.payment_provider_form"/>
             <field name="arch" type="xml">
                 <group name="provider_credentials" position='inside'>
-                    <group attrs="{'invisible': [('code', '!=', 'sampathbank')]}">
+                    <group invisible="code != 'sampathbank'">
                         <field name="sampathbank_clientId"/>
                         <field name="sampathbank_hmac_secret"/>
                         <field name="sampathbank_authtoken"/>

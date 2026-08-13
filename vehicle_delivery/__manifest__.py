@@ -21,7 +21,7 @@
 
 {
     'name': 'Kloudip link vehicle with delivery',
-    'version': '2.0.0',
+    'version': '19.0.1.0.0',
     'summary': 'Odoo Kloudip Custom module',
     'sequence': '19',
     'category': 'Tools',
@@ -32,19 +32,23 @@ Odoo Custom Module
 ==================
 Kloudip link vehicle with delivery
         """,
+    'author': "VK Data ApS",
+    'website': "https://vkdata.dk",
     'data': [
-        'models/stock.xml',
+        'data/stock.xml',
         'views/stock.xml',
-        'models/fleet.xml',
+        'data/fleet.xml',
         'views/fleet.xml',
         'actions/server_actions.xml',
-             ],
+    ],
     'depends': [
+        'base',
         'stock',
         'fleet',
+        'base_automation',  # <-- add this
     ],
+    'license': 'OPL-1',
+    'application': False,
     'installable': True,
     'auto_install': False,
-    'application': True,
-    'license': 'LGPL-3',
 }

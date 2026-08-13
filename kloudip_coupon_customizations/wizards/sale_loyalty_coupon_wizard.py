@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
-
-from odoo import api, fields, models, _
+from odoo import api, fields, models
 
 
 class SaleLoyaltyCouponWizard(models.TransientModel):
@@ -12,15 +11,19 @@ class SaleLoyaltyCouponWizard(models.TransientModel):
 
     @api.onchange('coupon_id')
     def onchange_coupon_id(self):
-        self.update({'coupon_code': self.coupon_id.code})
-
-    @api.depends('coupon_id')
-    def compute_reward_product(self):
-        reward = self.env['loyalty.reward']
         for rec in self:
-            reward = reward.search([('discount_product_ids', 'in', rec.order_id.order_line.product_id.ids)])
-            line = reward.discount_line_product_id.filtered(lambda x: x.lst_price in rec.order_id.order_line.mapped('price_reduce_taxexcl'))
-            if line:
-                rec.reward_product_ids = [(6, 0, line.ids)]
-            else:
-                rec.reward_product_ids = False
+            rec.coupon_code = rec.coupon_id.code
+
+    @api.depends('coupon_id', 'order_id')
+    def compute_reward_product(self):
+        reward_model = self.env['loyalty.reward']
+        for rec in self:
+            if not rec.order_id:
+                rec.reward_product_ids = self.env['product.product']
+                continue
+
+            rewards = reward_model.search([('discount_product_ids', 'in', rec.order_id.order_line.product_id.ids)])
+            lines = rewards.discount_line_product_id.filtered(
+                lambda x: x.lst_price in rec.order_id.order_line.mapped('price_reduce_taxexcl'))
+
+            rec.reward_product_ids = lines if lines else self.env['product.product']

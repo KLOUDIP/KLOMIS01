@@ -10,16 +10,21 @@ class Expenses(models.Model):
 
     @api.constrains('product_id', 'product_uom_id')
     def _check_product_uom_category(self):
-        for expense in self:
-            msg = 'Product name :' + str(expense.product_id.name) + " , " + str(
-                expense.product_uom_id.name) + ": " + str(expense.product_uom_id.category_id.id) + " - " + str(
-                expense.product_uom_id.category_id.name) + " , " + str(expense.product_id.uom_id.name) + ": " + str(
-                expense.product_id.uom_id.category_id.id) + " - " + str(expense.product_id.uom_id.category_id.name)
+        def _reference_uom(uom):
+            # Walk the relative_uom_id chain to the base/reference unit (Odoo 19)
+            seen = set()
+            while uom.relative_uom_id and uom.id not in seen:
+                seen.add(uom.id)
+                uom = uom.relative_uom_id
+            return uom
 
-            # raise UserError(msg)
-            if expense.product_id and expense.product_uom_id.category_id != expense.product_id.uom_id.category_id:
+        for expense in self:
+            if not expense.product_id or not expense.product_uom_id:
+                continue
+            if _reference_uom(expense.product_uom_id) != _reference_uom(expense.product_id.uom_id):
                 raise UserError(_(
-                    'Selected Unit of Measure for expense %(expense)s does not belong to the same category as the Unit of Measure of product %(product)s.',
+                    'Selected Unit of Measure for expense %(expense)s is not compatible '
+                    'with the Unit of Measure of product %(product)s.',
                     expense=expense.name, product=expense.product_id.name,
                 ))
 

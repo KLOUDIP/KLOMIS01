@@ -1,65 +1,98 @@
 # -*- coding: utf-8 -*-
 
-from odoo import api, fields, models, _
+from odoo import api, fields, models
 
 
 class SaleOrder(models.Model):
     _inherit = 'sale.order'
 
     custom_plan_id = fields.Many2one(
-        'sale.subscription.plan',
-        string='Subscription Plan',
-        help='User selected recurring pricing on invoice preview will appear here',
+        comodel_name='sale.subscription.plan',
+        string="Subscription Plan",
+        help="User selected recurring pricing on invoice preview will appear here",
         context={'sale_recurring': True},
         tracking=1,
-        default=lambda self: self.env['sale.subscription.plan'].search([('name', '=', 'Monthly')], limit=1)
+        default=lambda self: self.env['sale.subscription.plan'].search(
+            [('name', '=', 'Monthly')], limit=1),
     )
     sale_order_recurring_ids = fields.One2many(
         comodel_name='sale.order.recurring',
         inverse_name='order_id',
         string="Subscription Products Lines",
-        copy=True
+        copy=True,
     )
     sub_tax_totals = fields.Binary(compute='_compute_sub_tax_totals', exportable=False)
 
+    #=== COMPUTE METHODS ===#
+
     @api.depends_context('lang')
-    @api.depends('sale_order_recurring_ids.tax_ids', 'sale_order_recurring_ids.price_unit', 'currency_id')
+    @api.depends(
+        'sale_order_recurring_ids.price_subtotal',
+        'sale_order_recurring_ids.tax_ids',
+        'sale_order_recurring_ids.price_unit',
+        'currency_id',
+        'company_id',
+    )
     def _compute_sub_tax_totals(self):
+        """Totals of the subscription lines.
+
+        Odoo 18 removed ``account.tax._prepare_tax_totals`` in favour of
+        ``_get_tax_totals_summary``, fed with base line dicts.
+        """
+        AccountTax = self.env['account.tax']
         for order in self:
-            order_lines = order.sale_order_recurring_ids
-            order.sub_tax_totals = self.env['account.tax']._prepare_tax_totals(
-                [x._convert_to_tax_base_line_dict() for x in order_lines],
-                order.currency_id or order.company_id.currency_id,
+            base_lines = [
+                line._prepare_base_line_for_taxes_computation()
+                for line in order.sale_order_recurring_ids
+            ]
+            AccountTax._add_tax_details_in_base_lines(base_lines, order.company_id)
+            AccountTax._round_base_lines_tax_details(base_lines, order.company_id)
+            order.sub_tax_totals = AccountTax._get_tax_totals_summary(
+                base_lines=base_lines,
+                currency=order.currency_id or order.company_id.currency_id,
+                company=order.company_id,
             )
+
+    #=== ONCHANGE METHODS ===#
 
     @api.onchange('custom_plan_id')
     def _onchange_custom_plan_id(self):
+        """Update the recurring product prices from the recurring pricelist
+        rules of the selected subscription plan.
+
+        Odoo 18 removed sale.subscription.pricing; recurring prices are now
+        product.pricelist.item records carrying the plan.
         """
-        @private - update recurring product price using assigned price-list in the subscription plan
-        """
-        if self.custom_plan_id:
-            for rec in self.sale_order_recurring_ids:
-                plan_line_id = self.custom_plan_id.product_subscription_pricing_ids.filtered(lambda x: x.product_template_id.id == rec.product_id.product_tmpl_id.id and x.pricelist_id.id == self.pricelist_id.id)
-                price_unit = 0.00
-                if plan_line_id:
-                    # price_unit = plan_line_id.pricelist_id._get_product_price(rec.product_id, rec.quantity or 1.0, currency=plan_line_id[0].pricelist_id.currency_id)
-                    price_unit = plan_line_id.price
-                rec.update({
-                    'price_unit': price_unit
-                })
+        if not self.custom_plan_id:
+            return
+
+        PricelistItem = self.env['product.pricelist.item']
+        for recurring in self.sale_order_recurring_ids:
+            if not recurring.product_id:
+                continue
+            item = PricelistItem.search([
+                ('plan_id', '=', self.custom_plan_id.id),
+                ('pricelist_id', '=', self.pricelist_id.id),
+                '|',
+                ('product_id', '=', recurring.product_id.id),
+                '&',
+                ('product_id', '=', False),
+                ('product_tmpl_id', '=', recurring.product_id.product_tmpl_id.id),
+            ], limit=1)
+            recurring.price_unit = item.fixed_price if item else 0.0
 
     @api.onchange('sale_order_template_id')
     def _onchange_sale_order_template_id(self):
-        """
-        @Override - Add Recurring Products Lines
-        """
+        """Override to also load the recurring products of the template."""
         res = super()._onchange_sale_order_template_id()
-        sale_order_template = self.sale_order_template_id.with_context(lang=self.partner_id.lang)
+
+        sale_order_template = self.sale_order_template_id.with_context(
+            lang=self.partner_id.lang)
         recurring_lines_data = [fields.Command.clear()]
         recurring_lines_data += [
             fields.Command.create(recurring._prepare_recurring_line_values())
             for recurring in sale_order_template.sale_order_template_recurring_ids
         ]
-
         self.sale_order_recurring_ids = recurring_lines_data
+
         return res

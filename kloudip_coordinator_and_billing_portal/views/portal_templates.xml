@@ -1,18 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <template id="portal_layout_customize" inherit_id="portal.side_content">
-        <xpath expr="//div[@class='o_portal_my_details']" position="after">
+        <xpath expr="//div[hasclass('o_portal_my_details')]" position="after">
             <div class="my-custom-section">
                 <br/>
                 <p>
-                    <b style="color: #343A40; font-size: 1.9375rem; font-family: Bebas Neue;font-weight: 500;">SUPPORT CONTACTS:</b>
+                    <b style="color: #343A40; font-size: 1.9375rem; font-family: Bebas Neue;font-weight: 500;">SUPPORT
+                        CONTACTS:
+                    </b>
                     <br/>
                     Email: support@kloudip.com
                     <br/>
                     Whatsapp: +1-201 448 8116
                 </p>
                 <p>
-                    <b style="color: #343A40; font-size: 1.9375rem; font-family: Bebas Neue; font-weight: 500;">BILLING BY :</b>
+                    <b style="color: #343A40; font-size: 1.9375rem; font-family: Bebas Neue; font-weight: 500;">BILLING
+                        BY :
+                    </b>
                     <br/>
                     <span t-field="user_id.billing_by_id"/>
                     <br/>
@@ -23,24 +27,21 @@
     </template>
 
     <template id="portal_contact" inherit_id="portal.portal_contact">
-        <xpath expr="//div[@class='d-flex align-items-center mb-1']" position="after">
+
+        <xpath expr="//*[hasclass('fa-phone')]/.." position="before">
             <div class="d-flex flex-nowrap align-items-center mb-1">
                 <div class="fa fa-mobile fa-fw me-1"></div>
-                <span t-esc="sales_user.mobile"/>
+                <span t-out="sales_user.sudo().partner_id.phone"/>
             </div>
         </xpath>
 
-        <xpath expr="//span[@t-esc='sales_user.phone']" position="attributes">
-            <attribute name="t-attf-class">#{'d-none'}</attribute>
+        <xpath expr="//*[hasclass('fa-phone')]/.." position="attributes">
+            <attribute name="class" add="d-none" separator=" "/>
         </xpath>
-         <xpath expr="//span[@t-esc='sales_user.city']" position="attributes">
-            <attribute name="t-attf-class">#{'d-none'}</attribute>
+
+        <xpath expr="//*[hasclass('fa-map-marker')]/.." position="attributes">
+            <attribute name="class" add="d-none" separator=" "/>
         </xpath>
-        <xpath expr="//div[@class='fa fa-phone fa-fw me-1']" position="attributes">
-            <attribute name="t-attf-class">#{'d-none'}</attribute>
-        </xpath>
-         <xpath expr="//div[@class='fa fa-map-marker fa-fw me-1']" position="attributes">
-            <attribute name="t-attf-class">#{'d-none'}</attribute>
-        </xpath>
+
     </template>
 </odoo>

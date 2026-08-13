@@ -7,3 +7,4 @@ from . import account_move
 from . import loyalty_card
 from . import loyalty_program
 from . import sale_order
+from . import sale_order_line

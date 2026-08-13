@@ -1,9 +1,8 @@
 <?xml version="1.0"?>
 <odoo>
-
     <!-- Add EPORT details to contact view -->
     <record id="view_partners_form_eport" model="ir.ui.view">
-        <field name="name">view.res.partner.form.eport</field>
+        <field name="name">res.partner.view.form.inherit.eport_integration</field>
         <field name="model">res.partner</field>
         <field name="inherit_id" ref="base.view_partner_form"/>
         <field name="arch" type="xml">
@@ -20,11 +19,11 @@
                         </group>
                     </group>
                     <field name="transaction_ids" readonly="1">
-                        <tree>
+                        <list>
                             <field name="name"/>
                             <field name="date"/>
                             <field name="amount"/>
-                        </tree>
+                        </list>
                     </field>
                     <group>
                         <group>
@@ -39,5 +38,4 @@
             </xpath>
         </field>
     </record>
-
 </odoo>

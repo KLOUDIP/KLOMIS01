@@ -7,7 +7,7 @@
             <field name="arch" type="xml">
                 <field name='description' position="before">
                     <field name="worksheet_template_lines" context="{'get_license':True}">
-                        <tree editable="bottom">
+                        <list editable="bottom">
                             <field name="select_vals"/>
                             <field name="name" readonly="1" force_save="1"/>
                             <field name="template_id" string="Worksheet Template"/>
@@ -59,7 +59,7 @@
 
                             <button type="object" class="btn btn-primary" string='SP1' name="action_to_create_purchase_order" context="{'product_val': 'other_3'}"
                                     invisible="template_id == False or other_3 != False" groups="field_service_worksheet_template.group_coordinator_fsm,industry_fsm.group_fsm_manager"/>
-                        </tree>
+                        </list>
                     </field>
                 </field>
 
@@ -129,7 +129,8 @@
                     <field name="state" widget="badge" invisible="not active or is_tech_team_user"/>
                 </xpath>
 
-                <xpath expr="//div[@class='d-flex justify-content-start o_state_container w-100 w-md-50 w-lg-25']" position="replace">
+                <xpath expr="//div[@class='d-flex justify-content-start align-items-center w-100 w-md-50 w-lg-25']" position="replace">
+<!--                <xpath expr="//div[@class='d-flex justify-content-start o_state_container w-100 w-md-50 w-lg-25']" position="replace">-->
                     <div class="d-flex justify-content-start o_state_container w-100 w-md-50 w-lg-25" invisible="active or not is_tech_team_user">
                         <field name="state" widget="project_task_state_selection" class="o_task_state_widget"/>
                     </div>
@@ -197,7 +198,7 @@
             <field name="model">project.task</field>
             <field name="inherit_id" ref="project.view_task_form2"/>
             <field name="arch" type="xml">
-                <xpath expr="(//field[@name='project_id'])[2]" position="after">
+                <xpath expr="//field[@name='project_id']" position="after">
                     <field name="extra_minutes" invisible="1"/>
                     <field name="tech_team_member_id"/>
                     <field name="is_technician" invisible="1"/>

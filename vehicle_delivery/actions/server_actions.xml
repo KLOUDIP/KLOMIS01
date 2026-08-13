@@ -1,17 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+    <!-- First create the automation rules (no action link here) -->
+    <record id="action_create_contract_vehicle" model="base.automation">
+        <field name="name">Create contract on add vehicle to move line</field>
+        <field name="trigger">on_create_or_write</field>
+        <field name="model_id" ref="stock.model_stock_move_line"/>
+    </record>
+
+    <!-- Then create the server action and link it to the automation via base_automation_id -->
     <record id="create_contract_vehicle" model="ir.actions.server">
         <field name="name">Create contract on add vehicle to move line</field>
         <field name="model_id" ref="stock.model_stock_move_line"/>
-        <field name="binding_model_id" ref="stock.model_stock_move_line"/>
+        <field name="base_automation_id" ref="action_create_contract_vehicle"/>
         <field name="state">code</field>
         <field name="code">
             for rec in records:
                 if rec.x_vehicle_id.id and rec.state == 'done' and not rec.x_contract_id and not rec.move_id.origin_returned_move_id:
-                    contract = env['fleet.vehicle.log.contract'].create({
+                    contract = env['fleet.vehicle.log.contract'].with_context(active_id=False, active_ids=[], active_model=False).create({
                         'vehicle_id': rec.x_vehicle_id.id,
                         'x_lot_id': rec.lot_id.id,
-                        'purchaser_id': rec.x_vehicle_id.driver_id.id,
+                        'user_id': rec.x_vehicle_id.manager_id.id or env.user.id,
                         'expiration_date': False,
                         'state': 'open',
                     })
@@ -19,17 +27,16 @@
         </field>
     </record>
 
-    <record id="action_create_contract_vehicle" model="base.automation">
-        <field name="name">Create contract on add vehicle to move line</field>
+    <record id="action_expire_contract_return" model="base.automation">
+        <field name="name">Expire contract on return</field>
+        <field name="model_id" ref="stock.model_stock_move"/>
         <field name="trigger">on_create_or_write</field>
-        <field name="model_id" ref="stock.model_stock_move_line"/>
-        <field name="action_server_ids" eval="[(4, ref('create_contract_vehicle'))]"/>
     </record>
 
     <record id="create_expire_contract_return" model="ir.actions.server">
         <field name="name">Expire contract on return</field>
         <field name="model_id" ref="stock.model_stock_move"/>
-        <field name="binding_model_id" ref="stock.model_stock_move"/>
+        <field name="base_automation_id" ref="action_expire_contract_return"/>
         <field name="state">code</field>
         <field name="code">
             for rec in records:
@@ -38,7 +45,6 @@
                     if any(line.x_contract_id for line in rec.origin_returned_move_id.move_orig_ids.move_line_ids):
                         lines = rec.origin_returned_move_id.move_orig_ids.mapped('move_line_ids')
                     for ml in lines:
-                        # if ml.x_contract_id and ml.x_contract_id.state != 'expired':
                         if ml.x_contract_id and ml.x_contract_id.state != 'closed':
                             map_move_line = rec.move_line_ids.filtered(lambda l: l.lot_id == ml.lot_id and l.x_vehicle_id == ml.x_vehicle_id)
                             if map_move_line:
@@ -47,29 +53,21 @@
         </field>
     </record>
 
-    <record id="action_expire_contract_return" model="base.automation">
-        <field name="name">Expire contract on return</field>
-        <field name="model_id" ref="stock.model_stock_move"/>
-        <field name="trigger">on_create_or_write</field>
-        <field name="action_server_ids" eval="[(4, ref('create_expire_contract_return'))]"/>
+    <record id="action_constraint_contract" model="base.automation">
+        <field name="name">Constraint cannot be two open contracts for one vehicle/one product</field>
+        <field name="trigger">on_create</field>
+        <field name="model_id" ref="fleet.model_fleet_vehicle_log_contract"/>
     </record>
 
     <record id="constraint_contract" model="ir.actions.server">
         <field name="name">Constraint cannot be two open contracts for one vehicle/one product</field>
         <field name="model_id" ref="fleet.model_fleet_vehicle_log_contract"/>
-        <field name="binding_model_id" ref="fleet.model_fleet_vehicle_log_contract"/>
+        <field name="base_automation_id" ref="action_constraint_contract"/>
         <field name="state">code</field>
         <field name="code">
             for r in env['fleet.vehicle.log.contract'].search([('vehicle_id', '=', record.vehicle_id.id),('state','=','open'), ('id', '!=', record.id)]):
                 if r.x_lot_id.product_id == record.x_lot_id.product_id:
-                    raise Warning('Product %s is already present in vehicle %s with contract %s' % (r.x_lot_id.product_id.name, record.vehicle_id.license_plate, r.name))
+                    raise UserError('Product %s is already present in vehicle %s with contract %s' % (r.x_lot_id.product_id.name, record.vehicle_id.license_plate, r.name))
         </field>
-    </record>
-
-    <record id="action_constraint_contract" model="base.automation">
-        <field name="name">Constraint cannot be two open contracts for one vehicle/one product</field>
-        <field name="trigger">on_create</field>
-        <field name="model_id" ref="fleet.model_fleet_vehicle_log_contract"/>
-        <field name="action_server_ids" eval="[(4, ref('constraint_contract'))]"/>
     </record>
 </odoo>

@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-
     <record id="view_subscription_advance_payment_inv" model="ir.ui.view">
         <field name="name">Invoice Orders</field>
         <field name="model">subscription.advance.payment.inv</field>
         <field name="arch" type="xml">
             <form string="Invoice Subscriptions">
-                <group invisible="visible_refunded_amount == False">
+                <group invisible="not visible_refunded_amount">
                     <group string="Coupon Refunds">
                         <field name="visible_refunded_amount" invisible="1"/>
                         <field name="refunded_amount"/>
@@ -31,5 +30,4 @@
         <field name="binding_model_id" ref="sale.model_sale_order"/>
         <field name="binding_view_types">list</field>
     </record>
-
 </odoo>

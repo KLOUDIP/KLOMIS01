@@ -1,98 +1,61 @@
 # -*- coding: utf-8 -*-
+
+import base64
 import io
-from PyPDF2 import PdfFileWriter
-from PyPDF2.generic import NameObject, createStringObject
 
 from odoo import models
-
-from odoo.tools import pdf
-from odoo.addons.sale_pdf_quote_builder.models.ir_actions_report import IrActionsReport
-from odoo.addons.base.models.ir_actions_report import IrActionsReport as BaseIrActionsReport
+from odoo.tools import str2bool
+from odoo.tools.pdf import PdfFileWriter
 
 
-_original_render_qweb_pdf_prepare_streams = BaseIrActionsReport._render_qweb_pdf_prepare_streams
+class IrActionsReport(models.Model):
+    """Append the "inside quote" product documents of the subscription lines to
+    the quotation PDF.
 
+    In Odoo 17 this was done by monkey-patching
+    ``_render_qweb_pdf_prepare_streams`` and rebuilding the whole document
+    (header + product documents + body + footer) by hand. That is no longer
+    possible: ``sale_pdf_quote_builder`` was rewritten in Odoo 18/19 and the
+    ``sale_header`` / ``sale_footer`` binary fields were replaced by the
+    ``quotation.document`` model, while product documents are now selected per
+    order line through ``product_document_ids``.
 
-def _render_qweb_pdf_prepare_streams(self, report_ref, data, res_ids=None):
-    result = _original_render_qweb_pdf_prepare_streams(self, report_ref, data, res_ids=res_ids)
-    if self._get_report(report_ref).report_name != 'sale.report_saleorder':
-        return result
+    Since ``sale.order.recurring`` lines are not ``sale.order.line`` records,
+    they cannot take part in core's assembly loop. Their documents are
+    therefore appended after the document produced by core, and their PDF form
+    fields are not filled (core prefixes form field names with the sale order
+    line id, which these lines do not have).
+    """
 
-    orders = self.env['sale.order'].browse(res_ids)
+    _inherit = 'ir.actions.report'
 
-    for order in orders:
-        initial_stream = result[order.id]['stream']
-        if initial_stream:
-            order_template = order.sale_order_template_id
-            header_record = order_template if order_template.sale_header else order.company_id
-            footer_record = order_template if order_template.sale_footer else order.company_id
-            has_header = bool(header_record.sale_header)
-            has_footer = bool(footer_record.sale_footer)
-            included_product_docs = self.env['product.document']
-            doc_line_id_mapping = {}
-            for line in order.order_line:
-                product_product_docs = line.product_id.product_document_ids
-                product_template_docs = line.product_template_id.product_document_ids
-                doc_to_include = (
-                        product_product_docs.filtered(lambda d: d.attached_on == 'inside')
-                        or product_template_docs.filtered(lambda d: d.attached_on == 'inside')
-                )
-                included_product_docs = included_product_docs | doc_to_include
-                doc_line_id_mapping.update({doc.id: line.id for doc in doc_to_include})
+    def _render_qweb_pdf_prepare_streams(self, report_ref, data, res_ids=None):
+        result = super()._render_qweb_pdf_prepare_streams(report_ref, data, res_ids=res_ids)
+        if self._get_report(report_ref).report_name != 'sale.report_saleorder':
+            return result
 
-            for line in order.sale_order_recurring_ids:
-                product_product_docs = line.product_id.product_document_ids
-                doc_to_include = product_product_docs.filtered(lambda d: d.attached_on == 'inside')
-                included_product_docs = included_product_docs | doc_to_include
-                doc_line_id_mapping.update({doc.id: line.id for doc in doc_to_include})
+        always_include = str2bool(self.env['ir.config_parameter'].sudo().get_param(
+            'sale.always_include_selected_documents'))
 
-            if (not has_header and not included_product_docs and not has_footer):
+        for order in self.env['sale.order'].browse(res_ids):
+            if order.state == 'sale' and not always_include:
                 continue
 
-            IrBinary = self.env['ir.binary']
+            initial_stream = result.get(order.id, {}).get('stream')
+            if not initial_stream:
+                continue
+
+            documents = order.sale_order_recurring_ids._get_inside_product_documents()
+            if not documents:
+                continue
+
             writer = PdfFileWriter()
-            if has_header:
-                header_stream = IrBinary._record_to_stream(header_record, 'sale_header').read()
-                self._add_pages_to_writer(writer, header_stream)
-            if included_product_docs:
-                for doc in included_product_docs:
-                    doc_stream = IrBinary._record_to_stream(doc, 'datas').read()
-                    self._add_pages_to_writer(writer, doc_stream, doc_line_id_mapping[doc.id])
-                    if hasattr(self, '_prefix_sol_form_fields'):
-                        self._prefix_sol_form_fields(writer=writer, sol_id=doc_line_id_mapping[doc.id])
-            self._add_pages_to_writer(writer, (initial_stream).getvalue())
-            if has_footer:
-                footer_stream = IrBinary._record_to_stream(footer_record, 'sale_footer').read()
-                self._add_pages_to_writer(writer, footer_stream)
+            self._add_pages_to_writer(writer, initial_stream.getvalue())
+            for document in documents:
+                self._add_pages_to_writer(writer, base64.b64decode(document.datas))
 
-            form_fields = self._get_form_fields_mapping(order, doc_line_id_mapping)
-            pdf.fill_form_fields_pdf(writer, form_fields=form_fields)
-            with io.BytesIO() as _buffer:
-                writer.write(_buffer)
-                stream = io.BytesIO(_buffer.getvalue())
-            result[order.id].update({'stream': stream})
-    return result
+            with io.BytesIO() as buffer:
+                writer.write(buffer)
+                result[order.id].update({'stream': io.BytesIO(buffer.getvalue())})
 
-
-def _prefix_sol_form_fields(self, writer, sol_id):
-    prefix = f'{sol_id}_'
-    sol_field_names = self._get_sol_form_fields_names()
-    if hasattr(writer, 'pages'):
-        nbr_pages = len(writer.pages)
-    else:  # This method was renamed in PyPDF2 2.0
-        nbr_pages = writer.getNumPages()
-    for page_id in range(0, nbr_pages):
-        page = writer.getPage(page_id)
-        if not page.get('/Annots'):
-            continue
-        for j in range(0, len(page['/Annots'])):
-            writer_annot = page['/Annots'][j].getObject()
-            if writer_annot.get('/T') in sol_field_names:
-                writer_annot.update({
-                    NameObject("/T"): createStringObject(prefix + writer_annot.get('/T'))
-                })
-
-
-IrActionsReport._render_qweb_pdf_prepare_streams = _render_qweb_pdf_prepare_streams
-if not hasattr(IrActionsReport, '_prefix_sol_form_fields'):
-    IrActionsReport._prefix_sol_form_fields = _prefix_sol_form_fields
+        return result

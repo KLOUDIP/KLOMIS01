@@ -1,17 +1,19 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'HelpDesk Multi Sale Order Select',
-    'description': '',
-    'category': 'helpdesk',
-    'summary': '',
-    'version': '2.0.3',
-    'author': 'Nisus Solutions(pvt) Ltd.',
-    'website': 'https://www.nisus.lk',
+    'description': 'This module is for Multi Sale Order Select',
+    'category': 'Helpdesk',
+    'summary': 'Multi Sale Order Select',
+    'version': '19.0.3.0.0',
+    'author': "VK Data ApS",
+    'website': "https://vkdata.dk",
     'data': [
-        'views/help_desk.xml',
-        'views/sale_order.xml',
+        'views/helpdesk_ticket_views.xml',
+        'views/sale_order_views.xml',
     ],
     'depends': ['helpdesk', 'helpdesk_sale', 'sale_management', 'sale_timesheet'],
+    'license': 'OPL-1',
+    'application': False,
     'installable': True,
-    'license': 'LGPL-3',
+    'auto_install': False,
 }
