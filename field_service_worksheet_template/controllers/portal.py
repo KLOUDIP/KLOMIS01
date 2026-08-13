@@ -30,7 +30,7 @@ class CustomerPortalWorksheet(CustomerPortal):
         return request.render("field_service_worksheet_template.portal_my_worksheet_new", {'worksheet_map': worksheet_map, 'sheet': task_sudo, 'message': message, 'source': source})
 
 
-    @http.route(['/my/sheet/<int:sheet_id>/worksheet/customer_sign/<string:source>'], type='json', auth="public", website=True)
+    @http.route(['/my/sheet/<int:sheet_id>/worksheet/customer_sign/<string:source>'], type='jsonrpc', auth="public", website=True)
     def portal_worksheet_customer_sign(self, sheet_id, access_token=None, source=False, name=None, signature=None):
         # get from query string if not on json param
         access_token = access_token or request.httprequest.args.get('access_token')
@@ -57,7 +57,7 @@ class CustomerPortalWorksheet(CustomerPortal):
             'redirect_url': task_sudo.get_portal_url(suffix='/worksheet/%s' % source, query_string=query_string),
         }
 
-    @http.route(['/my/sheet/<int:sheet_id>/worksheet/technician_sign/<string:source>'], type='json', auth="public", website=True)
+    @http.route(['/my/sheet/<int:sheet_id>/worksheet/technician_sign/<string:source>'], type='jsonrpc', auth="public", website=True)
     def portal_worksheet_technician_sign(self, sheet_id, access_token=None, source=False, name=None, signature=None):
         # get from query string if not on json param
         access_token = access_token or request.httprequest.args.get('access_token')

@@ -4,6 +4,7 @@ from odoo.exceptions import UserError
 
 class WorksheetTemplateLine(models.Model):
     _name = 'worksheet.template.line'
+    _description = 'Worksheet Template Line'
     _inherit = ['portal.mixin', 'mail.thread']
 
     name = fields.Char('Name')
@@ -42,7 +43,7 @@ class WorksheetTemplateLine(models.Model):
         user_group = self.env['res.groups'].sudo().search([('name', '=', 'KloudIP-Telematics Technician')])
         uid = self.env.uid
         for record in self:
-            if uid in user_group.users.ids:
+            if uid in user_group.user_ids.ids:
                 record.is_telematics_technicians = True
             else:
                 record.is_telematics_technicians = False

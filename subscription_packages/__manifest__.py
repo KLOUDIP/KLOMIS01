@@ -11,7 +11,7 @@
     "description": """
 Add subscription package option to the website invoice preview
 """,
-    "version": "17.0.1.2.2",
+    "version": "19.0.2.0.0",
     "depends": [
         'sale',
         'sale_subscription',
@@ -30,11 +30,11 @@ Add subscription package option to the website invoice preview
     'assets': {
         'web.assets_frontend': [
             'subscription_packages/static/src/scss/sale_portal.scss',
-            'subscription_packages/static/src/js/sale_portal.js',
-            ]
+            'subscription_packages/static/src/interactions/**/*',
+        ],
     },
     "application": False,
     "auto_install": False,
     "installable": True,
-    "license": 'LGPL-3'
+    "license": 'OPL-1'
 }

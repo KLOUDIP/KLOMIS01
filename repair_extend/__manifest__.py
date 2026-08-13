@@ -4,7 +4,7 @@
     "summary": "This module allow add new feature to repair module",
     "description": "This module allow add new feature to repair module",
     'category': 'Inventory/Inventory',
-    'version': '1.0.3',
+    'version': '19.0.2.0.0',
     "author": "BitbrainHub",
     "email": "bitbrainhub@gmail.com",
     'depends': [
@@ -20,5 +20,5 @@
     'installable': True,
     'application': True,
     'auto_install': False,
-    'licence': 'LGPL-3',
+    'licence': 'OPL-1',
 }

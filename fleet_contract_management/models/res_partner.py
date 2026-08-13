@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from odoo import fields, models, api
 
+
 class ResPartner(models.Model):
     _inherit = 'res.partner'
 
@@ -38,7 +39,7 @@ class ResPartner(models.Model):
                 'name': 'Contract logs',
                 'res_model': 'fleet.vehicle.log.contract',
                 'domain': [('partner_id', 'in', self.child_ids.ids), ('state', '!=', 'closed')],
-                'views': [(contract_list_view.id, 'tree'), (contract_form_view.id, 'form')],
+                'views': [(contract_list_view.id, 'list'), (contract_form_view.id, 'form')],
             }
         else:
             return {
@@ -46,7 +47,7 @@ class ResPartner(models.Model):
                 'name': 'Contract logs',
                 'res_model': 'fleet.vehicle.log.contract',
                 'domain': [('partner_id', '=', self.id), ('state', '!=', 'closed')],
-                'views': [(contract_list_view.id, 'tree'), (contract_form_view.id, 'form')],
+                'views': [(contract_list_view.id, 'list'), (contract_form_view.id, 'form')],
             }
 
     def action_view_partner_active_contracts(self):
@@ -58,7 +59,7 @@ class ResPartner(models.Model):
                 'name': 'Contract logs',
                 'res_model': 'fleet.vehicle.log.contract',
                 'domain': [('partner_id', '=', self.child_ids.ids), ('is_activated', '=', True)],
-                'views': [(contract_list_view.id, 'tree'), (contract_form_view.id, 'form')],
+                'views': [(contract_list_view.id, 'list'), (contract_form_view.id, 'form')],
             }
         else:
             return {
@@ -66,6 +67,6 @@ class ResPartner(models.Model):
                 'name': 'Contract logs',
                 'res_model': 'fleet.vehicle.log.contract',
                 'domain': [('partner_id', '=', self.id), ('is_activated', '=', True)],
-                'views': [(contract_list_view.id, 'tree'), (contract_form_view.id, 'form')],
+                'views': [(contract_list_view.id, 'list'), (contract_form_view.id, 'form')],
             }
 

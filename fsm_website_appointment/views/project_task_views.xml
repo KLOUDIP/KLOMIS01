@@ -2,7 +2,7 @@
 <odoo>
     <data>
         <record id="view_task_form2_inherit" model="ir.ui.view">
-            <field name='name'>task.task.inherit.fsm_website_appointment</field>
+            <field name='name'>project.task.view.form.inherit.fsm_website_appointment</field>
             <field name="model">project.task</field>
             <field name="inherit_id" ref="industry_fsm.view_task_form2_inherit"/>
             <field name="arch" type="xml">

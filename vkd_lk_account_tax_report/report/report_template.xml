@@ -1,23 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <template id="report_invoice_document_lk">
-
-        <style type="text/css">
-            .address.row { display: none !important; }
-            div[name="address"] { display: none !important; }
-            div[name="information_block"] { display: none !important; }
-            div[name="company_address"] { display: none !important; }
-        </style>
-
         <div class="page lk-invoice">
-
-            <div class="text-center" style="padding-top: 20px; padding-bottom: 15px;">
-                <h2 style="border: 2px solid black; display: inline-block; padding: 10px 30px; margin: 0;">
+            <center>
+                <h2 style="border: 2px solid black; display: inline-block; padding: 10px 30px;">
                     <span t-if="o.move_type == 'out_invoice'">Tax Invoice</span>
                     <span t-if="o.move_type == 'out_refund'">Tax Credit Note</span>
                 </h2>
-            </div>
-
+            </center>
             <div class="row">
                 <div class="col-6">
                     <div class="lk-box-left">
@@ -29,26 +19,10 @@
                     <div class="lk-box-right">
                         <span t-if="o.move_type == 'out_invoice'">Tax Invoice No.:</span>
                         <span t-if="o.move_type == 'out_refund'">Tax Credit Note No.:</span>
-
-                        <t t-if="o.state == 'posted' and o.invoice_date and o.name and o.name != '/'">
-                            <t t-set="yy" t-value="o.invoice_date.strftime('%y')"/>
-                            <t t-set="mmm" t-value="o.invoice_date.strftime('%b').upper()"/>
-                            <t t-set="qqqq" t-value="o.journal_id.code"/>
-
-                            <t t-set="clean_name"
-                               t-value="o.name.replace('/', '_').replace('-', '_').replace(' ', '_')"/>
-                            <t t-set="num_parts" t-value="[p for p in clean_name.split('_') if p.isdigit()]"/>
-                            <t t-set="xxxxx" t-value="num_parts[-1] if num_parts else o.name"/>
-
-                            <span t-out="yy + mmm + '_' + qqqq + '_' + xxxxx"/>
-                        </t>
-                        <t t-else="">
-                            <span t-field="o.name"/>
-                        </t>
+                        <span t-field="o.name"/>
                     </div>
                 </div>
             </div>
-
             <div class="row mt-2">
                 <div class="col-6">
                     <div class="lk-box-left" style="height: 210px;">
@@ -100,7 +74,6 @@
                     </div>
                 </div>
             </div>
-
             <div class="row mt-2">
                 <div class="col-6">
                     <div class="lk-box-left">
@@ -111,12 +84,10 @@
                 <div class="col-6">
                     <div class="lk-box-right">
                         <span>Place of Supply:</span>
-                        <span t-field="o.partner_shipping_id"
-                              t-options='{"widget": "contact", "fields": ["address"], "no_marker": True}'/>
+                        <span t-field="o.partner_shipping_id" t-options='{"widget": "contact", "fields": ["address"], "no_marker": True}'/>
                     </div>
                 </div>
             </div>
-
             <div class="row mt-2">
                 <div class="col-12">
                     <div class="lk-box" style="height: 60px;">
@@ -125,15 +96,14 @@
                     </div>
                 </div>
             </div>
-
             <t t-set="display_discount" t-value="any(l.discount for l in o.invoice_line_ids)"/>
-            <table class="lk-table mt-4 w-100">
+            <table class="lk-table mt-4">
                 <thead style="display:table-row-group">
                     <tr>
-                        <th style="width: 15%;">
+                        <th style="width: 10%;">
                             <span>Reference</span>
                         </th>
-                        <th style="width: 35%;">
+                        <th style="width: 40%;">
                             <span>Description of Goods or Services</span>
                         </th>
                         <th style="width: 10%;">
@@ -185,7 +155,9 @@
                             </t>
                             <t t-elif="line.display_type == 'line_note'">
                                 <td colspan="99">
-                                    <span t-field="line.name" t-options="{'widget': 'text'}">A note</span>
+                                    <span t-field="line.name" t-options="{'widget': 'text'}">A note, whose content
+                                        usually applies to the section or product above.
+                                    </span>
                                 </td>
                             </t>
                         </tr>
@@ -216,6 +188,7 @@
                             <span t-field="o.amount_total"/>
                         </td>
                     </tr>
+                    <!-- Payments + Amount Due (mirrors standard Odoo; honors the print_with_payments flag) -->
                     <t t-if="print_with_payments and o.payment_state != 'invoicing_legacy'">
                         <t t-set="payments_vals"
                            t-value="o.sudo().invoice_payments_widget and o.sudo().invoice_payments_widget['content'] or []"/>
@@ -242,7 +215,6 @@
                     </t>
                 </tbody>
             </table>
-
             <div class="row mt-3">
                 <div class="col-12">
                     <div class="lk-box">
@@ -259,7 +231,6 @@
                     </div>
                 </div>
             </div>
-
             <div class="row mt-3">
                 <div class="col-12">
                     <t t-if="o.move_type == 'out_refund' and o.reversed_entry_id">
@@ -270,13 +241,11 @@
                     </t>
                 </div>
             </div>
-
             <div class="row mt-3">
                 <div class="col-12">
                     <span t-field="o.narration"/>
                 </div>
             </div>
-
             <div class="row mt-3">
                 <div class="col-12">
                     <span style="padding-top: 5px; display: block;">
@@ -287,17 +256,20 @@
         </div>
     </template>
 
-    <template id="report_invoice_document_inherit_lk" inherit_id="account.report_invoice_document">
-
-        <xpath expr="//div[hasclass('page')]" position="before">
+    <template id="report_invoice_document" inherit_id="account.report_invoice_document">
+        <xpath expr="//div[contains(@class,'page')][1]" position="before">
             <t t-if="o.is_sri_lankan_format">
                 <t t-call="vkd_lk_account_tax_report.report_invoice_document_lk"/>
+                <t t-set="skip_standard_invoice" t-value="True"/>
             </t>
         </xpath>
 
-        <xpath expr="//div[hasclass('page')]" position="attributes">
-            <attribute name="t-if">not o.is_sri_lankan_format</attribute>
+        <xpath expr="//div[contains(@class,'page')]" position="attributes">
+            <attribute name="t-if">not skip_standard_invoice</attribute>
         </xpath>
 
+        <xpath expr="//div[hasclass('row')]" position="attributes">
+            <attribute name="t-if">not o.is_sri_lankan_format</attribute>
+        </xpath>
     </template>
 </odoo>

@@ -1,10 +1,8 @@
 # -*- coding: utf-8 -*-
 {
     'name': "Employee Contract Extend",
-
     'summary': """
         Implements logic to automatically set the accounting date based on the bill/invoice date""",
-
     'description': """
        Add custom fields in to Contract Salary information Tab 
        1. Deduction Basic
@@ -18,16 +16,14 @@
        9. BR-Allownace-2
        10.PAYE
     """,
-
     'author': "VK DATA ApS",
     'website': "https://vkdata.dk",
-
     'category': 'Human Resources/Contracts',
-    'version': '1.0.1',
+    'version': '19.0.2.0.0',
     'license': 'OPL-1',
-    'depends': ['hr_contract'],
+    'depends': ['hr'],
     'data': [
-        'views/hr_contract_views.xml'
+        'views/hr_version_views.xml'
     ],
     'installable': True,
     'auto_install': False,

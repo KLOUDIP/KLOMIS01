@@ -1,3 +1,0 @@
-id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-so_assignees.access_coordinator_unit_line,access_coordinator_unit_line,so_assignees.model_coordinator_unit_line,base.group_user,1,1,1,1
-so_assignees.access_active_units_monthly,access_active_units_monthly,so_assignees.model_active_units_monthly,base.group_user,1,1,1,1
