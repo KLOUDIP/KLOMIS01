@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- FIOS base URL -->
+        <record id="fios_base_url_param" model="ir.config_parameter">
+            <field name="key">vkd_fios_api.base_url</field>
+            <field name="value">https://fios-api.kloudip.com</field>
+        </record>
+
+        <!-- Long-lived login token. PLACEHOLDER (test token) - replace in production. -->
+        <record id="fios_token_param" model="ir.config_parameter">
+            <field name="key">vkd_fios_api.token</field>
+            <field name="value">9652a19761d02150399fc6b414e34fdeA98546B3B613A63A23F5DC9CA42E3220C6FBE916</field>
+        </record>
+
+        <!-- Top-level creator user system id. PLACEHOLDER - replace in production. -->
+        <record id="fios_creator_id_param" model="ir.config_parameter">
+            <field name="key">vkd_fios_api.creator_id</field>
+            <field name="value">27557881</field>
+        </record>
+
+        <!-- Default billing plan code (testing). -->
+        <record id="fios_default_plan_code_param" model="ir.config_parameter">
+            <field name="key">vkd_fios_api.default_plan_code</field>
+            <field name="value">kloudip3</field>
+        </record>
+
+        <!-- Keep-alive cron toggle (1 = enabled). -->
+        <record id="fios_keepalive_active_param" model="ir.config_parameter">
+            <field name="key">vkd_fios_api.keepalive_active</field>
+            <field name="value">1</field>
+        </record>
+
+        <!-- Default service limits applied to a new account (step 2).
+             avl_unit (units/devices) starts at 0 and is raised on purchase;
+             zones_library / storage_user get a small base. `users` is left as-is. -->
+        <record id="fios_default_billing_services_param" model="ir.config_parameter">
+            <field name="key">vkd_fios_api.default_billing_services</field>
+            <field name="value">[{"name": "zones_library", "costTable": "5:0;-1"}, {"name": "avl_unit", "costTable": "0:0;-1"}, {"name": "storage_user", "costTable": "2:0;-1"}]</field>
+        </record>
+
+        <!-- Account flags: 32 = block-by-days billing mode. -->
+        <record id="fios_account_flags_param" model="ir.config_parameter">
+            <field name="key">vkd_fios_api.account_flags</field>
+            <field name="value">32</field>
+        </record>
+
+        <!-- Days granted to a new account (block-by-days credit). TBC by FIOS. -->
+        <record id="fios_block_days_param" model="ir.config_parameter">
+            <field name="key">vkd_fios_api.block_days</field>
+            <field name="value">5</field>
+        </record>
+
+        <record id="fios_payment_description_param" model="ir.config_parameter">
+            <field name="key">vkd_fios_api.payment_description</field>
+            <field name="value">FIRST MONTH</field>
+        </record>
+
+        <!-- Require email OTP verification on public FIOS signup (1 = enabled). -->
+        <record id="fios_signup_otp_enabled_param" model="ir.config_parameter">
+            <field name="key">vkd_fios_api.signup_otp_enabled</field>
+            <field name="value">1</field>
+        </record>
+
+        <!-- TEST ONLY: show the OTP on the verify page (for staging without mail).
+             MUST be 0 in production. -->
+        <record id="fios_signup_otp_debug_param" model="ir.config_parameter">
+            <field name="key">vkd_fios_api.signup_otp_debug</field>
+            <field name="value">0</field>
+        </record>
+    </data>
+</odoo>

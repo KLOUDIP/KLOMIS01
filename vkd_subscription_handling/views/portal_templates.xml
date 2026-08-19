@@ -1,0 +1,240 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Update the decrease quantity modal to handle special products (allowExternalAPI, collectPeriod) -->
+    <template id="subscription_portal_template_quantity_decrease"
+              inherit_id="sale_subscription.subscription_portal_template">
+        <xpath expr="//div[@id='modalaccept']" position="after">
+            <!-- ====== MODAL: Decrease Product Quantity ====== -->
+            <div role="dialog" class="modal fade" id="wc-modal-decrease-quantity"
+                 t-if="sale_order.subscription_state in ['3_progress', '4_paused']" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <header class="modal-header">
+                            <h4 class="modal-title">
+                                Decrease Product Quantity for
+                                <span t-field="sale_order.display_name" class="text-primary"/>
+                            </h4>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"/>
+                        </header>
+                        <form method="post"
+                              t-attf-action="/my/subscriptions/#{sale_order.id}/decrease_quantity?access_token=#{sale_order.access_token}">
+                            <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                            <main class="modal-body">
+                                <div class="alert alert-info">
+                                    <p>Adjust the quantities below. To completely remove a product, set its quantity to
+                                        0.
+                                    </p>
+                                    <p>
+                                        <strong>Note:</strong>
+                                        Changes will take effect from your next billing cycle
+                                        (
+                                        <t t-out="sale_order.next_invoice_date and sale_order.next_invoice_date.strftime('%B %d, %Y') or 'next cycle'"/>
+                                        ).
+                                    </p>
+                                    <p t-if="any(line.product_id.type == 'combo' for line in sale_order.order_line.filtered(lambda l: not l.display_type and l.product_uom_qty > 0 and not l.linked_line_id))">
+                                        <strong>Important:</strong>
+                                        Changing the quantity of a bundle product will automatically adjust all its
+                                        components.
+                                    </p>
+                                    <!-- Special notice for allowExternalAPI and collectPeriod products -->
+                                    <p t-if="any(line.product_id.product_tmpl_id.trazet_product_key in ['allowExternalAPI', 'collectPeriod'] for line in sale_order.order_line.filtered(lambda l: not l.display_type and l.product_uom_qty > 0 and not l.linked_line_id))"
+                                       class="text-primary">
+                                        <i class="fa fa-info-circle"></i>
+                                        <strong>API Access &amp; 400 Days History:</strong>
+                                        These products can only have a quantity of 0 (remove) or 1 (keep) as they are
+                                        per-subscription features.
+                                    </p>
+                                </div>
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>Product</th>
+                                            <th>Current Quantity</th>
+                                            <th>New Quantity</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- Only show lines that are not linked to another line (not combo items) -->
+                                        <t t-foreach="sale_order.order_line.filtered(lambda l: not l.display_type and l.product_uom_qty > 0 and not l.linked_line_id and l.product_id.recurring_invoice)"
+                                           t-as="line">
+                                            <tr t-att-class="'fw-bold' if line.product_id.type == 'combo' else ''">
+                                                <td>
+                                                    <span t-field="line.product_id.name"/>
+                                                    <t t-if="line.product_id.type == 'combo'">
+                                                        <span class="badge rounded-pill text-bg-info">Bundle</span>
+                                                    </t>
+                                                    <t t-if="line.product_id.product_tmpl_id.trazet_product_key in ['allowExternalAPI', 'collectPeriod']">
+                                                        <span class="badge rounded-pill text-bg-warning">Per
+                                                            Subscription
+                                                        </span>
+                                                    </t>
+                                                </td>
+                                                <td>
+                                                    <span t-field="line.product_uom_qty"/>
+                                                </td>
+                                                <td>
+                                                    <input type="number"
+                                                           t-att-name="'line_qty_' + str(line.id)"
+                                                           t-att-value="line.product_uom_qty"
+                                                           t-att-data-current-qty="line.product_uom_qty"
+                                                           t-att-data-trazet-key="line.product_id.product_tmpl_id.trazet_product_key or ''"
+                                                           min="0"
+                                                           t-att-max="line.product_uom_qty"
+                                                           t-att-step="1 if line.product_id.product_tmpl_id.trazet_product_key in ['allowExternalAPI', 'collectPeriod'] else 'any'"
+                                                           class="form-control quantity-input"
+                                                           style="width: 100px;"/>
+                                                    <t t-if="line.product_id.product_tmpl_id.trazet_product_key in ['allowExternalAPI', 'collectPeriod']">
+                                                        <small class="text-muted">Only 0 or 1</small>
+                                                    </t>
+                                                </td>
+                                            </tr>
+
+                                            <!-- Show combo items as sub-rows -->
+                                            <t t-if="line.product_id.type == 'combo'">
+                                                <t t-set="combo_items"
+                                                   t-value="sale_order.order_line.filtered(lambda l: l.linked_line_id == line)"/>
+                                                <t t-foreach="combo_items" t-as="item">
+                                                    <tr class="text-muted">
+                                                        <td class="ps-4">
+                                                            <i class="fa fa-arrow-right me-2"></i>
+                                                            <span t-field="item.product_id.name"/>
+                                                        </td>
+                                                        <td>
+                                                            <span t-field="item.product_uom_qty"/>
+                                                        </td>
+                                                        <td>
+                                                            <span class="fst-italic">Adjusted automatically</span>
+                                                        </td>
+                                                    </tr>
+                                                </t>
+                                            </t>
+                                        </t>
+                                    </tbody>
+                                </table>
+                            </main>
+                            <footer class="modal-footer">
+                                <button type="submit" class="btn btn-primary subscription-decrease-quantity-finish">
+                                    Update Quantities
+                                </button>
+                                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                            </footer>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </xpath>
+
+        <!-- Add all success and error messages -->
+        <xpath expr="//div[@id='quote_content']/div[@id='portal_sale_content']" position="before">
+            <!-- Success Messages -->
+            <div class="alert alert-success text-center" role="alert"
+                 t-if="request.params.get('success') == 'decrease'">
+                <i class="fa fa-check-circle"/>
+                Product quantities have been successfully updated. The changes will take effect from your next billing
+                cycle
+                (
+                <t t-out="sale_order.next_invoice_date and sale_order.next_invoice_date.strftime('%B %d, %Y') or 'next cycle'"/>
+                ).
+            </div>
+
+            <!-- Error Messages -->
+            <div class="alert alert-danger text-center" role="alert" t-if="request.params.get('error') == 'trazet'">
+                <i class="fa fa-exclamation-triangle"/>
+                <strong>Cannot update subscription:</strong>
+                <span t-out="request.params.get('message', 'Usage limit exceeded')"/>
+            </div>
+
+            <div class="alert alert-warning text-center" role="alert" t-if="request.params.get('error') == 'fios_usage'">
+                <i class="fa fa-exclamation-triangle"/>
+                <strong>Cannot reduce:</strong>
+                <span t-out="request.params.get('message', 'The new limit would be below your current FIOS usage. Delete unwanted items in FIOS first, then reduce.')"/>
+            </div>
+
+            <div class="alert alert-warning text-center" role="alert" t-if="request.params.get('error') == 'fios_tier'">
+                <i class="fa fa-exclamation-triangle"/>
+                You can only purchase products from your current FIOS service tier.
+            </div>
+
+            <div class="alert alert-danger text-center" role="alert"
+                 t-if="request.params.get('error') == 'invalid_quantity'">
+                <i class="fa fa-exclamation-triangle"/>
+                <strong>Invalid Quantity:</strong>
+                <span t-out="request.params.get('message', 'Please check the product quantities.')"/>
+            </div>
+
+            <div class="alert alert-warning text-center" role="alert"
+                 t-if="request.params.get('error') == 'no_changes'">
+                <i class="fa fa-info-circle"/>
+                No quantity changes were detected.
+            </div>
+
+            <div class="alert alert-warning text-center" role="alert" t-if="request.params.get('error') == 'no_lines'">
+                <i class="fa fa-info-circle"/>
+                No valid lines were found for update.
+            </div>
+            <div class="alert alert-danger text-center" role="alert" t-if="request.params.get('error') == 'processing'">
+                <i class="fa fa-exclamation-triangle"/>
+                An error occurred while processing your request. Please try again later.
+            </div>
+
+            <!-- Trazet Close Error Messages -->
+            <div class="alert alert-danger text-center" role="alert" t-if="request.params.get('error') == 'trazet'">
+                <i class="fa fa-exclamation-triangle"/>
+                <strong>Cannot close subscription:</strong>
+                <span t-out="request.params.get('message', 'Usage limit restriction prevents closing this subscription')"/>
+            </div>
+            <div class="alert alert-danger text-center" role="alert"
+                 t-if="request.params.get('error') == 'trazet_exception'">
+                <i class="fa fa-exclamation-triangle"/>
+                An error occurred while processing your request.
+                Please try again later or
+                contact support.
+            </div>
+
+        </xpath>
+
+    </template>
+
+    <!-- Add Decrease Quantity button to the subscription sidebar -->
+    <template id="subscription_portal_sidebar" inherit_id="sale_subscription.subscription_portal_sidebar">
+        <xpath expr="//t[@t-set='entries']//t[@t-if][2]" position="inside">
+            <button role="button" class="btn btn-primary mb-2 w-100" data-bs-toggle="modal"
+                    data-bs-target="#wc-modal-decrease-quantity" href="#"
+                    t-if="sale_order.subscription_state in ['3_progress', '4_paused'] and not any(line.product_id.product_tmpl_id.is_free_plan for line in sale_order.order_line.filtered(lambda l: l.product_id.recurring_invoice))">
+                Decrease Quantity
+            </button>
+
+            <!-- Upgrade to Shop Button (visible only for free plans) -->
+            <a role="button" class="btn btn-success mb-2 w-100" href="/shop/category/subscription-plans-1"
+               t-if="sale_order.subscription_state in ['3_progress', '4_paused'] and any(line.product_id.product_tmpl_id.is_free_plan for line in sale_order.order_line.filtered(lambda l: l.product_id.recurring_invoice))">
+                <i class="fa fa-shopping-cart me-2"/>
+                Upgrade Your Plan
+            </a>
+        </xpath>
+    </template>
+
+    <!-- NOTE: Odoo 19 removed the separate `sale.order.option`/`sale_order_option_ids`
+         mechanism this used to filter (`sale_management.sale_order_portal_content_inherit_sale_management`
+         no longer loops over a distinct options list - optional products are now regular
+         order lines living under an `is_optional` section). The equivalent filtering (skip
+         allowExternalAPI/collectPeriod if already present elsewhere, skip combo products) is
+         now applied at the source in `sale.order._add_optional_products`, so no view override
+         is needed here anymore. -->
+
+    <!-- Set max quantity on product page (min=0 to allow removal, max=1) -->
+    <template id="product_quantity_max" inherit_id="website_sale.product_quantity" name="Max Quantity for Special Products">
+        <xpath expr="//input[@name='add_qty']" position="attributes">
+            <attribute name="t-att-data-max">1 if product.trazet_product_key in ['allowExternalAPI', 'collectPeriod'] else 999999</attribute>
+        </xpath>
+    </template>
+
+    <!-- Set max quantity in cart (min=0 to allow removal, max=1).
+         Odoo 19 moved the quantity input out of `website_sale.cart_lines` into its own
+         sub-template `website_sale.cart_lines_quantity`. -->
+    <template id="cart_quantity_max" inherit_id="website_sale.cart_lines_quantity" name="Max Quantity in Cart">
+        <xpath expr="//input[hasclass('js_quantity')]" position="attributes">
+            <attribute name="t-att-data-max">1 if line.product_id.product_tmpl_id.trazet_product_key in ['allowExternalAPI', 'collectPeriod'] else 999999</attribute>
+        </xpath>
+    </template>
+
+</odoo>

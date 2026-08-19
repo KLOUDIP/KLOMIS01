@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_fios_root" name="FIOS" sequence="95"
+              groups="base.group_system"/>
+
+    <menuitem id="menu_fios_service_tier" name="Service Tiers"
+              parent="menu_fios_root" action="action_fios_service_tier" sequence="5"/>
+
+    <menuitem id="menu_fios_api_log" name="API Log"
+              parent="menu_fios_root" action="action_fios_api_log" sequence="10"/>
+
+    <menuitem id="menu_fios_session" name="Sessions"
+              parent="menu_fios_root" action="action_fios_session" sequence="20"/>
+</odoo>

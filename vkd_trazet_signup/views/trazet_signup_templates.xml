@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="signup_page" name="Trazet Sign Up">
+        <t t-call="website.layout">
+            <div id="wrap">
+                <div class="container py-5" style="max-width: 640px;">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body p-4 p-md-5">
+                            <h1 class="mb-1 h2">Registration</h1>
+                            <p class="text-muted mb-4">Create an account to get started.</p>
+
+                            <div class="alert alert-danger" t-if="error">
+                                <span t-out="error"/>
+                            </div>
+
+                            <form id="trazet_signup_form" action="/trazet-signup/submit" method="post">
+                                <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label" for="name">Name</label>
+                                        <input type="text" class="form-control" id="name" name="name" required="required"
+                                               t-att-value="form_data.get('name')"/>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label" for="organizationName">Company name</label>
+                                        <input type="text" class="form-control" id="organizationName" name="organizationName"
+                                               required="required" t-att-value="form_data.get('organizationName')"/>
+                                    </div>
+                                    <div class="col-12">
+                                        <label class="form-label" for="email">Email</label>
+                                        <input type="email" class="form-control" id="email" name="email" required="required"
+                                               autocapitalize="off" autocorrect="off" spellcheck="false"
+                                               t-att-value="form_data.get('email')" t-att-readonly="email_readonly or None"/>
+                                        <small class="form-text text-muted" t-if="email_readonly">
+                                            Tied to your existing account and cannot be changed here.
+                                        </small>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label" for="countryId_search">Country</label>
+                                        <div class="trazet-combobox" data-required="true">
+                                            <input type="text" class="form-control trazet-combobox-input" id="countryId_search"
+                                                   autocomplete="off" placeholder="Search a country"
+                                                   t-att-value="selected_country_name"/>
+                                            <i class="fa fa-chevron-down trazet-combobox-icon" aria-hidden="true"/>
+                                            <input type="hidden" name="countryId" class="trazet-combobox-value"
+                                                   t-att-value="form_data.get('countryId')"/>
+                                            <div class="trazet-combobox-menu">
+                                                <div class="trazet-combobox-empty-message">No matches found.</div>
+                                                <t t-foreach="countries" t-as="country">
+                                                    <div class="trazet-combobox-option" tabindex="0"
+                                                         t-att-data-value="country.get('id')">
+                                                        <t t-out="country.get('name')"/>
+                                                    </div>
+                                                </t>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label" for="phone">Phone number</label>
+                                        <input type="text" class="form-control" id="phone" name="phone" required="required"
+                                               placeholder="+14155552671" pattern="\+[1-9]\d{6,14}"
+                                               title="Include the country code, e.g. +14155552671."
+                                               t-att-value="form_data.get('phone')"/>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label" for="timezoneId_search">Timezone</label>
+                                        <div class="trazet-combobox" data-required="true">
+                                            <input type="text" class="form-control trazet-combobox-input" id="timezoneId_search"
+                                                   autocomplete="off" placeholder="Search a timezone"
+                                                   t-att-value="selected_timezone_name"/>
+                                            <i class="fa fa-chevron-down trazet-combobox-icon" aria-hidden="true"/>
+                                            <input type="hidden" name="timezoneId" class="trazet-combobox-value"
+                                                   t-att-value="form_data.get('timezoneId')"/>
+                                            <div class="trazet-combobox-menu">
+                                                <div class="trazet-combobox-empty-message">No matches found.</div>
+                                                <t t-foreach="timezones" t-as="tz">
+                                                    <div class="trazet-combobox-option" tabindex="0"
+                                                         t-att-data-value="tz.get('id')">
+                                                        <t t-out="tz.get('name')"/>
+                                                    </div>
+                                                </t>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label" for="languageId_search">Language</label>
+                                        <div class="trazet-combobox" data-required="false">
+                                            <input type="text" class="form-control trazet-combobox-input" id="languageId_search"
+                                                   autocomplete="off" placeholder="Search a language"
+                                                   t-att-value="selected_language_name"/>
+                                            <i class="fa fa-chevron-down trazet-combobox-icon" aria-hidden="true"/>
+                                            <input type="hidden" name="languageId" class="trazet-combobox-value"
+                                                   t-att-value="form_data.get('languageId')"/>
+                                            <div class="trazet-combobox-menu">
+                                                <div class="trazet-combobox-empty-message">No matches found.</div>
+                                                <t t-foreach="languages" t-as="lang_item">
+                                                    <div class="trazet-combobox-option" tabindex="0"
+                                                         t-att-data-value="lang_item.get('id')">
+                                                        <t t-out="lang_item.get('name')"/>
+                                                    </div>
+                                                </t>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label" for="password">Password</label>
+                                        <input type="password" class="form-control" id="password" name="password"
+                                               required="required" minlength="8"
+                                               pattern="(?=.*[A-Za-z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}"
+                                               title="At least 8 characters, with at least 1 letter, 1 number and 1 special character."/>
+                                        <small class="form-text text-muted">
+                                            At least 8 characters, with 1 letter, 1 number and 1 special character.
+                                        </small>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label" for="repeatPassword">Confirm Password</label>
+                                        <input type="password" class="form-control" id="repeatPassword" name="repeatPassword"
+                                               required="required"/>
+                                        <small class="form-text text-muted">
+                                            Re-enter the password above.
+                                        </small>
+                                    </div>
+                                </div>
+
+                                <div class="mt-4">
+                                    <button type="submit" class="btn btn-primary w-100">Continue</button>
+                                </div>
+                            </form>
+
+                            <p class="text-center mt-4 mb-0">
+                                Already have an account?
+                                <a t-att-href="login_url">Sign In</a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+</odoo>

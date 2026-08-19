@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="ir_cron_fios_keepalive" model="ir.cron">
+            <field name="name">FIOS: Session Keep-Alive</field>
+            <field name="model_id" ref="model_fios_api_client"/>
+            <field name="state">code</field>
+            <field name="code">model.cron_fios_keepalive()</field>
+            <field name="interval_number">4</field>
+            <field name="interval_type">minutes</field>
+            <field name="active">True</field>
+        </record>
+
+        <record id="ir_cron_fios_retry_failed_calls" model="ir.cron">
+            <field name="name">FIOS: Retry Failed API Calls</field>
+            <field name="model_id" ref="model_fios_api_log"/>
+            <field name="state">code</field>
+            <field name="code">model.cron_retry_failed_calls()</field>
+            <field name="interval_number">15</field>
+            <field name="interval_type">minutes</field>
+            <field name="active">True</field>
+        </record>
+
+        <record id="ir_cron_fios_process_provisioning" model="ir.cron">
+            <field name="name">FIOS: Process Pending Provisioning</field>
+            <field name="model_id" ref="model_fios_provisioning"/>
+            <field name="state">code</field>
+            <field name="code">model.cron_process_fios_provisioning()</field>
+            <field name="interval_number">2</field>
+            <field name="interval_type">minutes</field>
+            <field name="active">True</field>
+        </record>
+    </data>
+</odoo>

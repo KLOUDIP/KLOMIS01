@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Hide unit price for combo items in portal sale order view.
+         Odoo 19 moved the quantity input out of `sale.sale_order_portal_content` into a
+         separate `sale_management.sale_order_portal_optional_product_quantity` sub-template
+         (called via t-call), so that's the view we now need to inherit to reach it. -->
+    <template id="sale_order_portal_hide_combo_unit_price" name="Hide Unit Price for Combo Items"
+              inherit_id="sale_management.sale_order_portal_optional_product_quantity">
+
+<!--        <xpath expr="//t[@name='product_line_row']/td[div[@t-field='line.price_unit']]" position="replace">-->
+<!--            &lt;!&ndash; Only show unit price if not a combo item or linked item &ndash;&gt;-->
+<!--            <td t-if="not (line.combo_item_id or line.linked_line_id)"-->
+<!--                t-attf-class="text-end {{ 'd-none d-sm-table-cell' if report_type == 'html' else '' }}">-->
+<!--                <div-->
+<!--                    t-if="line.discount &gt;= 0"-->
+<!--                    t-field="line.price_unit"-->
+<!--                    t-att-style="line.discount and 'text-decoration: line-through' or None"-->
+<!--                    t-att-class="(line.discount and 'text-danger' or '') + ' text-end'"-->
+<!--                />-->
+<!--                <div t-if="line.discount">-->
+<!--                    <t t-out="(1-line.discount / 100.0) * line.price_unit" t-options='{"widget": "float", "decimal_precision": "Product Price"}'/>-->
+<!--                </div>-->
+<!--            </td>-->
+<!--            &lt;!&ndash; Show dash for combo items &ndash;&gt;-->
+<!--            <td t-if="line.combo_item_id or line.linked_line_id"-->
+<!--                t-attf-class="text-end {{ 'd-none d-sm-table-cell' if report_type == 'html' else '' }}">-->
+<!--                <span class="text-muted">-</span>-->
+<!--            </td>-->
+<!--        </xpath>-->
+
+<!--        &lt;!&ndash; Update the discount column to account for missing unit price column &ndash;&gt;-->
+<!--        <xpath expr="//td[@t-if='display_discount']" position="attributes">-->
+<!--            <attribute name="t-if">display_discount and not (line.combo_item_id or line.linked_line_id)</attribute>-->
+<!--        </xpath>-->
+
+<!--        &lt;!&ndash; Add empty discount cell for combo items when discount column is visible &ndash;&gt;-->
+<!--        <xpath expr="//td[@t-if='display_discount']" position="after">-->
+<!--            <td t-if="display_discount and (line.combo_item_id or line.linked_line_id)"-->
+<!--                t-attf-class="text-end {{ 'd-none d-sm-table-cell' if report_type == 'html' else '' }}">-->
+<!--                <span class="text-muted">-</span>-->
+<!--            </td>-->
+<!--        </xpath>-->
+
+        <xpath expr="//input[hasclass('js_quantity')]" position="attributes">
+            <attribute name="t-att-data-max">1 if line.product_id.product_tmpl_id.trazet_product_key in ['allowExternalAPI', 'collectPeriod'] else 999999</attribute>
+        </xpath>
+    </template>
+</odoo>

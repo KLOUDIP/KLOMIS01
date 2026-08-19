@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="tazet_jwt_secret" model="ir.config_parameter">
+            <field name="key">tazet.jwt_secret</field>
+<!--            key input (using SHA256) -trazetproductionapitoken-->
+            <field name="value">b705d4c5ba22bf8f9956777fa6abfc6a9d3c619cc752f01f7b50b30fcfbf06c0</field>
+<!--            for devlopment-->
+<!--            <field name="value">tazet</field>-->
+        </record>
+
+        <record id="trazet_api_url_param" model="ir.config_parameter">
+            <field name="key">vkd_trazet_api.trazet_api_url</field>
+<!--            <field name="value">https://dev.api.trazet.com</field>-->
+            <field name="value">https://euapi.trazet.com</field>
+        </record>
+        <record id="trazet_auth_token_param" model="ir.config_parameter">
+            <field name="key">vkd_trazet_api.trazet_auth_token</field>
+            <field name="value">nKR7Lp9WxYaNHgTqM5Cv2JkS8FbE4DrU6XwZ3AyQmPvBnLtKh9WcVjMxY4NsGfE7TpB3HC8KwL</field>
+<!--            for devlopment-->
+<!--            <field name="value">nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDeDL3D</field>-->
+        </record>
+        <record id="trazet_integrator_auth_token_param" model="ir.config_parameter">
+            <field name="key">vkd_trazet_api.trazet_integrator_auth_token</field>
+            <field name="value">8k8IggB3G18cpeZ1Nn38Wb6UpBY3J1KMr8hhUEsn8ZNHmn1uScEsIhlCMPCAJRzT</field>
+        </record>
+    </data>
+</odoo>

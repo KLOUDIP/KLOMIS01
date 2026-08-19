@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_fios_api_log_list" model="ir.ui.view">
+        <field name="name">fios.api.log.list</field>
+        <field name="model">fios.api.log</field>
+        <field name="arch" type="xml">
+            <list string="FIOS API Log" decoration-success="state=='success'"
+                  decoration-danger="state=='failed'" decoration-warning="state=='pending'">
+                <field name="create_date"/>
+                <field name="svc"/>
+                <field name="partner_id"/>
+                <field name="state"/>
+                <field name="retry_count"/>
+                <field name="error_code"/>
+                <field name="next_retry_time"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_fios_api_log_form" model="ir.ui.view">
+        <field name="name">fios.api.log.form</field>
+        <field name="model">fios.api.log</field>
+        <field name="arch" type="xml">
+            <form string="FIOS API Log">
+                <header>
+                    <button name="action_retry_now" type="object" string="Retry Now"
+                            class="btn-primary" invisible="state == 'success'"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="svc"/>
+                            <field name="partner_id"/>
+                            <field name="error_code"/>
+                        </group>
+                        <group>
+                            <field name="retry_count"/>
+                            <field name="max_retries"/>
+                            <field name="next_retry_time"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Params">
+                            <field name="params" widget="text"/>
+                        </page>
+                        <page string="Response">
+                            <field name="response_data" widget="text"/>
+                        </page>
+                        <page string="Error">
+                            <field name="last_error" widget="text"/>
+                        </page>
+                        <page string="Success">
+                            <field name="success_message" widget="text"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_fios_api_log_search" model="ir.ui.view">
+        <field name="name">fios.api.log.search</field>
+        <field name="model">fios.api.log</field>
+        <field name="arch" type="xml">
+            <search string="FIOS API Log">
+                <field name="svc"/>
+                <field name="partner_id"/>
+                <filter name="pending" string="Pending" domain="[('state','=','pending')]"/>
+                <filter name="failed" string="Failed" domain="[('state','=','failed')]"/>
+                <filter name="success" string="Success" domain="[('state','=','success')]"/>
+                <group>
+                    <filter name="group_svc" string="Service" context="{'group_by':'svc'}"/>
+                    <filter name="group_state" string="State" context="{'group_by':'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_fios_api_log" model="ir.actions.act_window">
+        <field name="name">FIOS API Log</field>
+        <field name="res_model">fios.api.log</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_fios_api_log_search"/>
+    </record>
+
+    <record id="view_fios_session_list" model="ir.ui.view">
+        <field name="name">fios.session.list</field>
+        <field name="model">fios.session</field>
+        <field name="arch" type="xml">
+            <list string="FIOS Sessions" decoration-muted="not active">
+                <field name="sid"/>
+                <field name="auth_user"/>
+                <field name="login_time"/>
+                <field name="last_activity"/>
+                <field name="active"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_fios_session" model="ir.actions.act_window">
+        <field name="name">FIOS Sessions</field>
+        <field name="res_model">fios.session</field>
+        <field name="view_mode">list</field>
+    </record>
+</odoo>

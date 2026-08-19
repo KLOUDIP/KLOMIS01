@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="fios_tier_default" model="fios.service.tier">
+            <field name="name">FIOS</field>
+            <field name="code">fios</field>
+            <field name="sequence">10</field>
+            <field name="base_url">https://fios-api.kloudip.com</field>
+            <field name="token">9652a19761d02150399fc6b414e34fdeA98546B3B613A63A23F5DC9CA42E3220C6FBE916</field>
+            <field name="creator_id">27557881</field>
+            <field name="plan_code">kloudip3</field>
+        </record>
+    </data>
+</odoo>

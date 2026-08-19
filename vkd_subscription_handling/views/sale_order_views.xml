@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+<!--    <record id="view_decrease_quantity_sale_subscription_form" model="ir.ui.view">-->
+<!--        <field name="name">view.decrease.quantity.sale.subscription.form</field>-->
+<!--        <field name="model">sale.order</field>-->
+<!--        <field name="inherit_id" ref="sale_subscription.sale_subscription_primary_form_view"/>-->
+<!--        <field name="arch" type="xml">-->
+<!--            &lt;!&ndash; Add Decrease Quantity button next to Upsell button &ndash;&gt;-->
+<!--            <xpath expr="//button[@name='prepare_upsell_order']" position="after">-->
+<!--                <button string="Decrease Quantity" name="prepare_decrease_order" type="object"-->
+<!--                        invisible="not is_subscription or subscription_state not in ['3_progress', '4_paused'] or state != 'sale'" data-hotkey="d"/>-->
+<!--            </xpath>-->
+<!--        </field>-->
+<!--    </record>-->
+
+    <!-- Create a "Downgrades" menu item -->
+    <record id="sale_subscription_action_downgrade" model="ir.actions.act_window">
+        <field name="name">Downgrades</field>
+        <field name="res_model">sale.order</field>
+        <field name="view_mode">list,kanban,form,pivot,graph,cohort,activity</field>
+        <field name="domain">[('is_quantity_decrease', '=', True)]</field>
+        <field name="context">{
+            'create': False,
+        }</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No Downgrades Found
+            </p><p>
+                Downgrade orders allow customers to reduce quantities or remove products from their ongoing subscriptions.
+                It can be created by clicking on the Decrease Quantity button from an active subscription.
+            </p>
+        </field>
+    </record>
+
+    <!-- Add the menu item to the Subscriptions menu -->
+    <menuitem action="sale_subscription_action_downgrade" id="menu_sale_subscription_downgrade" sequence="45" parent="sale_subscription.menu_sale_subscription"/>
+
+    <!-- Extend the search view to add a filter for quantity decrease orders -->
+    <record id="view_sales_order_filter_subscription_extension" model="ir.ui.view">
+        <field name="name">sale.order.filter.subscription.extension</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale_subscription.view_sales_order_filter_subscription"/>
+        <field name="arch" type="xml">
+            <filter name="not_recurring" position="after">
+                <separator/>
+                <filter string="Quantity Decrease" name="quantity_decrease" domain="[('is_quantity_decrease', '=', True)]"/>
+            </filter>
+        </field>
+    </record>
+
+    <!-- Add the is_quantity_decrease field to the form view -->
+    <record id="sale_subscription_order_view_form_extension" model="ir.ui.view">
+        <field name="name">sale.subscription.order.form.extension</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale_subscription.sale_subscription_order_view_form"/>
+        <field name="arch" type="xml">
+            <!-- `is_subscription` isn't rendered as an explicit <field> tag in this view (it's
+                 only referenced in `invisible=` expressions), so anchor on a field that is. -->
+            <xpath expr="//div[@name='subscription_closing_pill']" position="before">
+                <field name="is_quantity_decrease" invisible="1" />
+            </xpath>
+
+            <!-- Add a badge for quantity decrease orders -->
+            <xpath expr="//div[@name='subscription_closing_pill']" position="after">
+                <div name="quantity_decrease_pill"
+                     class="o_field_badge float-end fs-6 mx-1"
+                     invisible="not is_quantity_decrease">
+                    <span class="badge rounded-pill text-bg-primary">Quantity Decrease</span>
+                </div>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Extend the tree view to show quantity decrease orders -->
+    <record id="sale_subscription_view_tree_extension" model="ir.ui.view">
+        <field name="name">sale.subscription.view.tree.extension</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale_subscription.sale_subscription_view_tree"/>
+        <field name="arch" type="xml">
+            <field name="subscription_state" position="after">
+                <field name="is_quantity_decrease" invisible="1"/>
+            </field>
+        </field>
+    </record>
+
+</odoo>

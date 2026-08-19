@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Home card: shown only for provisioned FIOS customers -->
+    <template id="portal_my_home_fios_services" name="FIOS Services Card"
+              inherit_id="portal.portal_my_home" priority="92">
+        <xpath expr="//div[hasclass('o_portal_docs')]" position="before">
+            <t t-set="portal_client_client_enable" t-value="True"/>
+        </xpath>
+        <div id="portal_client_category" position="inside">
+            <t t-if="request.env.user.partner_id.fios_provision_state == 'active'">
+                <t t-call="portal.portal_docs_entry">
+                    <t t-set="title">FIOS Services</t>
+                    <t t-set="text">View your FIOS services and usage</t>
+                    <t t-set="url" t-value="'/my/fios-services'"/>
+                    <t t-set="config_card" t-value="True"/>
+                </t>
+            </t>
+        </div>
+    </template>
+
+    <!-- FIOS services + usage page -->
+    <template id="portal_my_fios_services" name="My FIOS Services">
+        <t t-call="portal.portal_layout">
+            <t t-set="breadcrumbs_searchbar" t-value="True"/>
+            <t t-call="portal.portal_searchbar">
+                <t t-set="title">FIOS Services</t>
+            </t>
+
+            <div class="alert alert-danger" t-if="error">
+                <span t-out="error"/>
+            </div>
+
+            <t t-if="not is_fios_customer">
+                <p class="alert alert-warning">You don't have an active FIOS account yet.</p>
+            </t>
+            <t t-elif="info">
+                <div class="row g-3 mb-4">
+                    <div class="col-md-4">
+                        <div class="border rounded p-3 h-100">
+                            <div class="text-muted small">Plan</div>
+                            <div class="fs-5 fw-bold"><t t-out="info.get('plan') or '-'"/></div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="border rounded p-3 h-100">
+                            <div class="text-muted small">Days until next payment</div>
+                            <div class="fs-5 fw-bold"><t t-out="info.get('days')"/></div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="border rounded p-3 h-100">
+                            <div class="text-muted small">Status</div>
+                            <div class="fs-5 fw-bold">
+                                <span t-if="info.get('enabled')" class="text-success">Active</span>
+                                <span t-else="" class="text-danger">Deactivated</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <h5 class="mb-3">Services</h5>
+                <t t-if="not info.get('services')">
+                    <p class="text-muted">No services found.</p>
+                </t>
+                <div class="table-responsive" t-else="">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Service</th>
+                                <th class="text-end">Used</th>
+                                <th class="text-end">Limit</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr t-foreach="info['services']" t-as="svc">
+                                <td><t t-out="svc['label']"/></td>
+                                <td class="text-end">
+                                    <t t-if="svc['feature']">
+                                        <span t-if="svc['enabled']" class="badge text-bg-success">Enabled</span>
+                                        <span t-else="" class="badge text-bg-secondary">Disabled</span>
+                                    </t>
+                                    <t t-else=""><t t-out="svc['usage']"/></t>
+                                </td>
+                                <td class="text-end">
+                                    <t t-if="not svc['feature']"><t t-out="svc['limit']"/></t>
+                                    <t t-else="">-</t>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </t>
+        </t>
+    </template>
+</odoo>

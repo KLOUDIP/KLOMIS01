@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="api_retry_log_view_list" model="ir.ui.view">
+        <field name="name">api.retry.log.list</field>
+        <field name="model">api.retry.log</field>
+        <field name="arch" type="xml">
+            <list string="Trazet Retry Logs" decoration-success="state=='success'"
+                  decoration-danger="state=='failed'"
+                  decoration-warning="state=='pending'">
+                <field name="create_date"/>
+                <field name="api_endpoint"/>
+                <field name="state"/>
+                <field name="partner_id"/>
+                <field name="retry_count"/>
+                <field name="next_retry_time"/>
+                <field name="last_error"/>
+                <button name="action_retry_now"
+                        string="Retry Now"
+                        type="object"
+                        icon="fa-refresh"
+                        invisible="state == 'success'"
+                        class="btn-primary"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="api_retry_log_view_form" model="ir.ui.view">
+        <field name="name">api.retry.log.form</field>
+        <field name="model">api.retry.log</field>
+        <field name="arch" type="xml">
+            <form string="Trazet Retry Log">
+                <header>
+                    <button name="action_retry_now"
+                            string="Retry Now"
+                            type="object"
+                            class="btn-primary"
+                            invisible="state in ['success']"/>
+                    <field name="state" widget="statusbar" statusbar_visible="pending,success,failed"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="api_endpoint" readonly="1"/>
+                            <field name="partner_id" readonly="1"/>
+                            <field name="sale_order_id" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="retry_count" readonly="1"/>
+                            <field name="max_retries" readonly="1"/>
+                            <field name="next_retry_time" readonly="1"/>
+                            <field name="create_date"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <page string="Request Details">
+                            <group>
+                                <field name="url" widget="url" readonly="1"/>
+                                <field name="headers" widget="text" readonly="1"/>
+                                <field name="payload" widget="text" readonly="1"/>
+                            </group>
+                        </page>
+                        <page string="Error Details" invisible="state == 'success'">
+                            <group>
+                                <field name="last_error" widget="text" readonly="1"/>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="api_retry_log_view_search" model="ir.ui.view">
+        <field name="name">api.retry.log.view.search</field>
+        <field name="model">api.retry.log</field>
+        <field name="arch" type="xml">
+            <search string="Trazet Retry Logs">
+                <field name="partner_id"/>
+                <field name="sale_order_id"/>
+                <field name="last_error"/>
+
+                <filter string="Pending" name="pending" domain="[('state', '=', 'pending')]"/>
+                <filter string="Failed" name="failed" domain="[('state', '=', 'failed')]"/>
+                <filter string="Success" name="success" domain="[('state', '=', 'success')]"/>
+
+                <separator/>
+                <filter string="Subscription Updates" name="subscription_updates"
+                        domain="[('api_endpoint', '=', 'subscription_update')]"/>
+                <filter string="Deactivations" name="deactivations"
+                        domain="[('api_endpoint', '=', 'deactivation')]"/>
+
+                <group>
+                    <filter string="State" name="group_state" context="{'group_by': 'state'}"/>
+                    <filter string="API Endpoint" name="group_endpoint" context="{'group_by': 'api_endpoint'}"/>
+                    <filter string="Partner" name="group_partner" context="{'group_by': 'partner_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+
+    <record id="action_api_retry_log_subscription_failed" model="ir.actions.act_window">
+        <field name="name">Failed Subscription Trazet Syncs</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">api.retry.log</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('state', 'in', ['pending', 'failed', 'success'])]</field>
+        <field name="context">{'search_default_pending': 1}</field>
+        <field name="search_view_id" ref="api_retry_log_view_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No pending subscription syncs found!
+            </p>
+            <p>
+                This view shows subscription-related API calls that failed and need attention.
+                Failed syncs can affect customer access to services.
+            </p>
+        </field>
+    </record>
+
+    <menuitem id="menu_subscription_failed_syncs"
+              name="API logs"
+              parent="sale_subscription.menu_sale_subscription_root"
+              action="action_api_retry_log_subscription_failed"
+              sequence="50"/>
+
+</odoo>

@@ -1,0 +1,57 @@
+.trazet-combobox {
+    position: relative;
+}
+
+.trazet-combobox-input {
+    padding-right: 2rem;
+}
+
+.trazet-combobox-icon {
+    position: absolute;
+    top: 50%;
+    right: 0.75rem;
+    transform: translateY(-50%);
+    color: #6c757d;
+    font-size: 0.75rem;
+    pointer-events: none;
+}
+
+.trazet-combobox-menu {
+    display: none;
+    position: absolute;
+    z-index: 1050;
+    top: 100%;
+    left: 0;
+    right: 0;
+    margin-top: 0.25rem;
+    max-height: 240px;
+    overflow-y: auto;
+    background: #fff;
+    border: 1px solid #ced4da;
+    border-radius: 0.375rem;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.12);
+}
+
+.trazet-combobox-menu-open {
+    display: block;
+}
+
+.trazet-combobox-option {
+    padding: 0.5rem 0.75rem;
+    cursor: pointer;
+}
+
+.trazet-combobox-option:hover,
+.trazet-combobox-option:focus {
+    background-color: #f1f3f5;
+}
+
+.trazet-combobox-empty-message {
+    display: none;
+    padding: 0.5rem 0.75rem;
+    color: #6c757d;
+}
+
+.trazet-combobox-menu.trazet-combobox-empty .trazet-combobox-empty-message {
+    display: block;
+}

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="sale_subscription_plan_view_form" model="ir.ui.view">
+        <field name="name">sale.subscription.plan.view.form.inherit.vkd_subscription_handling</field>
+        <field name="model">sale.subscription.plan</field>
+        <field name="inherit_id" ref="sale_subscription.sale_subscription_plan_view_form"/>
+        <field name="arch" type="xml">
+            <field name="related_plan_id" position="after">
+                <field name="is_free_plan"/>
+            </field>
+        </field>
+    </record>
+
+</odoo>

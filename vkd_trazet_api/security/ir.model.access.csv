@@ -1,0 +1,4 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_api_retry_log_admin,api.retry.log admin,model_api_retry_log,base.group_system,1,1,1,1
+access_api_retry_log_user,api.retry.log user,model_api_retry_log,base.group_user,1,0,0,0
+access_api_retry_log_manager,api.retry.log sales manager,model_api_retry_log,sales_team.group_sale_manager,1,1,0,0

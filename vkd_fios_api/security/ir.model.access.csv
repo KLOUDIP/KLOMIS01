@@ -1,0 +1,13 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_fios_service_tier_system,fios.service.tier.system,model_fios_service_tier,base.group_system,1,1,1,1
+access_fios_service_tier_user,fios.service.tier.user,model_fios_service_tier,base.group_user,1,0,0,0
+access_fios_session_system,fios.session.system,model_fios_session,base.group_system,1,1,1,1
+access_fios_session_user,fios.session.user,model_fios_session,base.group_user,1,0,0,0
+access_fios_api_log_system,fios.api.log.system,model_fios_api_log,base.group_system,1,1,1,1
+access_fios_api_log_user,fios.api.log.user,model_fios_api_log,base.group_user,1,1,1,0
+access_fios_device_system,fios.device.system,model_fios_device,base.group_system,1,1,1,1
+access_fios_device_user,fios.device.user,model_fios_device,base.group_user,1,0,0,0
+access_fios_service_usage_system,fios.service.usage.system,model_fios_service_usage,base.group_system,1,1,1,1
+access_fios_service_usage_user,fios.service.usage.user,model_fios_service_usage,base.group_user,1,0,0,0
+access_fios_account_import_system,fios.account.import.system,model_fios_account_import,base.group_system,1,1,1,1
+access_fios_account_import_line_system,fios.account.import.line.system,model_fios_account_import_line,base.group_system,1,1,1,1

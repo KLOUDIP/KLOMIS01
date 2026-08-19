@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="combo_item_recurring_price_view_form" model="ir.ui.view">
+        <field name="name">combo.item.recurring.price.form</field>
+        <field name="model">combo.item.recurring.price</field>
+        <field name="arch" type="xml">
+            <form string="Recurring Plan Price">
+                <group>
+                    <group>
+                        <field name="product_id" readonly="1"/>
+                        <field name="product_quantity" readonly="1"/>
+                        <field name="recurring_plan_id"/>
+                        <field name="pricelist_id"
+                               options="{'no_create': True, 'no_edit': True}"/>
+                    </group>
+                    <group>
+                        <field name="combo_price"/>
+                        <field name="currency_id"
+                               options="{'no_create': True, 'no_edit': True}"
+                               help="Price currency. Will be converted automatically in orders."/>
+                        <field name="company_id" invisible="1"/>
+                    </group>
+                </group>
+                <div class="alert alert-info" role="alert">
+                    <strong>Exact Combinations:</strong>
+                    Each pricing record represents an exact Plan + Pricelist combination.
+                    Price will be automatically converted to order currency.
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <record id="combo_item_recurring_price_view_list" model="ir.ui.view">
+        <field name="name">combo.item.recurring.price.list</field>
+        <field name="model">combo.item.recurring.price</field>
+        <field name="arch" type="xml">
+            <list string="Recurring Plan Prices" editable="bottom" create="0">
+                <field name="product_id" readonly="1"/>
+                <field name="product_quantity" readonly="1"/>
+                <field name="recurring_plan_id"/>
+                <field name="pricelist_id"
+                       options="{'no_create': True, 'no_edit': True}"/>
+                <field name="combo_price"/>
+                <field name="currency_id"
+                       options="{'no_create': True, 'no_edit': True}"/>
+                <field name="company_id" column_invisible="1"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="combo_item_recurring_price_action" model="ir.actions.act_window">
+        <field name="name">Recurring Plan Prices</field>
+        <field name="res_model">combo.item.recurring.price</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('combo_item_id', '=', active_id)]</field>
+        <field name="target">new</field>
+    </record>
+    <record id="combo_item_recurring_price_action_global" model="ir.actions.act_window">
+        <field name="name">Combo Recurring Prices</field>
+        <field name="res_model">combo.item.recurring.price</field>
+    </record>
+
+    <menuitem id="menu_combo_recurring_prices"
+              name="Combo Recurring Prices"
+              parent="sale_subscription.menu_sale_subscription_config"
+              action="combo_item_recurring_price_action_global"
+              groups="base.group_no_one"
+    />
+
+</odoo>

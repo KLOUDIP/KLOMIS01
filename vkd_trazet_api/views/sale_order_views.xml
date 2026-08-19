@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="sale_subscription_primary_form_view" model="ir.ui.view">
+        <field name="name">sale.order.view.form.inherit.vkd_trazet_api</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale_subscription.sale_subscription_primary_form_view"/>
+        <field name="arch" type="xml">
+            <field name="partner_id" position="after">
+                <field name="api_retry_log_count" invisible="1"/>
+                <field name="is_subscription" invisible="1"/>
+            </field>
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_view_api_retry_logs"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-exchange"
+                        invisible="not is_subscription or api_retry_log_count == 0">
+                    <field name="api_retry_log_count" widget="statinfo" string="API Logs"/>
+                </button>
+            </xpath>
+            <xpath expr="//label[@for='pricelist_id']" position="before">
+                <label name="grace_period_days_label" for="grace_period_days"/>
+                <div class="o_row">
+                    <field name="grace_period_days"
+                           invisible="not is_subscription or subscription_state not in ['3_progress', '4_paused']"/>
+                    <button name="action_send_effective_date_to_trazet"
+                            string="Send to Trazet"
+                            type="object"
+                            class="btn-primary"
+                            invisible="not grace_period_days"
+                            confirm="Are you sure you want to send the deactivation date to Trazet? This will schedule deactivation based on the selected grace period."
+                            help="Send deactivation date to Trazet based on selected grace period"/>
+                </div>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="sale_subscription_view_tree" model="ir.ui.view">
+        <field name="name">sale.order.view.list.vkd_trazet_api</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale_subscription.sale_subscription_view_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='next_invoice_date']" position="after">
+                <field name="grace_period_days" optional="hide"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_sales_order_filter_subscription" model="ir.ui.view">
+        <field name="name">sale.order.view.search.inherit.vkd_trazet_api</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale_subscription.view_sales_order_filter_subscription"/>
+        <field name="arch" type="xml">
+            <xpath expr="//filter[@name='not_recurring']" position="after">
+                <separator/>
+                <filter string="Has Grace Period" name="has_grace_period"
+                        domain="[('grace_period_days', '!=', False)]"/>
+                <separator/>
+                <filter string="3 Days Grace" name="grace_3_days" domain="[('grace_period_days', '=', '3')]"/>
+                <filter string="7 Days Grace" name="grace_7_days" domain="[('grace_period_days', '=', '7')]"/>
+                <filter string="14 Days Grace" name="grace_14_days" domain="[('grace_period_days', '=', '14')]"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

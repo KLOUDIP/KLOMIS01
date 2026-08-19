@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_fios_service_tier_list" model="ir.ui.view">
+        <field name="name">fios.service.tier.list</field>
+        <field name="model">fios.service.tier</field>
+        <field name="arch" type="xml">
+            <list string="FIOS Service Tiers">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="code"/>
+                <field name="plan_code"/>
+                <field name="creator_id"/>
+                <field name="active" widget="boolean_toggle"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_fios_service_tier_form" model="ir.ui.view">
+        <field name="name">fios.service.tier.form</field>
+        <field name="model">fios.service.tier</field>
+        <field name="arch" type="xml">
+            <form string="FIOS Service Tier">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="code"/>
+                            <field name="active"/>
+                        </group>
+                        <group string="FIOS Credentials">
+                            <field name="base_url"/>
+                            <field name="token" password="True"/>
+                            <field name="creator_id"/>
+                            <field name="plan_code"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_fios_service_tier" model="ir.actions.act_window">
+        <field name="name">FIOS Service Tiers</field>
+        <field name="res_model">fios.service.tier</field>
+        <field name="view_mode">list,form</field>
+    </record>
+</odoo>

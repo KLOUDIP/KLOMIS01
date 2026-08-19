@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_users_form_fios" model="ir.ui.view">
+        <field name="name">res.users.form.inherit.vkd_fios_api</field>
+        <field name="model">res.users</field>
+        <field name="inherit_id" ref="base.view_users_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="before">
+                <group>
+                    <field name="is_fios_user" string="Is FIOS User?"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+</odoo>

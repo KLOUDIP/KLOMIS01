@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="portal_my_home_trazet_services" name="Trazet Services" customize_show="True"
+              inherit_id="portal.portal_my_home" priority="91">
+        <xpath expr="//div[hasclass('o_portal_docs')]" position="before">
+            <t t-set="portal_client_client_enable" t-value="True"/>
+        </xpath>
+        <div id="portal_client_category" position="inside">
+            <t t-call="portal.portal_docs_entry">
+                <t t-set="title">Services</t>
+                <t t-set="text">View your Trazet product usage</t>
+                <t t-set="url" t-value="'/my/services'"/>
+                <t t-set="config_card" t-value="True"/>
+            </t>
+        </div>
+    </template>
+
+    <template id="portal_my_trazet_services" name="My Trazet Services">
+        <t t-call="portal.portal_layout">
+            <t t-set="breadcrumbs_searchbar" t-value="True"/>
+
+            <t t-call="portal.portal_searchbar">
+                <t t-set="title">Services</t>
+            </t>
+
+            <t t-if="not services">
+                <p class="alert alert-warning">You don't have any active Trazet services yet.</p>
+            </t>
+            <t t-else="">
+                <div class="row g-3">
+                    <t t-foreach="services" t-as="service">
+                        <div class="col-md-4">
+                            <div class="border rounded p-3 h-100 d-flex align-items-center gap-3">
+                                <i t-attf-class="fa #{service['icon']} fa-2x text-primary"/>
+                                <div>
+                                    <div class="text-muted small">
+                                        <t t-out="service['label']"/>
+                                    </div>
+                                    <div class="fs-5 fw-bold">
+                                        <t t-out="service['value']"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </div>
+            </t>
+        </t>
+    </template>
+</odoo>

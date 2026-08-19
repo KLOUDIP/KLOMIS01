@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_fios_account_import_form" model="ir.ui.view">
+        <field name="name">fios.account.import.form</field>
+        <field name="model">fios.account.import</field>
+        <field name="arch" type="xml">
+            <form string="Import FIOS Accounts">
+                <group>
+                    <field name="tier_id"/>
+                </group>
+                <div class="text-muted mb-2">
+                    Pick a tier and fetch its accounts, then set the Odoo customer on each
+                    row you want to link. Already-linked accounts are shown for reference.
+                </div>
+                <field name="line_ids">
+                    <list editable="bottom" create="false" delete="false">
+                        <field name="name" readonly="1"/>
+                        <field name="account_item_id" readonly="1"/>
+                        <field name="already_linked" readonly="1"/>
+                        <field name="partner_id"
+                               options="{'no_create': True}"
+                               readonly="already_linked"/>
+                    </list>
+                </field>
+                <footer>
+                    <button name="action_fetch" type="object" string="Fetch Accounts"
+                            class="btn-secondary"/>
+                    <button name="action_import" type="object" string="Import Selected"
+                            class="btn-primary"/>
+                    <button string="Close" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_fios_account_import" model="ir.actions.act_window">
+        <field name="name">Import FIOS Accounts</field>
+        <field name="res_model">fios.account.import</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <menuitem id="menu_fios_account_import" name="Import Accounts"
+              parent="menu_fios_root" action="action_fios_account_import" sequence="8"/>
+</odoo>

@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_partner_form_fios" model="ir.ui.view">
+        <field name="name">res.partner.form.fios</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <notebook position="inside">
+                <page string="FIOS" name="fios">
+                    <header>
+                        <button name="action_fios_provision" type="object"
+                                string="Provision / Resume" class="btn-primary"/>
+                        <button name="action_fios_refresh_status" type="object"
+                                string="Refresh FIOS Status"
+                                invisible="not fios_account_item_id"/>
+                        <button name="action_fios_refresh_devices" type="object"
+                                string="Refresh Devices"
+                                invisible="not fios_account_item_id"/>
+                    </header>
+                    <group>
+                        <group string="Status">
+                            <field name="is_fios_user"/>
+                            <field name="fios_tier_id"/>
+                            <field name="fios_provision_state"/>
+                            <field name="fios_provision_pending"/>
+                            <field name="fios_last_sync"/>
+                        </group>
+                        <group string="FIOS Identifiers">
+                            <field name="fios_user_id"/>
+                            <field name="fios_resource_id"/>
+                            <field name="fios_account_item_id"/>
+                        </group>
+                    </group>
+                    <group string="Last Error" invisible="not fios_last_error">
+                        <field name="fios_last_error" nolabel="1" readonly="1"/>
+                    </group>
+                    <group string="Live Account Status" invisible="not fios_status_synced">
+                        <group>
+                            <field name="fios_account_enabled"/>
+                            <field name="fios_current_plan"/>
+                            <field name="fios_days_counter"/>
+                        </group>
+                        <group>
+                            <field name="fios_balance"/>
+                            <field name="fios_status_synced"/>
+                        </group>
+                        <field name="fios_service_usage_ids" nolabel="1" colspan="2" readonly="1">
+                            <list>
+                                <field name="name"/>
+                                <field name="usage"/>
+                                <field name="limit"/>
+                                <field name="feature" optional="hide"/>
+                                <field name="enabled" widget="boolean_toggle"/>
+                            </list>
+                        </field>
+                    </group>
+                    <group string="FIOS Devices" invisible="not fios_device_ids">
+                        <field name="fios_device_ids" nolabel="1" readonly="1">
+                            <list>
+                                <field name="name"/>
+                                <field name="imei"/>
+                                <field name="phone"/>
+                                <field name="active" widget="boolean_toggle"/>
+                            </list>
+                        </field>
+                    </group>
+                </page>
+            </notebook>
+        </field>
+    </record>
+</odoo>
