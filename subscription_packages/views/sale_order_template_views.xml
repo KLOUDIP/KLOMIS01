@@ -8,17 +8,19 @@
         <field name="inherit_id" ref="sale_management.sale_order_template_view_form"/>
         <field name="arch" type="xml">
 
-            <page name="optional_products" position="after">
+            <!-- "optional_products" page removed in Odoo 19, anchored after "order_lines". -->
+            <page name="order_lines" position="after">
                 <page string="Recurring Products" name="recurring_products">
                     <field name="sale_order_template_recurring_ids">
-                        <tree string="Template Recurring Products" editable="bottom">
+                        <list string="Template Recurring Products" editable="bottom">
+                            <field name="sequence" widget="handle"/>
                             <field name="product_id"/>
                             <field name="name"/>
                             <field name="quantity"/>
-                            <field name="product_uom_category_id" column_invisible="True"/>
+                            <field name="allowed_uom_ids" column_invisible="True"/>
                             <field name="uom_id" groups="uom.group_uom"/>
                             <field name="company_id" column_invisible="True"/>
-                        </tree>
+                        </list>
                     </field>
                 </page>
             </page>

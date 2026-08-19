@@ -4,11 +4,15 @@
     "summary": "This module allow to add vehicle no to delivery slip",
     "description": "This module allow to add vehicle no to delivery slip",
     'category': 'stock',
-    'version': '1.0.2',
-    "author": "Nisus Solutions (Pvt) Ltd",
-    "website": "https://nisus.lk/",
+    'version': '19.0.1.0.0',
+    'author': "VK Data ApS",
+    'website': "https://vkdata.dk",
     'data': [
         'report/report_deliveryslip.xml',
     ],
     'depends': ['stock'],
+    'license': 'OPL-1',
+    'application': False,
+    'installable': True,
+    'auto_install': False,
 }

@@ -1,13 +1,16 @@
-from odoo import api, fields, models, _
-from datetime import datetime, time
+# -*- coding: utf-8 -*-
+# KLOMIS01 v17 -> v19 REMOVAL SHELL - load-only.
+from odoo import fields, models
+
 
 class Task(models.Model):
     _inherit = 'project.task'
 
     real_start_time = fields.Datetime(string="Start Time")
-    partner_email = fields.Char(string="Email", track_visibility='onchange')
+    # v17 passed track_visibility='onchange', removed from the ORM in v13 and
+    # silently ignored ever since. Dropped rather than converted to
+    # tracking=True, which would start writing messages that never existed.
+    partner_email = fields.Char(string="Email")
 
-    def action_timer_start(self):
-        res = super(Task, self).action_timer_start()
-        self.real_start_time = datetime.now()
-        return res
+    # NOTE: the action_timer_start() override is dropped along with the
+    # timesheet_grid dependency.

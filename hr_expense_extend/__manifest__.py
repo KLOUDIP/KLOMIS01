@@ -13,13 +13,14 @@
     'website': "https://vkdata.dk",
 
     'category': 'Human Resources/Expenses',
-    'version': '1.0.2',
+    'version': '19.0.1.0.0',
     'license': 'OPL-1',
     'depends': ['hr_expense'],
     'data': [
         'views/hr_expense_views.xml'
     ],
+    'license': 'OPL-1',
+    'application': False,
     'installable': True,
     'auto_install': False,
-    'application': False
 }

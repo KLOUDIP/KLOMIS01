@@ -1,6 +1,6 @@
-# -*- encoding: utf-8 -*-
-
-from odoo import api, fields, models, _
+# -*- coding: utf-8 -*-
+# KLOMIS01 v17 -> v19 REMOVAL SHELL - load-only.
+from odoo import fields, models
 
 
 class MissingFleets(models.Model):

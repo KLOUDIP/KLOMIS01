@@ -14,11 +14,10 @@ class FleetVehicle(models.Model):
         return {
             'domain': [('fleet_id', '=', self.id)],
             'name': 'Fleet Vehicle Worksheet',
-            'view_type': 'form',
-            'view_mode': 'tree,form',
+            'view_mode': 'list,form',
             'res_model': 'worksheet.template.line',
             'view_id': False,
-            'views': [(self.env.ref('field_service_worksheet_template.cites_tree_view').id, 'tree'),
+            'views': [(self.env.ref('field_service_worksheet_template.cites_tree_view').id, 'list'),
                       (self.env.ref('field_service_worksheet_template.worksheet_template_line_form').id, 'form')],
             'type': 'ir.actions.act_window'
         }

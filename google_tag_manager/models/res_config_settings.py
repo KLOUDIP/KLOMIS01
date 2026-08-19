@@ -1,4 +1,6 @@
-from odoo import models, fields, api, _
+# -*- coding: utf-8 -*-
+# KLOMIS01 v17 -> v19 REMOVAL SHELL - load-only.
+from odoo import fields, models
 
 
 class ResConfigSettings(models.TransientModel):

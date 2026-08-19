@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-from odoo import fields, models, Command
+# KLOMIS01 v17 -> v19 REMOVAL SHELL - load-only.
+from odoo import fields, models
 
 
 class SaleOrder(models.Model):

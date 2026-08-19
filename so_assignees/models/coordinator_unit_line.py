@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-from odoo import models, fields
+# KLOMIS01 v17 -> v19 REMOVAL SHELL - load-only.
+from odoo import fields, models
 
 MONTH_SELECTION = [
     ('1', 'January'),
@@ -16,8 +17,10 @@ MONTH_SELECTION = [
     ('12', 'December'),
 ]
 
+
 class CoordinatorUnitLine(models.Model):
     _name = 'coordinator.unit.line'
+    _description = 'Coordinator Unit Line'
 
     year = fields.Char(string="Year")
     month = fields.Selection(selection=MONTH_SELECTION, string="Month")

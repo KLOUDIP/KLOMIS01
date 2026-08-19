@@ -1,5 +1,4 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-
 access_active_units,access_active_units,model_active_units,base.group_user,1,1,1,1
 access_missing_fleets,access_missing_fleets,model_missing_fleets,base.group_user,1,1,1,1
 access_missing_serial,access_missing_serial,model_missing_serial,base.group_user,1,1,1,1

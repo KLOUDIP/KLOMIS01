@@ -1,48 +1,31 @@
-# -*- encoding: utf-8 -*-
-
+# -*- coding: utf-8 -*-
+# KLOMIS01 v17 -> v19 REMOVAL SHELL - load-only, uninstall after go-live.
 {
     'name': 'FIOS Connector',
-    'summary': """FIOS Integration with Odoo""",
+    'summary': "[REMOVAL SHELL] FIOS Integration with Odoo - scheduled for uninstall",
     'description': """
-        FIOS Integration with Odoo
+        Load-only shell retained for the 17.0 -> 19.0 upgrade.
+        All models and stored fields are preserved so the schema, the
+        Studio customisations on res.partner / fleet.vehicle /
+        fleet.vehicle.log.contract and any saved filters stay valid.
+        Every FIOS API call, view, menu, report and server action override
+        has been removed. Uninstall after go-live, then delete the folder.
     """,
-    'version': '2.0.2',
+    'version': '19.0.2.0.2',
     'category': 'Fleet',
     'author': 'Nisus Solutions (Pvt) Ltd',
     'website': 'http://www.nisus.lk',
     'depends': [
         'base',
-        'sales_team',
+        'mail',
         'fleet',
-        'account_fleet',
-        'contacts',
         'stock',
-        'fleet_contract_management',
-        'sale_subscription',
-        'vehicle_delivery'
     ],
     'data': [
         'security/ir.model.access.csv',
-        # 'reports/ir_actions_report.xml',
-        # 'reports/ir_actions_report_templates.xml',
-        'data/data.xml',
-        'data/server_actions.xml',
-        # 'data/mail_template_data.xml',
-        'views/active_units_views.xml',
-        'views/missing_fleets_views.xml',
-        'views/missing_serial_views.xml',
-        'views/res_partner_views.xml',
-        'views/match_fios_missing_views.xml',
-        'views/fleet_vehicle_views.xml',
-        'views/fleet_vehicle_log_contract_views.xml',
-        'views/stock_production_lot_views.xml',
-        'views/odoo_unmatched_serials.xml',
-        'views/odoo_unmatched_fleets.xml',
-        # 'wizard/fios_active_unit_report_wizard.xml'
     ],
     'installable': True,
-    'application': True,
+    'application': False,
     'auto_install': False,
     'license': 'LGPL-3',
 }
-

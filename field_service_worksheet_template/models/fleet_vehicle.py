@@ -4,14 +4,10 @@ from odoo import api, fields, models, _
 class FleetVehicle(models.Model):
     _inherit = 'fleet.vehicle'
 
-    @api.depends('name')
-    def name_get(self):
-        res = []
+    @api.depends('name', 'license_plate')
+    def _compute_display_name(self):
         for record in self:
             if self.env.context.get('get_license') and self.env.context.get('default_x_project_task_id') is None:
-                name = record.license_plate
-                res.append((record.id, name))
+                record.display_name = record.license_plate
             else:
-                name = record.name
-                res.append((record.id, name))
-        return res
+                record.display_name = record.name

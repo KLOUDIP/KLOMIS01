@@ -1,3 +1,3 @@
-# -*- encoding: utf-8 -*-
+# -*- coding: utf-8 -*-
+# KLOMIS01 v17 -> v19 REMOVAL SHELL - load-only.
 from . import models
-from . import wizard

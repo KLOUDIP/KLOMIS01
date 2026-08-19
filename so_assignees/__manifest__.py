@@ -1,25 +1,28 @@
 # -*- coding: utf-8 -*-
+# KLOMIS01 v17 -> v19 REMOVAL SHELL - load-only, uninstall after go-live.
 {
     'name': 'SO Assignees',
-    'version': '1.0.2',
-    'summary': 'Assign coordinator to the SO',
+    'version': '19.0.1.0.2',
+    'summary': "[REMOVAL SHELL] SO coordinator assignment - scheduled for uninstall",
     'description': """
-================
-This module allow to assign coordinator to a SO and it will calculate unit counts by coordinators.
-""",
+        Load-only shell retained for the 17.0 -> 19.0 upgrade.
+        Keeps sale_order.coordinator_id, the coordinator.unit.line and
+        active.units.monthly tables and hr_employee.coordinator_assigned_ids
+        so nothing is dropped and the Studio customisation on hr.employee
+        stays valid. All onchange / create validation is removed.
+
+        NOTE: coordinator_id here is NOT the same field as coordination_by_id
+        in kloudip_so_coordinator_and_billing_responsible. No data is migrated
+        between them.
+    """,
     'category': 'Tools',
-    "author": "BitbrainHub",
-    "email": "bitbrainhub@gmail.com",
-    'depends': ['sale', 'helpdesk', 'hr', 'fios_connector', 'field_service_worksheet_template'],
+    'author': 'BitbrainHub',
+    'depends': ['sale', 'hr', 'fios_connector'],
     'data': [
         'security/ir.model.access.csv',
-        'views/sale_order_views.xml',
-        'views/hr_employee_views.xml',
-        'views/res_partner_views.xml'
     ],
-    'licence': 'LGPL-3',
+    'license': 'LGPL-3',
     'installable': True,
-    'application': True,
+    'application': False,
     'auto_install': False,
-
 }

@@ -1,22 +1,27 @@
+# -*- coding: utf-8 -*-
+# KLOMIS01 v17 -> v19 REMOVAL SHELL - load-only, uninstall after go-live.
 {
     'name': 'Timesheet customization',
-    'summary': "Modifications for employee timesheets",
-    'description': """Modifications for employee timesheets""",
-    'version': '1.0.1',
-    'category': '',
+    'summary': "[REMOVAL SHELL] Employee timesheet modifications - scheduled for uninstall",
+    'description': """
+        Load-only shell retained for the 17.0 -> 19.0 upgrade.
+        Keeps account_analytic_line.start_time / end_time and
+        project_task.real_start_time / partner_email so no column is dropped
+        before the customer signs off. The timesheet_grid wizard extension,
+        the views and the timer override are removed - which also drops the
+        timesheet_grid dependency.
+    """,
+    'version': '19.0.1.0.1',
+    'category': 'Services/Timesheets',
     'author': 'Nisus Solutions (Pvt) Ltd',
     'website': 'http://www.nisus.lk',
     'depends': [
-        'timesheet_grid', 'project'
+        'hr_timesheet',
+        'project',
     ],
-    'data': [
-        'views/hr_timesheet_views.xml',
-        'views/project_views.xml',
-        'wizard/project_task_create_timesheet_views.xml',
-        # 'security/hr_timesheet_security.xml',
-    ],
+    'data': [],
     'installable': True,
+    'application': False,
     'auto_install': False,
+    'license': 'LGPL-3',
 }
-
-# Actual Version 1.0.5

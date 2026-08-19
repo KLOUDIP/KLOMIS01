@@ -3,15 +3,17 @@
 
 {
     "name": "Website Hide Sales Orders and Quotations",
-    "version": "1.0.0",
-    "license": "AGPL-3",
+    'version': '19.0.1.0.0',
+    'license': 'OPL-1',
     "author": """TREVI Software,
         Odoo Community Association (OCA)""",
     "summary": """Hide orders &amp; quotations in the customer portal.""",
+    "description": "Hide sales orders and quotations in the customer portal home page.",
     "category": "Sales",
     "maintainers": ["TREVI Software"],
     "images": ["static/src/img/main_screenshot.png"],
-    "website": "https://github.com/trevi-software/trevi-misc",
+    'author': "VK Data ApS",
+    'website': "https://vkdata.dk",
     "depends": [
         "portal",
         "sale",
@@ -19,5 +21,8 @@
     "data": [
         "views/sale_portal_templates.xml",
     ],
-    "installable": True,
+    'license': 'OPL-1',
+    'application': False,
+    'installable': True,
+    'auto_install': False,
 }

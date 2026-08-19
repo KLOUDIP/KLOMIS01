@@ -4,9 +4,9 @@
     "summary": "This module allow to add task type to sale order, delivery order and invoice",
     "description": "This module allow to add task type to sale order, delivery order and invoice",
     'category': 'sale',
-    'version': '1.0.1',
-    "author": "Nisus Solutions (Pvt) Ltd",
-    "website": "https://nisus.lk/",
+    'version': '19.0.1.0.0',
+    'author': "VK Data ApS",
+    'website': "https://vkdata.dk",
     'data': [
         'views/sale_order_views.xml',
         'views/stock_picking_views.xml',
@@ -15,4 +15,8 @@
         'report/report_invoice.xml',
     ],
     'depends': ['sale', 'project', 'stock'],
+    'license': 'OPL-1',
+    'application': False,
+    'installable': True,
+    'auto_install': False,
 }

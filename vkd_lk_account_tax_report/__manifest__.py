@@ -1,6 +1,6 @@
 {
     'name': "Sri Lankan Tax Invoice Report",
-    'version': '17.0.1.2.9',
+    'version': '19.0.2.0.0',
     'category': 'Accounting',
     'summary': 'Sri Lankan Tax Invoice Report Customization',
     'description': """
@@ -24,7 +24,7 @@
     },
     'demo': [
     ],
-    'licence': 'OPL-1',
+    'license': 'OPL-1',
     'application': False,
     'installable': True,
     'auto_install': False,

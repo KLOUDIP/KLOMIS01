@@ -1,23 +1,23 @@
-# -*- encoding: utf-8 -*-
+# -*- coding: utf-8 -*-
+# KLOMIS01 v17 -> v19 REMOVAL SHELL - load-only, uninstall after go-live.
 {
     'name': 'FIOS Connector Active Unit Report',
-    'summary': """This module allow to print the FIOS active units report""",
-    'description': """This module allow to print the FIOS active units report""",
-    'version': '1.0.1',
+    'summary': "[REMOVAL SHELL] FIOS active units report - scheduled for uninstall",
+    'description': """
+        Load-only shell retained for the 17.0 -> 19.0 upgrade.
+        Only action_fios_active_units_send() survives, as a stub, because a
+        Studio customisation on the Contacts form has a button bound to it.
+        The report, wizard and mail template are removed.
+        Uninstall after go-live, then delete the folder.
+    """,
+    'version': '19.0.1.0.1',
     'category': 'Fleet',
     'author': 'Ranga Dharmapriya',
     'website': '',
     'depends': ['fios_connector'],
-    'data': [
-        'security/ir.model.access.csv',
-        'reports/ir_actions_report.xml',
-        'reports/ir_actions_report_templates.xml',
-        'views/res_partner_views.xml',
-        'data/mail_template_data.xml',
-        'wizard/fios_unit_report_wizard.xml'
-    ],
+    'data': [],
     'installable': True,
-    'application': True,
+    'application': False,
     'auto_install': False,
     'license': 'LGPL-3',
 }

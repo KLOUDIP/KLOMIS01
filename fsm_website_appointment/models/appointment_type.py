@@ -17,7 +17,7 @@ class AppointmentType(models.Model):
             'type': 'ir.actions.act_window',
             'res_model': 'project.task',
             'target': 'current',
-            'view_mode': 'tree,form',
+            'view_mode': 'list,form',
             'domain': [('id', 'in', task_ids), ('is_fsm', '=', True)],
         }
 

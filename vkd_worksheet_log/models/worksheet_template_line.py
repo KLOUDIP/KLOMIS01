@@ -10,8 +10,8 @@ class WorksheetTemplateLine(models.Model):
 
     def _get_sri_lanka_time(self):
         sri_lanka_tz = pytz.timezone('Asia/Colombo')
-        utc_now = datetime.datetime.utcnow()
-        local_time = pytz.utc.localize(utc_now).astimezone(sri_lanka_tz)
+        utc_now = datetime.datetime.now(datetime.timezone.utc)
+        local_time = utc_now.astimezone(sri_lanka_tz)
         return local_time.strftime("%Y-%m-%d %H:%M:%S")
 
     @api.model

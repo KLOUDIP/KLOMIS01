@@ -1,16 +1,16 @@
-# -*- encoding: utf-8 -*-
-from odoo import models, _
+# -*- coding: utf-8 -*-
+# KLOMIS01 v17 -> v19 REMOVAL SHELL - load-only.
+from odoo import models
+from odoo.exceptions import UserError
 
 
 class ResPartner(models.Model):
     _inherit = 'res.partner'
 
     def action_fios_active_units_send(self):
-        return {
-            'name': _('FIOS Active Unit Report'),
-            'type': 'ir.actions.act_window',
-            'res_model': 'fios.unit.report.wizard',
-            'view_mode': 'form',
-            'view_id': self.env.ref('fios_connector_report.fios_unit_report_wizard_view').id,
-            'target': 'new'
-        }
+        # IMPORTANT: this stub is the reason the module is kept at all.
+        # A Studio customisation on res.partner binds a button to this method;
+        # without it Odoo deactivates that custom view on first load.
+        raise UserError(
+            "The FIOS active units report is scheduled for removal and is no longer available."
+        )

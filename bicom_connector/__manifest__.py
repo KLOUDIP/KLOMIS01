@@ -1,28 +1,26 @@
 # -*- coding: utf-8 -*-
+# KLOMIS01 v17 -> v19 REMOVAL SHELL - load-only, uninstall after go-live.
 {
     "name": "BiCom Connector",
     "author": "Ranga Dharmapriya",
-    "email": "rangadharmapriya@gmail.com",
     "website": "",
-    "support": "",
     "category": "MISC",
-    "summary": "BiCom Integration with Odoo",
+    "summary": "[REMOVAL SHELL] BiCom Integration with Odoo - scheduled for uninstall",
     "description": """
-        This module allow to integrate BiCom with Odoo CRM
+        Load-only shell retained for the 17.0 -> 19.0 upgrade.
+        Models and fields are preserved so the schema and any Studio
+        customisations stay valid; all integration logic is removed.
+        Uninstall this module after go-live, then delete the folder.
     """,
-    "version": "17.0.1.0.4",
+    "version": "19.0.1.0.0",
     "depends": [
         'base',
-        'voip'
+        'voip',
     ],
-    "data": [
-        'data/ir_cron_data.xml',
-        'views/res_users_views.xml',
-        'views/res_partner_views.xml'
-    ],
+    "data": [],
     'assets': {},
     "application": False,
     "auto_install": False,
     "installable": True,
-    "license": 'LGPL-3'
+    "license": 'LGPL-3',
 }

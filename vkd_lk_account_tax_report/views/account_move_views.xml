@@ -5,23 +5,17 @@
         <field name="model">account.move</field>
         <field name="inherit_id" ref="account.view_move_form"/>
         <field name="arch" type="xml">
-
             <xpath expr="//field[@name='invoice_user_id']" position="after">
-                <field name="is_sri_lankan_format" invisible="True"/>
-                <field name="vat_18_amount" invisible="True"/>
+                <field name="is_sri_lankan_format" invisible="1"/>
+                <field name="vat_18_amount" invisible="1"/>
             </xpath>
-
-            <xpath expr="//page[@name='other_info']//group" position="inside">
-                <group string="Sri Lankan Tax Details" name="lk_tax_details">
-                    <field name="additional_info" placeholder="E.g. Bank Account details..."/>
-                </group>
+            <xpath expr="//page[@name='other_info']" position="inside">
+                <field name="additional_info" placeholder="Additional Information"/>
             </xpath>
-
-            <xpath expr="//field[@name='delivery_date']" position="after">
-                <field name="available_payment_method_ids" invisible="True"/>
+            <xpath expr="//page[@name='other_info']//field[@name='delivery_date']" position="after">
+                <field name="available_payment_method_ids" invisible="1"/>
                 <field name="payment_method_id"/>
             </xpath>
-
         </field>
     </record>
 </odoo>

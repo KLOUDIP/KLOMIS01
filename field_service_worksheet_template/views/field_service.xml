@@ -7,7 +7,7 @@
             <field name="arch" type="xml">
                 <field name='description' position="before">
                     <field name="worksheet_template_lines">
-                        <tree editable="bottom">
+                        <list editable="bottom">
                             <field name="name" readonly="1" force_save="1"/>
                             <field name="template_id" string="Worksheet Template"/>
                             <field name="select_user"/>
@@ -20,42 +20,42 @@
                             <field name="other" invisible="1"/>
 
                             <button type="object" class="btn btn-primary" string='UPDATE' name="action_fsm_worksheet_template"
-                                    attrs="{'invisible': [('template_id', '=', False)]}"/>
+                                    invisible="not template_id"/>
 
                             <button type="object" class="btn btn-primary" string='SIG' name="action_preview_worksheet"
-                                    attrs="{'invisible': [('template_id', '=', False)]}"/>
+                                    invisible="not template_id"/>
 
                             <button type="object" class="btn btn-primary" string='SND' name="action_worksheet_send"
-                                    attrs="{'invisible': [('template_id', '=', False)]}" context="{'default_composition_mode':'mass_mail'}"/>
+                                    invisible="not template_id" context="{'default_composition_mode':'mass_mail'}"/>
 
                             <button type="object" class="btn btn-primary" string='FD' name="action_to_create_expense_food"
-                                    attrs="{'invisible': ['|', ('template_id', '=', False), ('food', '!=', False)]}"/>
+                                    invisible="not template_id or food"/>
 
                             <button type="object" class="btn btn-primary" string='LD' name="action_to_create_expense_beverage"
-                                    attrs="{'invisible': ['|', ('template_id', '=', False), ('beverage', '!=', False)]}"/>
+                                    invisible="not template_id or beverage"/>
 
                             <button type="object" class="btn btn-primary" string='KM' name="action_to_create_expense_transport"
-                                    attrs="{'invisible': ['|', ('template_id', '=', False), ('transport', '!=', False)]}"/>
+                                    invisible="not template_id or transport"/>
 
                             <button type="object" class="btn btn-primary" string='EM' name="action_to_create_expense_extra_minutes"
-                                    attrs="{'invisible': ['|', ('template_id', '=', False), ('extra', '!=', False)]}"/>
+                                    invisible="not template_id or extra"/>
 
                             <button type="object" class="btn btn-primary" string='OP1' name="action_to_create_expense_other" context="{'product_val': 'other'}"
-                                    attrs="{'invisible': ['|', ('template_id', '=', False), ('other', '!=', False)]}"/>
+                                    invisible="not template_id or other"/>
 
                             <button type="object" class="btn btn-primary" string='OP2' name="action_to_create_expense_other" context="{'product_val': 'other_2'}"
-                                    attrs="{'invisible': ['|', ('template_id', '=', False), ('other_2', '!=', False)]}"/>
+                                    invisible="not template_id or other_2"/>
 
                             <button type="object" class="btn btn-primary" string='SP1' name="action_to_create_purchase_order" context="{'product_val': 'other_3'}"
-                                    attrs="{'invisible': ['|', ('template_id', '=', False), ('other_3', '!=', False)]}"/>
-                        </tree>
+                                    invisible="not template_id or other_3"/>
+                        </list>
                     </field>
 
                 </field>
 
                 <xpath expr="//button[@name='action_fsm_create_invoice'][2]" position="after">
                     <button class="btn btn-primary" name="action_task_temp" type="object" string="HelpDesk Ticket"
-                            attrs="{'invisible': [('fsm_done', '=', True)]}"/>
+                            invisible="fsm_done"/>
                 </xpath>
 
                 <xpath expr="//button[@name='action_fsm_worksheet']" position="replace">
@@ -65,7 +65,7 @@
                 <xpath expr="//div[@name='button_box']" position="after">
                     <field name="mark_as_done_rec" invisible="1"/>
                     <div role="alert" class="alert-success p-3 text-center"
-                         attrs="{'invisible': [('mark_as_done_rec', '=', False),]}">
+                         invisible="not mark_as_done_rec">
                         <span class="align-middle">This Task has Done</span>
                     </div>
                 </xpath>
