@@ -423,12 +423,20 @@ class WorksheetTemplateLine(models.Model):
         self.ensure_one()
         return 'Worksheet %s - %s' % (self.project_task_id.name, self.project_task_id.partner_id.name)
 
-    @api.model
-    def create(self, vals):
-        if 'name' in vals:
-            if vals['name'] == False:
-                vals['name'] = self.env['ir.sequence'].next_by_code('worksheet.template.line', sequence_date=None) or _('New')
-        result = super(WorksheetTemplateLine, self).create(vals)
-        return result
+    # @api.model
+    # def create(self, vals):
+    #     if 'name' in vals:
+    #         if vals['name'] == False:
+    #             vals['name'] = self.env['ir.sequence'].next_by_code('worksheet.template.line', sequence_date=None) or _('New')
+    #     result = super(WorksheetTemplateLine, self).create(vals)
+    #     return result
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        for vals in vals_list:
+            if not vals.get('name'):
+                vals['name'] = self.env['ir.sequence'].next_by_code(
+                    'worksheet.template.line', sequence_date=None) or _('New')
+        return super().create(vals_list)
 
 

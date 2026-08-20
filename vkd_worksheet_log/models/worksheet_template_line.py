@@ -14,26 +14,46 @@ class WorksheetTemplateLine(models.Model):
         local_time = utc_now.astimezone(sri_lanka_tz)
         return local_time.strftime("%Y-%m-%d %H:%M:%S")
 
-    @api.model
-    def create(self, vals):
-        if 'name' in vals:
-            if vals['name'] == False:
-                vals['name'] = self.env['ir.sequence'].next_by_code('worksheet.template.line', sequence_date=None) or _(
-                    'New')
+    # @api.model
+    # def create(self, vals):
+    #     if 'name' in vals:
+    #         if vals['name'] == False:
+    #             vals['name'] = self.env['ir.sequence'].next_by_code('worksheet.template.line', sequence_date=None) or _(
+    #                 'New')
+    #
+    #     result = super(WorksheetTemplateLine, self).create(vals)
+    #
+    #     if result.project_task_id:
+    #         current_user = self.env.user.name
+    #         current_time = self._get_sri_lanka_time()
+    #         worksheet_number = result.name or 'Unknown'
+    #
+    #         log_message = _("Added worksheet number: %s At Date/time: %s By user: %s") % (
+    #             worksheet_number, current_time, current_user
+    #         )
+    #         result.project_task_id.message_post(body=log_message, message_type='comment')
+    #
+    #     return result
 
-        result = super(WorksheetTemplateLine, self).create(vals)
+    @api.model_create_multi
+    def create(self, vals_list):
+        for vals in vals_list:
+            if not vals.get('name'):
+                vals['name'] = self.env['ir.sequence'].next_by_code(
+                    'worksheet.template.line', sequence_date=None) or _('New')
 
-        if result.project_task_id:
-            current_user = self.env.user.name
-            current_time = self._get_sri_lanka_time()
-            worksheet_number = result.name or 'Unknown'
+        records = super().create(vals_list)
 
-            log_message = _("Added worksheet number: %s At Date/time: %s By user: %s") % (
-                worksheet_number, current_time, current_user
-            )
-            result.project_task_id.message_post(body=log_message, message_type='comment')
+        current_user = self.env.user.name
+        current_time = self._get_sri_lanka_time()
+        for result in records:
+            if result.project_task_id:
+                log_message = _("Added worksheet number: %s At Date/time: %s By user: %s") % (
+                    result.name or 'Unknown', current_time, current_user
+                )
+                result.project_task_id.message_post(body=log_message, message_type='comment')
 
-        return result
+        return records
 
     def write(self, vals):
         skip_fields = {'line_add', 'worksheet_id', '__last_update', 'access_token',
