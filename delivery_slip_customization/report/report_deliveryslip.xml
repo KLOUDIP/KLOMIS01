@@ -22,4 +22,36 @@
             </t>
         </xpath>
     </template>
+
+    <!--
+        Kit components that sit inside a package are printed twice on the
+        delivery slip.
+
+        stock.report_delivery_document prints, per package, every move line
+        matching `result_package_id == package or
+        package_history_id.outermost_dest_id == package`.  mrp then appends its
+        kit sections inside the "no package assigned" block, but
+        mrp.stock_report_delivery_kit_sections builds its line set from
+        `o.move_ids.move_line_ids` - the whole picking - instead of the
+        unpackaged subset the surrounding block is about.  A kit component that
+        was put in a package therefore appears once under the package and again
+        under the kit header.
+
+        Restrict the kit sections to move lines that are not already printed in
+        a package section, and derive the kit headers from that same set so a
+        kit whose components are all packaged does not get an empty header.
+    -->
+    <template id="stock_report_delivery_kit_sections_no_duplicate"
+              inherit_id="mrp.stock_report_delivery_kit_sections">
+        <xpath expr="//t[@t-set='all_kits_move_lines']" position="replace">
+            <t t-set="all_kits_move_lines"
+               t-value="o.move_ids.move_line_ids.filtered(
+                   lambda l: l.move_id.bom_line_id.bom_id.type == 'phantom'
+                   and not (o.packages_count and (l.result_package_id or l.package_history_id.outermost_dest_id))
+               )"/>
+        </xpath>
+        <xpath expr="//t[@t-set='boms']" position="replace">
+            <t t-set="boms" t-value="all_kits_move_lines.mapped('move_id.bom_line_id.bom_id')"/>
+        </xpath>
+    </template>
 </odoo>
