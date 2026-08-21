@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!--
+        Transfers that were orphaned before this fix keep their stored
+        sale_id = NULL, because a stored computed field is only recomputed when
+        one of its dependencies changes. This queues them for recomputation.
+
+        Inventory > Transfers > (optionally select some) > Actions >
+        "Relink Transfers to Sales Orders".
+        With nothing selected it sweeps every transfer that has no sales order.
+
+        Idempotent - transfers that genuinely belong to no order stay unlinked.
+    -->
+    <record id="action_relink_transfers_to_sale_orders" model="ir.actions.server">
+        <field name="name">Relink Transfers to Sales Orders</field>
+        <field name="model_id" ref="stock.model_stock_picking"/>
+        <field name="binding_model_id" ref="stock.model_stock_picking"/>
+        <field name="binding_view_types">list,form</field>
+        <field name="state">code</field>
+        <field name="code">
+env['stock.picking'].action_relink_transfers_to_sale_orders(pickings=records)
+        </field>
+    </record>
+
+    <!--
+        Explains, per transfer, why it is or is not attached to a Sales Order:
+        origin, backorder_id, return_id, the stock.reference chain, and every
+        move with its sale line and its chain neighbours.
+
+        Inventory > Transfers > select the transfer > Actions >
+        "Diagnose Sales Order Link".  Output goes to the server log.
+        Writes nothing.
+    -->
+    <record id="action_diagnose_sale_link" model="ir.actions.server">
+        <field name="name">Diagnose Sales Order Link</field>
+        <field name="model_id" ref="stock.model_stock_picking"/>
+        <field name="binding_model_id" ref="stock.model_stock_picking"/>
+        <field name="binding_view_types">list,form</field>
+        <field name="state">code</field>
+        <field name="code">
+records.action_diagnose_sale_link()
+        </field>
+    </record>
+
+    <!--
+        From the Sales Order side: compares what core linked (picking_ids, i.e.
+        stock.picking.sale_id) against what actually belongs to the order, and
+        names the transfers core is missing.
+
+        Sales > Orders > select the order > Actions > "Diagnose Order Transfers".
+        Writes nothing.
+    -->
+    <record id="action_diagnose_order_transfers" model="ir.actions.server">
+        <field name="name">Diagnose Order Transfers</field>
+        <field name="model_id" ref="sale.model_sale_order"/>
+        <field name="binding_model_id" ref="sale.model_sale_order"/>
+        <field name="binding_view_types">list,form</field>
+        <field name="state">code</field>
+        <field name="code">
+for order in records:
+    linked = order.picking_ids
+    everything = order._get_related_transfers()
+    missing = everything - linked
+    _logger.info("%s: picking_ids=%s, resolved=%s, core is missing %s",
+                 order.name, len(linked), len(everything), len(missing))
+    _logger.info("  linked   : %s", ", ".join(linked.mapped('name')) or "-")
+    _logger.info("  resolved : %s", ", ".join(everything.mapped('name')) or "-")
+    for picking in missing:
+        _logger.info("  MISSING  : %s (origin=%s, sale_id=%s, backorder=%s, return=%s)",
+                     picking.name, picking.origin or "-",
+                     picking.sale_id.name or "EMPTY",
+                     picking.backorder_id.name or "-",
+                     picking.return_id.name or "-")
+        </field>
+    </record>
+
+</odoo>

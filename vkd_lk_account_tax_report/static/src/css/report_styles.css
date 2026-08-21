@@ -1,7 +1,16 @@
     .lk-invoice {
-    /* remove unwanted space */
-    margin-top: -70px !important;
-    padding-top: -70px !important;
+    /* Odoo 19: was margin-top/padding-top: -70px, to claw back the vertical
+       space left by the standard address block. That block is now suppressed
+       properly - the inheriting template blanks `address`,
+       `information_block` and `layout_document_title` - so there is no gap to
+       close, and the negative offset is what pushed the "Tax Invoice" /
+       "Tax Credit Note" title box off the top of the page.
+       (padding-top: -70px was never valid CSS in the first place: negative
+       padding is ignored by every renderer.)
+       If a gap does reappear on your layout, tune this single value rather
+       than reintroducing the -70px. */
+    margin-top: 0 !important;
+    padding-top: 0 !important;
     }
     .lk-box {
     border: 1px solid black;
