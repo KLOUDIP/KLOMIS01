@@ -134,6 +134,33 @@ class SaleOrderRecurring(models.Model):
                 or recurring.env.company.currency_id
             )
 
+    def _discard_pricing_line(self, new_sol):
+        """Detach *and forget* the in-cache sale.order.line used only for pricing.
+
+        Setting ``order_id = False`` is not enough: the record stays queued in
+        ``env.transaction.tocompute`` for the stored computed fields of
+        sale.order.line (price_subtotal/price_total/price_tax).
+        ``Field.recompute()`` batches all pending ids together via
+        ``expand_ids()``, so the next read of ``price_subtotal`` on a *real*
+        order line drags this order-less line into the same ``_compute_amount``
+        call - where it has no currency and the tax engine asserts on
+        ``precision_rounding == 0.0``.
+
+        Dropping it from ``tocompute`` is enough and is the only safe thing to
+        do here. Do NOT call ``invalidate_recordset()`` on the throw-away line:
+        that also invalidates the *inverse* of every relational field with
+        ``ids=None``, which wipes ``sale.order.order_line`` out of the cache for
+        every order in the transaction - including the one the onchange is
+        currently building, whose lines would then silently disappear.
+        """
+        env = new_sol.env
+        # Unset first: writing order_id re-marks the dependent stored computes,
+        # so the tocompute cleanup below has to come after it.
+        new_sol.order_id = False
+        for field in new_sol._fields.values():
+            if field.store and field.compute:
+                env.remove_to_compute(field, new_sol)
+
     @api.depends('product_id', 'uom_id', 'quantity')
     def _compute_price_unit(self):
         for recurring in self:
@@ -144,8 +171,7 @@ class SaleOrderRecurring(models.Model):
                 recurring._get_values_to_add_to_order())
             new_sol._compute_price_unit()
             recurring.price_unit = new_sol.price_unit
-            # Avoid attaching the new line when called on template change
-            new_sol.order_id = False
+            recurring._discard_pricing_line(new_sol)
 
     @api.depends('product_id', 'uom_id', 'quantity')
     def _compute_discount(self):
@@ -157,8 +183,7 @@ class SaleOrderRecurring(models.Model):
                 recurring._get_values_to_add_to_order())
             new_sol._compute_discount()
             recurring.discount = new_sol.discount
-            # Avoid attaching the new line when called on template change
-            new_sol.order_id = False
+            recurring._discard_pricing_line(new_sol)
 
     @api.depends('product_id', 'company_id', 'order_id.fiscal_position_id')
     def _compute_tax_ids(self):
