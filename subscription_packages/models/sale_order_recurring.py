@@ -22,8 +22,14 @@ class SaleOrderRecurring(models.Model):
         comodel_name='sale.order',
         string="Sales Order Reference",
         ondelete='cascade', index=True)
+    # precompute=True is required here, not cosmetic: currency_id, tax_ids and
+    # the price_* fields all declare precompute=True and depend on company_id.
+    # Without it each of them logs "cannot be precomputed as it depends on
+    # non-precomputed field sale.order.recurring.company_id" at registry load
+    # and silently falls back to a post-create recompute.
     company_id = fields.Many2one(
-        related='order_id.company_id', store=True, index=True)
+        related='order_id.company_id', store=True, index=True,
+        precompute=True)
     line_id = fields.Many2one(
         comodel_name='sale.order.line', ondelete='set null', copy=False)
     sequence = fields.Integer(

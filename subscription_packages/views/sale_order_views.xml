@@ -29,7 +29,10 @@
                                 <field name="uom_id" groups="uom.group_uom"/>
                                 <field name="price_unit" force_save="1"/>
                                 <field name="tax_ids" widget="many2many_tags"/>
-                                <field name="discount" groups="product.group_discount_per_so_line"/>
+                                <!-- product.group_discount_per_so_line does not exist in Odoo 19.
+                                     An unresolvable group makes Odoo drop the field for everyone,
+                                     which is why the Discount column vanished from this tab. -->
+                                <field name="discount"/>
                                 <field name="is_present"/>
                                 <field name="currency_id" invisible="1"/>
                                 <field name="price_subtotal"/>
@@ -81,7 +84,6 @@
                             <field name="tax_ids" widget="many2many_tags"/>
                             <field name="discount"
                                    string="Disc.%"
-                                   groups="product.group_discount_per_so_line"
                                    optional="show"/>
                             <field name="is_present" column_invisible="True"/>
                             <field name="price_subtotal"/>
