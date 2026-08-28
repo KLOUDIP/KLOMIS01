@@ -21,7 +21,7 @@
     'category': 'Human Resources/Contracts',
     'version': '19.0.2.0.0',
     'license': 'OPL-1',
-    'depends': ['hr'],
+    'depends': ['hr', 'hr_payroll'],
     'data': [
         'views/hr_version_views.xml'
     ],

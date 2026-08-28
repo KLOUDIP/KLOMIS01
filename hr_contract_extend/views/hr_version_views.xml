@@ -19,4 +19,16 @@
             </xpath>
         </field>
     </record>
+
+    <record id="hr_version_list_view" model="ir.ui.view">
+        <field name="name">hr.version.list.show.view.button</field>
+        <field name="model">hr.version</field>
+        <field name="inherit_id" ref="hr.hr_version_list_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//button[@name='action_open_version_form_view']"
+                   position="attributes">
+                <attribute name="groups">hr_payroll.group_hr_payroll_manager</attribute>
+            </xpath>
+        </field>
+    </record>
 </odoo>
