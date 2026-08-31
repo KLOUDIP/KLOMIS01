@@ -4,6 +4,13 @@ from odoo.exceptions import UserError
 
 _logger = logging.getLogger(__name__)
 
+# Only a write that actually changes the *content* of the order may trigger a
+# rebuild of the optional-products block. Bookkeeping writes - the ones
+# _create_recurring_invoice() and the invoicing cron perform on
+# next_invoice_date / invoice_status / last_invoice_date - must never do so.
+OPTIONAL_TRIGGER_FIELDS = {'order_line', 'plan_id', 'partner_id', 'pricelist_id'}
+
+
 class SaleOrder(models.Model):
     _inherit = 'sale.order'
 
@@ -17,20 +24,75 @@ class SaleOrder(models.Model):
     def write(self, vals):
         res = super().write(vals)
 
-        for order in self:
-            if order.is_subscription and order.order_line and not order._get_optional_products_section():
-                subscription_lines = order.order_line.filtered(lambda l: l.product_id.recurring_invoice)
-                if subscription_lines:
-                    has_free_plan_products = any(
-                        line.product_id.product_tmpl_id.is_free_plan
-                        or getattr(line.product_id.product_tmpl_id, 'is_fios_free_plan', False)
-                        for line in subscription_lines
-                    )
+        # Guard 1 - recursion: creating the block itself writes on the order.
+        if self.env.context.get('skip_optional_products'):
+            return res
+        # Guard 2 - only content-changing writes may rebuild the block.
+        if not (OPTIONAL_TRIGGER_FIELDS & set(vals)):
+            return res
 
-                    # Only add optional products if no free plan products are present
-                    if not has_free_plan_products:
-                        order._add_optional_products()
+        for order in self:
+            order._sync_optional_products()
         return res
+
+    def _allow_optional_products(self):
+        """Whether the optional-products block belongs on this order.
+
+        The block is a *sales* tool: it lets a salesperson hand a customer a
+        quotation with add-ons they can tick. It must never be built on an
+        order the customer is driving themselves, because in Odoo 19 optional
+        products are plain ``sale.order.line`` records - so anything added here
+        shows up in the eCommerce cart, in checkout and in the portal exactly
+        like a product the customer chose.
+        """
+        self.ensure_one()
+
+        # Confirmed orders / subscriptions in progress are not being quoted.
+        if self.state != 'draft':
+            return False
+
+        # eCommerce: a draft order carrying a website_id IS the customer's live
+        # cart. Injecting lines into it is what made every product show up on
+        # /shop/cart and blocked online ordering.
+        if self.website_id:
+            return False
+
+        # Belt and braces: only an internal user preparing a quotation may
+        # trigger this. Portal/public writes (cart updates, portal "add to my
+        # subscription", payment callbacks) run as the public or portal user
+        # even when sudo'ed, so this also covers website flows that reach
+        # sale.order without a website_id.
+        if not self.env.user._is_internal():
+            return False
+
+        if not self.is_subscription or not self.order_line:
+            return False
+
+        if self._get_optional_products_section():
+            return False
+
+        subscription_lines = self.order_line.filtered(
+            lambda l: l.product_id.recurring_invoice)
+        if not subscription_lines:
+            return False
+
+        # Free plans get no upsell block.
+        has_free_plan_products = any(
+            line.product_id.product_tmpl_id.is_free_plan
+            or getattr(line.product_id.product_tmpl_id, 'is_fios_free_plan', False)
+            for line in subscription_lines
+        )
+        if has_free_plan_products:
+            return False
+
+        return True
+
+    def _sync_optional_products(self):
+        """Add the optional-products block, but only where it belongs."""
+        self.ensure_one()
+        if not self._allow_optional_products():
+            return
+        self._add_optional_products()
 
     def _get_optional_products_section(self):
         """The 'Optional Products' feature no longer uses a separate `sale.order.option`
@@ -64,6 +126,7 @@ class SaleOrder(models.Model):
             ('recurring_invoice', '=', True),
             ('is_free_plan', '=', False),
             ('type', '!=', 'combo'),
+            ('sale_ok', '=', True),
         ])
 
         # Only offer optional products of the SAME platform as this subscription:
@@ -99,7 +162,11 @@ class SaleOrder(models.Model):
         if not optional_products:
             return
 
-        base_sequence = max(self.order_line.mapped('sequence'), default=0) + 10
+        # The block must sort *below* every existing line: sale.order.line
+        # _compute_parent_id assigns parenthood by sequence order, so a section
+        # landing above real lines turns those lines into optional ones and
+        # silently removes them from the totals and from invoicing.
+        base_sequence = max(self.order_line.mapped('sequence'), default=0) + 100
         section_vals = {
             'order_id': self.id,
             'display_type': 'line_section',
@@ -130,7 +197,9 @@ class SaleOrder(models.Model):
                 'sequence': base_sequence + index,
             })
 
-        self.env['sale.order.line'].create([section_vals] + option_lines_vals)
+        self.env['sale.order.line'].with_context(
+            skip_optional_products=True,
+        ).create([section_vals] + option_lines_vals)
 
     def prepare_decrease_order(self):
         """Create a new quantity decrease order from subscription"""
