@@ -2,7 +2,7 @@
 
 {
     'name': 'Payment Provider: Sampath Bank',
-    'version': '19.0.1.0.0',
+    'version': '19.0.1.1.0',
     "author": "Ranga Dharmapriya",
     "email": "rangadharmapriya@gmail.com",
     'category': 'Accounting/Payment Providers',

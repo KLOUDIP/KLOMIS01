@@ -45,58 +45,101 @@ class PaymentProvider(models.Model):
             return 'https://sampath.paycorp.lk/rest/service/proxy'
 
     def _sampath_make_request(self, payload=None):
-        """ Make a request to Sampath API at the specified endpoint. """
+        """ Post to the Paycorp proxy and ALWAYS return a parsed dict.
+
+        Paycorp can answer 200 OK with a body that is not JSON (empty body,
+        an HTML error page, a WAF/proxy block page). Calling `.json()` on that
+        raises `json.JSONDecodeError: Expecting value: line 1 column 1 (char 0)`,
+        which Odoo shows to the shopper as "Payment processing failed".
+        Everything below exists so that the raw body reaches the log and the
+        shopper gets a meaningful message instead.
+        """
         self.ensure_one()
         url = self._sampath_get_api_url()
-        hmac_secret = self._sampath_generate_hmac(payload)
+
+        # The HMAC must be computed over the EXACT bytes that are sent, so build
+        # the body once and post it with `data=`, never with `json=`.
+        raw_payload = json.dumps(payload, separators=(',', ':'))
+        hmac_secret = self._sampath_generate_hmac(raw_payload)
 
         headers = {
             'AUTHTOKEN': self.sampath_auth_token,
             'HMAC': hmac_secret,
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
         }
 
+        _logger.info(
+            "Sampath: sending %s to %s\npayload: %s",
+            (payload or {}).get('operation'), url, pprint.pformat(payload),
+        )
+
         try:
-            response = requests.post(url, json=payload, headers=headers, timeout=10)
-            try:
-                response.raise_for_status()
-            except requests.exceptions.HTTPError:
-                _logger.exception(
-                    "Invalid API request at %s with data:\n%s", url, pprint.pformat(payload),
-                )
-
-                # Prevent JSON decoder crash if Sampath returns an HTML error (e.g. 502/504)
-                try:
-                    response_content = response.json()
-                    error_code = response_content.get('error', 'N/A')
-                    error_message = response_content.get('message', 'Unknown Error')
-                except ValueError:
-                    error_code = response.status_code
-                    error_message = response.text
-
-                raise ValidationError("Sampath: " + _(
-                    "The communication with the API failed. Information: '%s' (code %s)", error_message, error_code
-                ))
-
+            response = requests.post(
+                url, data=raw_payload.encode('utf-8'), headers=headers, timeout=30,
+            )
         except (requests.exceptions.ConnectionError, requests.exceptions.Timeout):
-            _logger.exception("Unable to reach endpoint at %s", url)
+            _logger.exception("Sampath: unable to reach endpoint at %s", url)
             raise ValidationError(
                 "Sampath: " + _("Could not establish the connection to the API.")
             )
 
-        return response
+        body = response.text or ''
 
-    def _sampath_generate_hmac(self, payload):
-        """ Generate HMAC for payload security """
-        # Ensure the secret is present to avoid NoneType encoding errors
+        # Log the raw answer unconditionally: this is the only place the real
+        # cause of a non-JSON reply is visible.
+        _logger.info(
+            "Sampath: HTTP %s from %s (content-type: %s)\nbody: %s",
+            response.status_code,
+            url,
+            response.headers.get('Content-Type'),
+            body[:2000] if body else '<EMPTY BODY>',
+        )
+
+        try:
+            data = response.json()
+        except ValueError:
+            _logger.error(
+                "Sampath: non-JSON response (HTTP %s, content-type %s). "
+                "Body was:\n%s",
+                response.status_code,
+                response.headers.get('Content-Type'),
+                body[:2000] if body else '<EMPTY BODY>',
+            )
+            raise ValidationError("Sampath: " + _(
+                "The gateway returned an unreadable response (HTTP %(status)s). "
+                "Raw answer: %(body)s",
+                status=response.status_code,
+                body=(body[:300] if body.strip() else _("empty body")),
+            ))
+
+        if response.status_code != 200:
+            error_message = data.get('message') or data.get('errorMessage') or body[:300]
+            error_code = data.get('error') or data.get('errorCode') or response.status_code
+            _logger.error(
+                "Sampath: API error at %s with data:\n%s\nresponse:\n%s",
+                url, pprint.pformat(payload), pprint.pformat(data),
+            )
+            raise ValidationError("Sampath: " + _(
+                "The communication with the API failed. Information: '%s' (code %s)",
+                error_message, error_code,
+            ))
+
+        return data
+
+    def _sampath_generate_hmac(self, raw_payload):
+        """ Generate the HMAC header for the exact request body being sent.
+
+        :param str raw_payload: the serialised JSON body, byte-for-byte as posted
+        """
         if not self.sampath_hmac_secret:
             raise ValidationError(
                 _("Sampath HMAC Secret is not configured. Please check your payment provider settings."))
 
-        # Using separators ensures Python doesn't inject spaces that alter the payload hash
-        raw_payload = json.dumps(payload, separators=(',', ':'))
+        # Accept a dict for backwards compatibility with the previous signature.
+        if isinstance(raw_payload, dict):
+            raw_payload = json.dumps(raw_payload, separators=(',', ':'))
 
-        # UTF-8 encoding is explicitly required in Python 3.12+ to prevent byte mismatches
         hmac_object = hmac.new(
             key=self.sampath_hmac_secret.encode('utf-8'),
             msg=raw_payload.encode('utf-8'),
