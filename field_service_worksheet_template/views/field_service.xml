@@ -8,16 +8,21 @@
                 <field name='description' position="before">
                     <field name="worksheet_template_lines">
                         <list editable="bottom">
+                            <field name="select_vals" string="Select"/>
                             <field name="name" readonly="1" force_save="1"/>
                             <field name="template_id" string="Worksheet Template"/>
+                            <field name="fleet_id"/>
                             <field name="select_user"/>
-                            <field name="expense_id" invisible="1"/>
-                            <field name="is_telematics_technicians" invisible="1"/>
+                            <field name="expense_id" column_invisible="1"/>
+                            <field name="is_telematics_technicians" column_invisible="1"/>
                             <field name="done_mark" readonly="is_telematics_technicians == True"/>
-                            <field name="food" invisible="1"/>
-                            <field name="transport" invisible="1"/>
-                            <field name="beverage" invisible="1"/>
-                            <field name="other" invisible="1"/>
+                            <field name="food" column_invisible="1"/>
+                            <field name="extra" column_invisible="1"/>
+                            <field name="transport" column_invisible="1"/>
+                            <field name="beverage" column_invisible="1"/>
+                            <field name="other" column_invisible="1"/>
+                            <field name="other_2" column_invisible="1"/>
+                            <field name="other_3" column_invisible="1"/>
 
                             <button type="object" class="btn btn-primary" string='UPDATE' name="action_fsm_worksheet_template"
                                     invisible="not template_id"/>
@@ -53,10 +58,10 @@
 
                 </field>
 
-                <xpath expr="//button[@name='action_fsm_create_invoice'][2]" position="after">
-                    <button class="btn btn-primary" name="action_task_temp" type="object" string="HelpDesk Ticket"
-                            invisible="fsm_done"/>
-                </xpath>
+                <!-- The "HelpDesk Ticket" / "Create New Task" buttons now come from
+                     field_service_worksheet_template.view_task_form_worksheet_move_buttons,
+                     which is anchored on the base task form header and therefore applies
+                     to this primary view too. Adding one here again would duplicate it. -->
 
                 <xpath expr="//button[@name='action_fsm_worksheet']" position="replace">
 

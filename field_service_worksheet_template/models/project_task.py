@@ -128,34 +128,46 @@ class ProjectTaskLine(models.Model):
 
                 task.write(values)
 
-    def action_create_new_task(self):
-        get_ids = self.mapped('worksheet_template_lines').filtered(lambda x: x.select_vals == True)
-        if not get_ids:
-            raise UserError(_(
-                "Please Select at least one Worksheet"))
-        else:
-            get_mark_as_done = get_ids.filtered(lambda x: x.done_mark == True)
-            if get_mark_as_done:
-                raise UserError(_(
-                    "You can not add mark as done worksheet(s) to create a new task."))
-            else:
-                count = self.search_count([('name', 'like', self.name)])
-                if count == 0:
-                    count = ""
-                return {
-                    'type': 'ir.actions.act_window',
-                    'name': _('Create a Field Task'),
-                    'res_model': 'task.wizard',
-                    'view_mode': 'form',
-                    'target': 'new',
-                    'context': {
-                        'product_val': 'transport',
-                        'default_name': self.name + '-' + str(count),
-                        'default_partner_id': self.partner_id.id,
-                        'fsm_task_ids': self.id,
+    def _get_follow_up_task_name(self):
+        """Suggest a name for the follow-up task, e.g. "Install GPS" -> "Install GPS-2".
 
-                    },
-                }
+        The base name is never trimmed: many task names legitimately end in
+        "-<digits>" (fleet codes), and stripping that would rename the job.
+        """
+        self.ensure_one()
+        base = self.name or _('Task')
+        existing = self.search_count([('name', '=like', base.replace('_', r'\_') + '%')])
+        return '%s-%s' % (base, existing + 1)
+
+    def action_create_new_task(self):
+        """Move the ticked (unfinished) worksheets of this task onto a brand new task."""
+        self.ensure_one()
+        lines = self.worksheet_template_lines.filtered(lambda line: line.select_vals)
+        if not lines:
+            raise UserError(_(
+                "Please tick the Select box on at least one worksheet before creating a new task."))
+
+        done_lines = lines.filtered(lambda line: line.done_mark)
+        if done_lines:
+            raise UserError(_(
+                "Worksheets already marked as done cannot be moved to a new task:\n%s",
+                "\n".join("- %s" % line.display_name for line in done_lines)))
+
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Create a Field Task'),
+            'res_model': 'task.wizard',
+            'view_mode': 'form',
+            'views': [(self.env.ref('field_service_worksheet_template.task_wizard_view').id, 'form')],
+            'target': 'new',
+            'context': {
+                'active_id': self.id,
+                'active_ids': self.ids,
+                'active_model': 'project.task',
+                'default_name': self._get_follow_up_task_name(),
+                'default_partner_id': self.partner_id.id,
+            },
+        }
 
     def get_extra_minutes_expenses(self):
         pro_id = False

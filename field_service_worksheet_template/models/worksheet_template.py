@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import collections
-from odoo import models, tools
+from odoo import models
 
 
 class ProjectWorksheetTemplateCustom(models.Model):
@@ -118,10 +118,11 @@ class ProjectWorksheetTemplateCustom(models.Model):
         # this must be done after form view creation and filling the 'model_id' field
         self.sudo()._generate_qweb_report_template()
 
-        # Add unique constraint on the x_model_id field since we want one worksheet per host record
-        conname = '%s_x_%s_id_uniq' % (name, res_model)
-        concode = 'unique(x_%s_id)' % (res_model)
-        tools.add_constraint(self.env.cr, name, conname, concode)
+        # NOTE: standard Odoo adds a unique(x_<res_model>_id) constraint here so a host
+        # record can only ever carry one worksheet. This module deliberately puts MANY
+        # worksheet lines (and therefore many worksheets) on a single task, and moving
+        # unfinished worksheets to another task re-points x_<res_model>_id at the new
+        # task. Both break under that constraint, so it is intentionally not added.
 
     def _prepare_default_fields_values(self):
         res = super(ProjectWorksheetTemplateCustom, self)._prepare_default_fields_values()

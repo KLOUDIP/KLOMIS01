@@ -164,14 +164,6 @@
                             groups="field_service_worksheet_template.group_coordinator_fsm,industry_fsm.group_fsm_manager"
                     />
                 </xpath>
-                <xpath expr="(//button[@name='action_fsm_validate'])[2]" position="after">
-                    <button class="btn btn-primary" name="action_task_temp" type="object" string="HelpDesk Ticket"
-                            invisible="fsm_done == True" groups="field_service_worksheet_template.group_coordinator_fsm,industry_fsm.group_fsm_manager"/>
-
-                    <button class="btn btn-primary" name="action_create_new_task" type="object" string="Create New Task"
-                            invisible="fsm_done == True" groups="field_service_worksheet_template.group_coordinator_fsm,industry_fsm.group_fsm_manager"/>
-                </xpath>
-
                 <xpath expr="//field[@name='is_task_phone_update']" position="after">
                     <label for="partner_mobile" invisible="not is_fsm"/>
                     <div class="o_row o_row_readonly" invisible="not is_fsm">
@@ -179,6 +171,41 @@
                         <span class="fa fa-exclamation-triangle text-warning oe_edit_only" title="By saving this change, the customer mobile number will also be updated." invisible="not partner_id or not is_task_phone_update"/>
                     </div>
                 </xpath>
+            </field>
+        </record>
+
+        <!--
+            "HelpDesk Ticket" and "Create New Task" are anchored on the BASE task form
+            header so they show up on every variant of the task form (Field Service,
+            a task opened from a Helpdesk ticket, or the plain Project task form).
+            They used to hang off (//button[@name='action_fsm_validate'])[2] inside the
+            industry_fsm inherit, which silently disappeared whenever that button count
+            changed upstream.
+        -->
+        <record id="view_task_form_worksheet_move_buttons" model="ir.ui.view">
+            <field name="name">project.task.form.worksheet.move.buttons</field>
+            <field name="model">project.task</field>
+            <field name="inherit_id" ref="project.view_task_form2"/>
+            <field name="priority">99</field>
+            <field name="arch" type="xml">
+                <header position="inside">
+                    <!-- declared here so the modifiers below resolve on every form
+                         variant, even if the industry_fsm inherit is ever disabled -->
+                    <field name="fsm_done" invisible="1"/>
+                    <button class="btn btn-primary"
+                            name="action_task_temp"
+                            type="object"
+                            string="HelpDesk Ticket"
+                            invisible="fsm_done"
+                            groups="field_service_worksheet_template.group_coordinator_fsm,industry_fsm.group_fsm_manager"/>
+                    <button class="btn btn-primary"
+                            name="action_create_new_task"
+                            type="object"
+                            string="Create New Task"
+                            invisible="fsm_done"
+                            help="Tick the worksheets that are not finished, then click here to move them onto a brand new task."
+                            groups="field_service_worksheet_template.group_coordinator_fsm,industry_fsm.group_fsm_manager"/>
+                </header>
             </field>
         </record>
 

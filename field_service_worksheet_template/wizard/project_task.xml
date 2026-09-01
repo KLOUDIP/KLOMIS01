@@ -2,7 +2,7 @@
 <odoo>
     <data>
         <record model="ir.ui.view" id="task_wizard_view">
-            <field name="name">ticket wizard view</field>
+            <field name="name">task.wizard.form</field>
             <field name="model">task.wizard</field>
             <field name="arch" type="xml">
                 <form string="Fill this details">
