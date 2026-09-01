@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!--
+        Dedicated group that keeps the delete right. It is implied by
+        Settings / Administration, so every user whose Role is "Administrator"
+        gets it automatically; nobody else does unless you tick it manually.
+    -->
+    <record id="group_allow_record_deletion" model="res.groups">
+        <field name="name">Allow Record Deletion</field>
+        <field name="comment">Users in this group can delete Tickets, Quotations,
+            Invoices and Tasks. Implied by Settings / Administration.</field>
+    </record>
+
+    <record id="base.group_system" model="res.groups">
+        <field name="implied_ids"
+               eval="[(4, ref('group_allow_record_deletion'))]"/>
+    </record>
+
+</odoo>

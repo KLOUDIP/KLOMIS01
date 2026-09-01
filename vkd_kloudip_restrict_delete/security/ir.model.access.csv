@@ -1,0 +1,6 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_helpdesk_ticket_delete,helpdesk.ticket.delete.admin,helpdesk.model_helpdesk_ticket,vkd_kloudip_restrict_delete.group_allow_record_deletion,0,0,0,1
+access_project_task_delete,project.task.delete.admin,project.model_project_task,vkd_kloudip_restrict_delete.group_allow_record_deletion,0,0,0,1
+access_sale_order_delete,sale.order.delete.admin,sale.model_sale_order,vkd_kloudip_restrict_delete.group_allow_record_deletion,0,0,0,1
+access_account_move_delete,account.move.delete.admin,account.model_account_move,vkd_kloudip_restrict_delete.group_allow_record_deletion,0,0,0,1
+access_stock_picking_delete,stock.picking.delete.admin,stock.model_stock_picking,vkd_kloudip_restrict_delete.group_allow_record_deletion,0,0,0,1

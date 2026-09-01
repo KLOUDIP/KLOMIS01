@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Runs on install and on every upgrade of this module. -->
+    <function model="ir.model.access" name="_kloudip_apply_delete_restrictions"/>
+
+</odoo>

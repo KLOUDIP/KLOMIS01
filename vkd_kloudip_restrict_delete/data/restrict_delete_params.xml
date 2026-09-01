@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!--
+            Extra models to restrict, on top of RESTRICTED_MODELS and the
+            worksheet models. Comma-separated technical model names, editable
+            from Settings > Technical > Parameters > System Parameters.
+            Changing it re-applies the restriction immediately.
+        -->
+        <record id="param_extra_models" model="ir.config_parameter">
+            <field name="key">vkd_restrict_delete.extra_models</field>
+            <field name="value"></field>
+        </record>
+
+    </data>
+</odoo>
