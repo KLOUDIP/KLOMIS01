@@ -11,7 +11,7 @@
     'author': 'VK DATA ApS',
     'website': 'https://vkdata.dk/',
     'category': 'Website',
-    'version': '19.0.2.0.0',
+    'version': '19.0.2.1.0',
     'license': 'OPL-1',
     'depends': ['website', 'website_sale', 'portal', 'vkd_fios_api'],
     'data': [

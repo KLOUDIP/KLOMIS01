@@ -14,7 +14,7 @@
     'author': 'VK DATA ApS',
     'website': 'https://vkdata.dk/',
     'category': 'Hidden',
-    'version': '19.0.2.0.2',
+    'version': '19.0.2.3.0',
     'license': 'OPL-1',
     'depends': ['base', 'sale', 'sale_subscription', 'product'],
     'data': [

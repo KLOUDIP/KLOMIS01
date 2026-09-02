@@ -16,6 +16,17 @@
                         <button name="action_fios_refresh_devices" type="object"
                                 string="Refresh Devices"
                                 invisible="not fios_account_item_id"/>
+                        <button name="action_fios_grant_grace" type="object"
+                                string="Grant 7-Day Grace Period"
+                                class="btn-warning"
+                                invisible="not fios_grace_available"
+                                confirm="Grant this customer a 7-day grace period? This restores FIOS access for 7 more days and can only be used once per billing cycle."/>
+                        <button name="action_fios_debug_devices" type="object"
+                                string="Diagnose Devices" class="btn-secondary"
+                                groups="base.group_system"
+                                invisible="not fios_account_item_id"
+                                help="Dump the raw FIOS unit search response for this account."/>
+                        <field name="fios_grace_available" invisible="1"/>
                     </header>
                     <group>
                         <group string="Status">
@@ -36,12 +47,14 @@
                     </group>
                     <group string="Live Account Status" invisible="not fios_status_synced">
                         <group>
-                            <field name="fios_account_enabled"/>
+                            <field name="fios_account_status"
+                                   decoration-success="fios_account_status == 'active'"
+                                   decoration-danger="fios_account_status == 'blocked'"
+                                   widget="badge"/>
                             <field name="fios_current_plan"/>
                             <field name="fios_days_counter"/>
                         </group>
                         <group>
-                            <field name="fios_balance"/>
                             <field name="fios_status_synced"/>
                         </group>
                         <field name="fios_service_usage_ids" nolabel="1" colspan="2" readonly="1">
@@ -54,15 +67,46 @@
                             </list>
                         </field>
                     </group>
-                    <group string="FIOS Devices" invisible="not fios_device_ids">
-                        <field name="fios_device_ids" nolabel="1" readonly="1">
-                            <list>
-                                <field name="name"/>
-                                <field name="imei"/>
-                                <field name="phone"/>
-                                <field name="active" widget="boolean_toggle"/>
-                            </list>
-                        </field>
+                    <group string="Grace Period" invisible="not fios_grace_granted_on">
+                        <group>
+                            <field name="fios_grace_granted_on"/>
+                            <field name="fios_grace_days_granted"/>
+                            <field name="fios_grace_expiry"/>
+                        </group>
+                        <group>
+                            <field name="fios_grace_source"/>
+                            <field name="fios_grace_granted_by"/>
+                            <field name="fios_grace_cycle_ref"/>
+                            <button name="action_fios_reset_grace" type="object"
+                                    string="Reset grace period lock"
+                                    class="btn-link ps-0" groups="base.group_system"
+                                    confirm="Reset the grace period lock? The customer will be able to use a grace period again in this billing cycle."/>
+                        </group>
+                    </group>
+                    <!-- Outside a <group> on purpose: a group is a two-column
+                         table, which squeezed this list into half the page and
+                         truncated the IMEI / phone columns. -->
+                    <separator string="FIOS Devices" invisible="not fios_device_ids"/>
+                    <field name="fios_device_ids" nolabel="1" readonly="1"
+                           invisible="not fios_device_ids">
+                        <list limit="50" default_order="device_active desc, name"
+                              decoration-muted="not device_active">
+                            <field name="name" string="Device / Plate"/>
+                            <field name="imei" string="IMEI" widget="char"
+                                   class="text-nowrap"/>
+                            <field name="phone" string="Phone" widget="char"
+                                   class="text-nowrap"/>
+                            <field name="device_status" string="Status" widget="badge"
+                                   decoration-success="device_status == 'activated'"
+                                   decoration-danger="device_status == 'deactivated'"/>
+                            <field name="device_active" string="Activated"
+                                   widget="boolean_toggle" optional="hide"/>
+                        </list>
+                    </field>
+                    <group string="Device Diagnostic" groups="base.group_system"
+                           invisible="not fios_device_diagnostic">
+                        <field name="fios_device_diagnostic" nolabel="1" readonly="1"
+                               widget="text"/>
                     </group>
                 </page>
             </notebook>

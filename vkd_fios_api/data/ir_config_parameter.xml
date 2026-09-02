@@ -56,6 +56,29 @@
             <field name="value">FIRST MONTH</field>
         </record>
 
+        <!-- Data flags for the unit search behind the device list.
+             1 = base (nm/uid), 4 = billing properties, 256 = administrative
+             fields (act = activation state, bact = billing account). Raise this
+             if FIOS needs another flag to report deactivated units. -->
+        <record id="fios_device_search_flags_param" model="ir.config_parameter">
+            <field name="key">vkd_fios_api.device_search_flags</field>
+            <field name="value">261</field>
+        </record>
+
+        <!-- Length of the grace period (days) granted to a blocked account, once
+             per billing cycle, from the backend or the customer portal. -->
+        <record id="fios_grace_period_days_param" model="ir.config_parameter">
+            <field name="key">vkd_fios_api.grace_period_days</field>
+            <field name="value">7</field>
+        </record>
+
+        <!-- Allow customers to grant themselves the grace period from the portal
+             (1 = enabled). Set to 0 to leave it as a billing-team-only action. -->
+        <record id="fios_grace_portal_enabled_param" model="ir.config_parameter">
+            <field name="key">vkd_fios_api.grace_portal_enabled</field>
+            <field name="value">1</field>
+        </record>
+
         <!-- Require email OTP verification on public FIOS signup (1 = enabled). -->
         <record id="fios_signup_otp_enabled_param" model="ir.config_parameter">
             <field name="key">vkd_fios_api.signup_otp_enabled</field>

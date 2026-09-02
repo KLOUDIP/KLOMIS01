@@ -29,6 +29,14 @@
             <div class="alert alert-danger" t-if="error">
                 <span t-out="error"/>
             </div>
+            <div class="alert alert-danger alert-dismissible" t-if="grace_error">
+                <span t-out="grace_error"/>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"/>
+            </div>
+            <div class="alert alert-success alert-dismissible" t-if="grace_message">
+                <span t-out="grace_message"/>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"/>
+            </div>
 
             <t t-if="not is_fios_customer">
                 <p class="alert alert-warning">You don't have an active FIOS account yet.</p>
@@ -51,11 +59,51 @@
                         <div class="border rounded p-3 h-100">
                             <div class="text-muted small">Status</div>
                             <div class="fs-5 fw-bold">
-                                <span t-if="info.get('enabled')" class="text-success">Active</span>
-                                <span t-else="" class="text-danger">Deactivated</span>
+                                <span t-if="account_status == 'active'" class="text-success">Active</span>
+                                <span t-elif="account_status == 'blocked'" class="text-danger">Blocked</span>
+                                <span t-else="" class="text-muted">No Account</span>
                             </div>
                         </div>
                     </div>
+                </div>
+
+                <!-- Grace period: shown only while the account is blocked and the
+                     current billing cycle's grace has not been used. -->
+                <div t-if="account_status == 'blocked'" class="card border-warning mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title">Your service is currently blocked</h5>
+                        <t t-if="grace_available">
+                            <p class="card-text">
+                                Your payment is overdue, so access to your FIOS account has been
+                                suspended. You can restore it for
+                                <strong><t t-out="grace_days"/> more days</strong> while you
+                                arrange payment. This grace period can be used
+                                <strong>once per billing cycle</strong>.
+                            </p>
+                            <form action="/my/fios-services/grace" method="post">
+                                <input type="hidden" name="csrf_token"
+                                       t-att-value="request.csrf_token()"/>
+                                <button type="submit" class="btn btn-warning"
+                                        onclick="this.disabled=true;this.form.submit();">
+                                    Activate my <t t-out="grace_days"/>-day grace period
+                                </button>
+                            </form>
+                        </t>
+                        <t t-else="">
+                            <p class="card-text mb-0">
+                                You have already used your grace period for this billing cycle<t
+                                    t-if="grace_granted_on"> (on <t
+                                    t-out="grace_granted_on" t-options="{'widget': 'date'}"/>)</t>.
+                                Please settle your invoice to restore access, or contact our
+                                billing team for help.
+                            </p>
+                        </t>
+                    </div>
+                </div>
+                <div t-elif="grace_active" class="alert alert-info">
+                    A grace period is active on your account until
+                    <strong t-out="grace_expiry" t-options="{'widget': 'date'}"/>.
+                    Please settle your invoice before then to avoid interruption.
                 </div>
 
                 <h5 class="mb-3">Services</h5>

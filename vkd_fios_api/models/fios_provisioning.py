@@ -2,6 +2,7 @@
 import logging
 import secrets
 import string
+from datetime import timedelta
 
 from odoo import models, fields, api, _
 from odoo.exceptions import UserError
@@ -40,6 +41,10 @@ def fios_cost_table(name, value):
 # Account flags: 32 = block-by-days (days counter) billing mode.
 DEFAULT_ACCOUNT_FLAGS = 32
 USER_FLAG_CREATE_ITEMS = 4
+
+# Length of the self-service / billing-team grace period, in days. Overridable
+# with the `vkd_fios_api.grace_period_days` system parameter.
+DEFAULT_GRACE_PERIOD_DAYS = 7
 
 
 class FiosProvisioning(models.AbstractModel):
@@ -372,6 +377,115 @@ class FiosProvisioning(models.AbstractModel):
             'description': description,
         }, tier=partner.fios_tier_id)
 
+    # ------------------------------------------------------------------
+    # Grace period
+    # ------------------------------------------------------------------
+    @api.model
+    def _grace_period_days(self):
+        try:
+            days = int(self.env['ir.config_parameter'].sudo().get_param(
+                'vkd_fios_api.grace_period_days', DEFAULT_GRACE_PERIOD_DAYS))
+        except (TypeError, ValueError):
+            days = DEFAULT_GRACE_PERIOD_DAYS
+        return days if days > 0 else DEFAULT_GRACE_PERIOD_DAYS
+
+    @api.model
+    def grant_grace_period(self, partner, source='backend', days=None):
+        """Give a blocked account `days` more days of access, once per billing cycle.
+
+        FIOS blocks access when the block-by-days counter reaches -1. The grace
+        adds days to that counter via account/do_payment and, if the account was
+        also disabled, re-enables it. Returns the number of days granted.
+        """
+        from .fios_api_client import FiosApiError
+        partner = partner.sudo()
+        days = days or self._grace_period_days()
+
+        if partner.fios_provision_state != 'active' or not partner.fios_account_item_id:
+            raise UserError(_("This customer has no active FIOS account."))
+
+        # Lock the partner row for the rest of the transaction: two portal clicks
+        # landing at the same time must not both pass the once-per-cycle check.
+        self.env.cr.execute("SELECT id FROM res_partner WHERE id = %s FOR UPDATE",
+                            (partner.id,))
+
+        # Read the live status first so the decision is never made on stale data.
+        try:
+            self.refresh_account_status(partner)
+        except Exception as e:
+            _logger.warning("FIOS: could not refresh status before grace for partner %s: %s",
+                            partner.id, e)
+        partner.invalidate_recordset()
+
+        if partner.fios_account_status != 'blocked':
+            raise UserError(_("The FIOS account is currently active - a grace period "
+                              "can only be granted once the account is blocked."))
+        if not partner.fios_grace_available:
+            raise UserError(_("The grace period for this billing cycle has already been "
+                              "used. A new one becomes available on the next billing cycle."))
+
+        log = self.env['fios.api.log']
+        item_id = int(partner.fios_account_item_id)
+        description = _("%(days)s-day grace period (%(source)s)") % {
+            'days': days,
+            'source': dict(partner._fields['fios_grace_source'].selection).get(source, source),
+        }
+
+        # 1) Top the days counter up by the grace length.
+        params = {
+            'itemId': item_id,
+            'balanceUpdate': 0,
+            'daysUpdate': days,
+            'description': description,
+        }
+        try:
+            result = self.env['fios.api.client'].call(
+                'account/do_payment', params, tier=partner.fios_tier_id)
+        except (FiosApiError, UserError) as e:
+            # retryable=False on purpose: do_payment applies a *delta*, so a
+            # background replay would hand out a second grace period behind the
+            # once-per-cycle rule. The customer/agent retries the action instead.
+            log.log_failure('account/do_payment', params, partner=partner,
+                            error_msg=str(e), retryable=False)
+            raise UserError(_("Could not apply the grace period on FIOS: %s") % e)
+        log.log_success('account/do_payment', params, partner=partner, response_data=result,
+                        message=description)
+
+        # 2) Re-enable the account if FIOS had also switched it off.
+        if not partner.fios_account_enabled:
+            ok, error = self.env['sale.order']._fios_set_enabled(partner, True)
+            if not ok:
+                raise UserError(_("Grace days were added but the FIOS account could not be "
+                                  "re-enabled: %s") % error)
+
+        partner.write({
+            'fios_grace_cycle_ref': partner._fios_current_cycle_ref(),
+            'fios_grace_granted_on': fields.Datetime.now(),
+            'fios_grace_granted_by': self.env.user.id,
+            'fios_grace_source': source,
+            'fios_grace_days_granted': days,
+            'fios_grace_expiry': fields.Date.today() + timedelta(days=days),
+        })
+
+        # Pull the post-grace state back so the form/portal shows Active again.
+        try:
+            self.refresh_account_status(partner)
+        except Exception as e:
+            _logger.warning("FIOS: could not refresh status after grace for partner %s: %s",
+                            partner.id, e)
+
+        # author_id explicitly: `partner` is sudo'd here, so the log note would
+        # otherwise be attributed to OdooBot instead of whoever clicked.
+        partner.message_post(
+            body=_("FIOS grace period granted: %(days)s days (%(source)s). "
+                   "Access restored until %(until)s.")
+            % {'days': days, 'source': source, 'until': partner.fios_grace_expiry},
+            author_id=self.env.user.partner_id.id,
+        )
+        _logger.info("FIOS: %s-day grace period granted to partner %s from %s",
+                     days, partner.id, source)
+        return days
+
     @api.model
     def update_billing_service(self, partner, name, cost_table, interval_type=0):
         partner = partner.sudo()
@@ -398,12 +512,22 @@ class FiosProvisioning(models.AbstractModel):
         return str(max_usage)
 
     @api.model
-    def list_accounts(self, tier):
+    def list_accounts(self, tier, name_mask=None):
+        """List the FIOS accounts on a tier.
+
+        `name_mask` is pushed to FIOS as the sys_name mask, so a search narrows
+        the result server-side instead of pulling every account back and
+        filtering here. Plain text is wrapped in wildcards ("acme" -> "*acme*");
+        a mask the caller already wrote with * is passed through untouched.
+        """
+        mask = (name_mask or '').strip() or '*'
+        if mask != '*' and '*' not in mask:
+            mask = '*%s*' % mask
         params = {
             'spec': {
                 'itemsType': 'avl_resource',
                 'propName': 'sys_name',
-                'propValueMask': '*',
+                'propValueMask': mask,
                 'sortType': 'sys_name',
             },
             'force': 1,
@@ -425,37 +549,178 @@ class FiosProvisioning(models.AbstractModel):
             })
         return result
 
+    # Data flags for a unit search: 1 = base (nm/uid), 4 = billing properties,
+    # 256 = administrative fields (act = activation state, bact = billing account).
+    DEVICE_SEARCH_FLAGS = 1 | 4 | 256
+
+    @api.model
+    def _device_search_flags(self):
+        try:
+            return int(self.env['ir.config_parameter'].sudo().get_param(
+                'vkd_fios_api.device_search_flags', self.DEVICE_SEARCH_FLAGS))
+        except (TypeError, ValueError):
+            return self.DEVICE_SEARCH_FLAGS
+
+    @api.model
+    def _search_units(self, tier, spec, flags):
+        data = self.env['fios.api.client'].call('core/search_items', {
+            'spec': spec,
+            'force': 1,
+            'flags': flags,
+            'from': 0,
+            'to': 0,
+        }, tier=tier)
+        return data.get('items') or []
+
+    @api.model
+    def _device_search_specs(self, partner):
+        """Ordered search specs used to collect a customer's units.
+
+        A single sys_billing_account_guid search returns only the *activated*
+        units, which is why deactivated devices never reached Odoo. Several
+        specs are tried and their results merged by unit id; one that FIOS
+        rejects (unsupported propType) is logged and skipped, so adding a
+        strategy can never break the ones that already work.
+        """
+        account_id = str(partner.fios_account_item_id)
+        specs = [
+            ('billing_account', {
+                'itemsType': 'avl_unit',
+                'propName': 'sys_billing_account_guid',
+                'propValueMask': account_id,
+                'sortType': 'sys_name',
+            }),
+            ('account_tree', {
+                'itemsType': 'avl_unit',
+                'propName': 'sys_billing_account_guid',
+                'propValueMask': account_id,
+                'sortType': 'sys_name',
+                'propType': 'accounttree',
+            }),
+        ]
+        if partner.fios_user_id:
+            # Everything created under the customer's own FIOS user, activated
+            # or not. Cross-account results are filtered out on `bact` below.
+            specs.append(('creator_tree', {
+                'itemsType': 'avl_unit',
+                'propName': 'sys_user_creator',
+                'propValueMask': str(partner.fios_user_id),
+                'sortType': 'sys_name',
+                'propType': 'creatortree',
+            }))
+        return specs
+
+    @staticmethod
+    def _device_belongs_to_account(item, account_id):
+        """Keep an item unless it positively belongs to a different account.
+
+        `bact` is only present when the admin data flag came back; when it is
+        missing or zero nothing is asserted and the item is kept.
+        """
+        bact = item.get('bact')
+        if bact in (None, 0, '0', ''):
+            return True
+        return str(bact) == str(account_id)
+
     @api.model
     def list_account_devices(self, partner):
         partner = partner.sudo()
         if not partner.fios_account_item_id:
             raise UserError(_("Partner has no FIOS account yet."))
-        params = {
-            'spec': {
-                'itemsType': 'avl_unit',
-                'propName': 'sys_billing_account_guid',
-                'propValueMask': str(partner.fios_account_item_id),
-                'sortType': 'sys_name',
-            },
-            'force': 1,
-            'flags': 257,  # base + admin fields (returns uid/ph/act)
-            'from': 0,
-            'to': 0,
-        }
-        data = self.env['fios.api.client'].call('core/search_items', params,
-                                                tier=partner.fios_tier_id)
-        items = data.get('items') or []
-        return [{
+
+        account_id = str(partner.fios_account_item_id)
+        flags = self._device_search_flags()
+        items_by_id, first_error = {}, None
+
+        for label, spec in self._device_search_specs(partner):
+            try:
+                items = self._search_units(partner.fios_tier_id, spec, flags)
+            except Exception as e:
+                # An unsupported propType must not take down the whole refresh.
+                first_error = first_error or e
+                _logger.info("FIOS: device search '%s' unavailable for partner %s: %s",
+                             label, partner.id, e)
+                continue
+            added = 0
+            for it in items:
+                unit_id = it.get('id')
+                if not unit_id or unit_id in items_by_id:
+                    continue
+                if not self._device_belongs_to_account(it, account_id):
+                    continue
+                items_by_id[unit_id] = it
+                added += 1
+            _logger.info("FIOS: device search '%s' returned %s item(s), %s new "
+                         "(partner %s, account %s)",
+                         label, len(items), added, partner.id, account_id)
+
+        if not items_by_id and first_error is not None:
+            # Every strategy failed - surface it instead of reporting "0 devices".
+            raise UserError(_("Could not read FIOS devices: %s") % first_error)
+
+        devices = [{
             'name': it.get('nm'),
             'imei': it.get('uid'),
             'phone': it.get('ph'),
-            'active': bool(it.get('act')),
-        } for it in items]
+            # `act` comes back with the admin data flag (256). Absent means the
+            # account did not report activation state - treat that as activated
+            # rather than silently marking every device deactivated.
+            'active': bool(it.get('act', 1)),
+        } for it in items_by_id.values()]
+        devices.sort(key=lambda d: (d['name'] or '').lower())
+
+        deactivated = sum(1 for d in devices if not d['active'])
+        _logger.info("FIOS: account %s -> %s device(s) total, %s deactivated (partner %s)",
+                     account_id, len(devices), deactivated, partner.id)
+        return devices
+
+    @api.model
+    def debug_device_payload(self, partner, limit=3):
+        """Return the raw FIOS response per search strategy, for diagnosis.
+
+        Used by the admin-only button on the contact: it shows exactly which
+        fields FIOS sends back for a unit and which strategy finds which units,
+        so activation state can be mapped from evidence instead of guesswork.
+        """
+        import json
+        partner = partner.sudo()
+        if not partner.fios_account_item_id:
+            raise UserError(_("Partner has no FIOS account yet."))
+
+        flags = self._device_search_flags()
+        report = ["FIOS device diagnostic",
+                  "account item id : %s" % partner.fios_account_item_id,
+                  "fios user id    : %s" % (partner.fios_user_id or '-'),
+                  "tier            : %s" % (partner.fios_tier_id.name or '-'),
+                  "data flags      : %s" % flags,
+                  ""]
+        for label, spec in self._device_search_specs(partner):
+            report.append("--- strategy: %s" % label)
+            report.append("spec: %s" % json.dumps(spec))
+            try:
+                items = self._search_units(partner.fios_tier_id, spec, flags)
+            except Exception as e:
+                report.append("ERROR: %s" % e)
+                report.append("")
+                continue
+            act_values = sorted({str(it.get('act')) for it in items})
+            report.append("items: %s | distinct 'act' values: %s"
+                          % (len(items), ', '.join(act_values) or '-'))
+            for it in items[:limit]:
+                report.append("sample: %s" % json.dumps(it, default=str)[:1500])
+            report.append("")
+
+        text = '\n'.join(report)
+        _logger.info("FIOS device diagnostic for partner %s:\n%s", partner.id, text)
+        return text
 
     @api.model
     def get_service_usage(self, partner):
         partner = partner.sudo()
-        data = self.get_account_data(partner)
+        # Refresh (rather than plain-read) so the stored status fields the portal
+        # and the Active/Blocked label depend on are never stale.
+        data = self.refresh_account_status(partner)
+        partner.invalidate_recordset()
         services = ((data.get('settings') or {}).get('combined') or {}).get('services') or {}
         out = []
         for name, meta in FIOS_SERVICE_META.items():
@@ -516,7 +781,6 @@ class FiosProvisioning(models.AbstractModel):
             'fios_account_enabled': bool(data.get('enabled')),
             'fios_days_counter': data.get('daysCounter') or 0,
             'fios_current_plan': data.get('plan') or False,
-            'fios_balance': data.get('balance') or False,
             'fios_services_summary': '\n'.join(lines) or _("No tracked services found"),
             'fios_status_synced': fields.Datetime.now(),
         })

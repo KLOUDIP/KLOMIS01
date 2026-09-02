@@ -6,13 +6,36 @@
         <field name="arch" type="xml">
             <form string="Import FIOS Accounts">
                 <group>
-                    <field name="tier_id"/>
+                    <group>
+                        <field name="tier_id"/>
+                    </group>
+                    <group>
+                        <label for="search_name"/>
+                        <div class="o_row">
+                            <field name="search_name" placeholder="Account name or item ID..."
+                                   class="oe_inline"/>
+                            <button name="action_search" type="object" string="Search"
+                                    icon="fa-search" class="btn-link"
+                                    title="Filter the fetched accounts"/>
+                            <button name="action_clear_search" type="object" string="Clear"
+                                    icon="fa-times" class="btn-link"
+                                    invisible="not search_name"/>
+                        </div>
+                        <field name="hide_linked"/>
+                    </group>
                 </group>
                 <div class="text-muted mb-2">
                     Pick a tier and fetch its accounts, then set the Odoo customer on each
                     row you want to link. Already-linked accounts are shown for reference.
+                    Type a name and hit <b>Fetch Accounts</b> to search FIOS directly, or
+                    <b>Search</b> to filter the list you already pulled.
                 </div>
-                <field name="line_ids">
+                <div class="text-muted mb-2" invisible="not line_ids">
+                    Showing <field name="result_count" class="oe_inline fw-bold" readonly="1"/>
+                    matching account(s).
+                </div>
+                <field name="line_ids" invisible="1"/>
+                <field name="display_line_ids">
                     <list editable="bottom" create="false" delete="false">
                         <field name="name" readonly="1"/>
                         <field name="account_item_id" readonly="1"/>
