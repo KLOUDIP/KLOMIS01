@@ -3,11 +3,34 @@ import logging
 from odoo.http import request, route
 
 from odoo.addons.website_sale.controllers.cart import Cart
+from odoo.addons.website_sale.controllers.combo_configurator import (
+    WebsiteSaleComboConfiguratorController,
+)
 from odoo.addons.website_sale.controllers.main import WebsiteSale
 
 _logger = logging.getLogger(__name__)
 
 SIGNUP_ROUTE = '/trazet-signup'
+
+
+def _related_templates(tmpl):
+    """`tmpl` together with the templates offered inside its combo choices.
+
+    A `combo` product is frequently left untagged while `trazet_product_key`
+    sits on the items it bundles (or the other way round). Looking at both ends
+    means a bundle gates on the strength of whatever it actually sells. Sudo
+    because the choices of a combo need not be published for the combo to be.
+    """
+    tmpl_sudo = tmpl.sudo()
+    return tmpl_sudo | tmpl_sudo.combo_ids.combo_item_ids.product_id.product_tmpl_id
+
+
+def _is_trazet_template(tmpl):
+    return any(t.trazet_product_key for t in _related_templates(tmpl))
+
+
+def _is_trazet_product(product):
+    return _is_trazet_template(product.product_tmpl_id)
 
 
 def _current_user_is_trazet_user():
@@ -29,11 +52,31 @@ class TrazetShopCheckoutGate(WebsiteSale):
             return redirection
 
         has_trazet_product = any(
-            line.product_id.product_tmpl_id.trazet_product_key
-            for line in order_sudo.order_line
+            _is_trazet_product(line.product_id) for line in order_sudo.order_line
         )
         if has_trazet_product and not _current_user_is_trazet_user():
             return request.redirect(SIGNUP_ROUTE)
+
+
+class TrazetComboConfiguratorGate(WebsiteSaleComboConfiguratorController):
+    """Gate the combo configurator, which runs *before* the cart.
+
+    Adding a `combo` product from the shop calls
+    /website_sale/combo_configurator/get_data first and only posts to
+    /shop/cart/add once the visitor has picked an item per choice. Gating the
+    cart alone would therefore make an unregistered visitor configure the whole
+    bundle before being told to sign up. Returning `redirect_url` here is the
+    same contract TrazetCartGate uses; static/src/js/cart_service_patch.js acts
+    on it for both routes.
+    """
+
+    @route()
+    def website_sale_combo_configurator_get_data(self, *args, **kwargs):
+        tmpl_id = kwargs.get('product_tmpl_id') or (args[0] if args else None)
+        tmpl = request.env['product.template'].browse(int(tmpl_id)).exists() if tmpl_id else None
+        if tmpl and _is_trazet_template(tmpl) and not _current_user_is_trazet_user():
+            return {'redirect_url': SIGNUP_ROUTE}
+        return super().website_sale_combo_configurator_get_data(*args, **kwargs)
 
 
 class TrazetCartGate(Cart):
@@ -63,7 +106,7 @@ class TrazetCartGate(Cart):
             product_ids += [p['product_id'] for p in linked_products if p.get('product_id')]
 
         products = request.env['product.product'].browse(product_ids).exists()
-        has_trazet_product = any(p.product_tmpl_id.trazet_product_key for p in products)
+        has_trazet_product = any(_is_trazet_product(p) for p in products)
 
         if has_trazet_product and not _current_user_is_trazet_user():
             order_sudo = request.cart

@@ -2,60 +2,51 @@
 
 import { patch } from "@web/core/utils/patch";
 import { CartService } from "@website_sale/js/cart_service";
-import { browser } from "@web/core/browser/browser";
-import { session } from "@web/session";
+
+/**
+ * Routes whose response may carry a `redirect_url` instead of the payload the
+ * caller expects, because the server refused the operation and wants the
+ * visitor sent elsewhere (see controllers/shop.py).
+ *
+ * `/website_sale/combo_configurator/get_data` matters as much as the cart
+ * route: for a `combo` product it is the *first* call the browser makes, so a
+ * gate that only covered `/shop/cart/add` would let an unregistered visitor
+ * configure the whole bundle before being bounced to the sign-up page.
+ */
+const GATED_ROUTES = new Set([
+    '/shop/cart/add',
+    '/website_sale/combo_configurator/get_data',
+]);
+
+/**
+ * Returned in place of the refused payload. It never settles on purpose: the
+ * browser is already navigating away, and letting the caller resume would run
+ * it against a response that has none of the fields it destructures.
+ */
+const NAVIGATING_AWAY = new Promise(() => {});
 
 patch(CartService.prototype, {
     /**
-     * The server responds with `redirect_url` instead of the usual cart-add
-     * payload when a FIOS product was blocked from being added because the
-     * visitor doesn't have a FIOS account yet (see controllers/shop.py:
-     * FiosCartGate.add_to_cart). Checked right after the RPC call, before the
-     * "Buy Now" branch below, since that branch redirects to /shop/cart on its
-     * own and never reaches `_showCartNotification`.
+     * Wrap `this.rpc` rather than overriding `_makeRequest`/`add`.
      *
-     * The redirect handling is generic (it honours whatever `redirect_url` the
-     * server returns), so this stays correct even if the Trazet signup module's
-     * equivalent patch is also installed.
+     * `setup` assigns `this.rpc = rpc` expressly so it can be swapped out, and
+     * wrapping it there covers every gated route from one seam without copying
+     * any of the upstream cart logic (which would silently drift the next time
+     * website_sale changes). If the Trazet sign-up module is installed too, its
+     * identical wrapper simply nests with this one - whichever runs first
+     * redirects, and the other never resumes.
      */
-    async _makeRequest({
-        productTemplateId,
-        productId,
-        quantity,
-        uomId = undefined,
-        productCustomAttributeValues = [],
-        noVariantAttributeValues = [],
-        shouldRedirectToCart = false,
-        ...rest
-    }) {
-        const data = await this.rpc('/shop/cart/add', {
-            product_template_id: productTemplateId,
-            product_id: productId,
-            quantity: quantity,
-            uom_id: uomId,
-            product_custom_attribute_values: productCustomAttributeValues,
-            no_variant_attribute_value_ids: noVariantAttributeValues,
-            ...rest
-        });
-
-        if (data.redirect_url) {
-            window.location.href = data.redirect_url;
-            return 0;
-        }
-
-        if (shouldRedirectToCart || session.add_to_cart_action === 'go_to_cart') {
-            window.location = '/shop/cart';
-            return data.quantity;
-        }
-        if (data.cart_quantity && (
-            data.cart_quantity !== browser.sessionStorage.getItem('website_sale_cart_quantity')
-        )) {
-            this._updateCartIcon(data.cart_quantity);
-        }
-        this._showCartNotification(data.notification_info);
-        if (data.quantity) {
-            this._trackProducts(data.tracking_info);
-        }
-        return data.quantity;
+    setup() {
+        const api = super.setup(...arguments);
+        const rpc = this.rpc;
+        this.rpc = async (route, params, settings) => {
+            const data = await rpc(route, params, settings);
+            if (GATED_ROUTES.has(route) && data?.redirect_url) {
+                window.location.href = data.redirect_url;
+                return NAVIGATING_AWAY;
+            }
+            return data;
+        };
+        return api;
     },
 });

@@ -6,7 +6,7 @@
                    enhanced bundling capabilities.""",
     'summary': 'Enhanced product combos with multiple quantities and subscription pricing support',
     'category': 'Sales',
-    'version': "19.0.1.0.0",
+    'version': "19.0.1.1.0",
     'author': 'VK DATA ApS',
     'website': 'https://vkdata.dk',
     'depends': ['base','product', 'website_sale', 'sale','account','sale_subscription'],
