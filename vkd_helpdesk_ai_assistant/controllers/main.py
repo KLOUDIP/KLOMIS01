@@ -1,4 +1,5 @@
 import json
+from markupsafe import Markup, escape
 from odoo import http
 from odoo.http import request, Response
 
@@ -126,7 +127,8 @@ class IrisIntegrationController(http.Controller):
 
             iris_partner = self._get_iris_partner()
 
-            formatted_body = f"<p><strong>🤖 Voice Call Note:</strong></p><p>{comment_text}</p>"
+            # Wrap in Markup so Odoo renders rich HTML in Chatter while escaping raw user text safely
+            formatted_body = Markup("<p><strong>Voice Call Note:</strong></p><p>%s</p>") % escape(comment_text)
 
             ticket.sudo().message_post(
                 body=formatted_body,

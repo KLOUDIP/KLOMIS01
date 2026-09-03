@@ -1,6 +1,6 @@
 {
     'name': "Helpdesk Voice Integration (Iris AI)",
-    'version': '19.0.1.0.3',
+    'version': '19.0.1.0.4',
     'category': 'Helpdesk',
     'summary': 'Custom REST endpoints for Iris Voice AI Helpdesk integration',
     'description': """
