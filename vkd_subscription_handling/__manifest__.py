@@ -9,6 +9,7 @@
                     - Add new products to existing subscriptions
                     - Remove products from existing subscriptions
                     - All from a single interface
+                    - Services
                     """,
     'author': 'VK Data ApS',
     'website': 'https://vkdata.dk',
