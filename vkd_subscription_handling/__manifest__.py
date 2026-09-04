@@ -1,6 +1,6 @@
 {
     'name': 'Subscription Extensions',
-    'version': '19.0.1.1.3',
+    'version': '19.0.1.1.2',
     'category': 'Subscriptions',
     'summary': 'Allow portal users to manage their subscription products',
     'description': """
@@ -9,7 +9,6 @@
                     - Add new products to existing subscriptions
                     - Remove products from existing subscriptions
                     - All from a single interface
-                    - Services
                     """,
     'author': 'VK Data ApS',
     'website': 'https://vkdata.dk',

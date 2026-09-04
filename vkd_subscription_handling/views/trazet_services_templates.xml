@@ -3,15 +3,11 @@
     <template id="portal_my_home_trazet_services" name="Trazet Services" customize_show="True"
               inherit_id="portal.portal_my_home" priority="91">
         <xpath expr="//div[hasclass('o_portal_docs')]" position="before">
-            <!-- Enables the #portal_client_category container in portal.portal_my_home.
-                 That div is rendered behind t-if="portal_client_category_enable", so
-                 without this exact flag the card below is added to an element that
-                 never renders and disappears silently. -->
-            <t t-set="portal_client_category_enable" t-value="True"/>
+            <t t-set="portal_client_client_enable" t-value="True"/>
         </xpath>
         <div id="portal_client_category" position="inside">
             <t t-call="portal.portal_docs_entry">
-                <t t-set="title">Trazet Services</t>
+                <t t-set="title">Services</t>
                 <t t-set="text">View your Trazet product usage</t>
                 <t t-set="url" t-value="'/my/services'"/>
                 <t t-set="config_card" t-value="True"/>
