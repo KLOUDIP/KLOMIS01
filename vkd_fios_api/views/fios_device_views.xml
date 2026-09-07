@@ -39,14 +39,25 @@
         <field name="name">fios.device.search</field>
         <field name="model">fios.device</field>
         <field name="arch" type="xml">
+            <!-- NB: <group> here carries no `expand` / `string`. Odoo 19's
+                 search-view schema rejects those attributes; the same bare
+                 form is what vkd_trazet_api uses on this database. -->
             <search string="FIOS Devices">
-                <field name="name" string="Device / Plate"/>
+                <field name="name"/>
                 <field name="partner_id"/>
+                <!-- imei is deliberately not searchable here: it is hidden from
+                     the billing team, and a search field would let them probe
+                     for it. -->
+                <field name="imei"
+                       groups="field_service_extension.group_fsm_tech_team,base.group_system"/>
+
+                <separator/>
                 <filter name="filter_activated" string="Activated"
                         domain="[('device_active', '=', True)]"/>
                 <filter name="filter_deactivated" string="Deactivated"
                         domain="[('device_active', '=', False)]"/>
-                <group expand="0" string="Group By">
+
+                <group>
                     <filter name="group_partner" string="Customer"
                             context="{'group_by': 'partner_id'}"/>
                     <filter name="group_status" string="Status"
