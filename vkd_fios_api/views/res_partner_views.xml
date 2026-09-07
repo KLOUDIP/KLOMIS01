@@ -20,7 +20,7 @@
                         <button name="action_fios_grant_grace" type="object"
                                 string="Grant 7-Day Grace Period"
                                 class="btn-warning"
-                                groups="vkd_fios_api.group_fios_billing_team,base.group_system"
+                                groups="account.group_account_invoice,base.group_system"
                                 invisible="not fios_grace_available"
                                 confirm="Grant this customer a 7-day grace period? This restores FIOS access for 7 more days and can only be used once per billing cycle."/>
                         <button name="action_fios_debug_devices" type="object"

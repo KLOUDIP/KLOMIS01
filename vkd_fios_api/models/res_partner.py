@@ -291,9 +291,9 @@ class ResPartner(models.Model):
         affected by this check.
         """
         self.ensure_one()
-        if not (self.env.user.has_group('vkd_fios_api.group_fios_billing_team')
+        if not (self.env.user.has_group('account.group_account_invoice')
                 or self.env.user.has_group('base.group_system')):
-            raise UserError(_("Only the FIOS billing team can grant a grace period."))
+            raise UserError(_("Only the billing team can grant a grace period."))
         days = self.env['fios.provisioning'].grant_grace_period(self, source='backend')
         return {
             'type': 'ir.actions.client',

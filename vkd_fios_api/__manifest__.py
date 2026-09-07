@@ -16,12 +16,12 @@
     'category': 'Hidden',
     'version': '19.0.2.3.0',
     'license': 'OPL-1',
-    # field_service_extension is a dependency only for its group_fsm_tech_team
-    # record: the FIOS tech-team restrictions reuse that group rather than
-    # introducing a second "Tech Team" users have to be assigned to separately.
-    'depends': ['base', 'sale', 'sale_subscription', 'product', 'field_service_extension'],
+    # Role gating reuses groups that already exist rather than adding new ones:
+    #   Tech team    -> field_service_extension.group_fsm_tech_team
+    #   Billing team -> account.group_account_invoice (standard Odoo Invoicing)
+    'depends': ['base', 'sale', 'sale_subscription', 'product', 'account',
+                'field_service_extension'],
     'data': [
-        'security/fios_security.xml',
         'security/ir.model.access.csv',
         'data/fios_service_tier_data.xml',
         'data/ir_config_parameter.xml',
