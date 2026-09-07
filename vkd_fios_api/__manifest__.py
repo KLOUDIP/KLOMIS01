@@ -14,7 +14,7 @@
     'author': 'VK DATA ApS',
     'website': 'https://vkdata.dk/',
     'category': 'Hidden',
-    'version': '19.0.2.4.0',
+    'version': '19.0.2.3.0',
     'license': 'OPL-1',
     # field_service_extension is a dependency only for its group_fsm_tech_team
     # record: the FIOS tech-team restrictions reuse that group rather than
