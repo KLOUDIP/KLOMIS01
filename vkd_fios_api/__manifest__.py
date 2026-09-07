@@ -16,7 +16,11 @@
     'category': 'Hidden',
     'version': '19.0.2.3.0',
     'license': 'OPL-1',
-    'depends': ['base', 'sale', 'sale_subscription', 'product'],
+    # Role gating reuses groups that already exist rather than adding new ones:
+    #   Tech team    -> field_service_extension.group_fsm_tech_team
+    #   Billing team -> account.group_account_invoice (standard Odoo Invoicing)
+    'depends': ['base', 'sale', 'sale_subscription', 'product', 'account',
+                'field_service_extension'],
     'data': [
         'security/ir.model.access.csv',
         'data/fios_service_tier_data.xml',
@@ -24,6 +28,7 @@
         'data/ir_cron_data.xml',
         'views/fios_service_tier_views.xml',
         'views/fios_api_log_views.xml',
+        'views/fios_device_views.xml',
         'views/res_partner_views.xml',
         'views/res_users_views.xml',
         'views/product_template_views.xml',
