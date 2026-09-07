@@ -140,3 +140,44 @@ class IrisIntegrationController(http.Controller):
             return self._json_response({'status': 'success', 'message': f'Comment posted to ticket #{ticket.id}'})
         except Exception as e:
             return self._json_response({'error': str(e)}, 500)
+
+    @http.route('/api/voice/contact/search', type='http', auth='public', methods=['POST'], csrf=False)
+    def search_contact(self, **kwargs):
+        """Verifies if a caller exists by phone or email."""
+        if not self._authenticate():
+            return self._json_response({'error': 'Unauthorized'}, 401)
+
+        try:
+            payload = json.loads(request.httprequest.data)
+            phone = payload.get('caller_phone')
+            email = payload.get('caller_email')
+
+            domain = []
+            if phone:
+                domain.append(('phone', 'ilike', phone))
+            if email:
+                domain.append(('email', '=ilike', email.strip()))
+
+            if len(domain) == 2:
+                domain = ['|'] + domain
+
+            if not domain:
+                return self._json_response({'error': 'Provide caller_phone or caller_email'}, 400)
+
+            partner = request.env['res.partner'].sudo().search(domain, limit=1)
+
+            if partner:
+                return self._json_response({
+                    'status': 'success',
+                    'found': True,
+                    'contact': {
+                        'id': partner.id,
+                        'name': partner.name,
+                        'email': partner.email,
+                        'phone': partner.phone
+                    }
+                })
+
+            return self._json_response({'status': 'success', 'found': False, 'message': 'Contact not found'})
+        except Exception as e:
+            return self._json_response({'error': str(e)}, 500)
