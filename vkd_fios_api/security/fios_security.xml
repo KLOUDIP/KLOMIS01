@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="0">
+
+        <!--
+            FIOS role groups.
+
+            "Tech Team" is NOT redefined here - it reuses the existing
+            field_service_extension.group_fsm_tech_team group so a user is only
+            ever assigned to one Tech Team group across the database.
+
+            Only the billing counterpart is new. No privilege_id is set (same as
+            the access_rights module) so the group lands in the technical /
+            extra-rights section of the user form rather than inventing a new
+            application category.
+        -->
+        <record id="group_fios_billing_team" model="res.groups">
+            <field name="name">FIOS Billing Team</field>
+            <field name="comment">Billing-side FIOS access: can grant grace periods and read device
+                plates, but cannot see device IMEI / phone numbers or the FIOS technical menus.</field>
+        </record>
+
+    </data>
+</odoo>

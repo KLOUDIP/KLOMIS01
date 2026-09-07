@@ -1,14 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+    <!--
+        Technical FIOS menus. Administrators and the tech team only - the
+        billing team must not see Service Tiers / API Log / Sessions.
+        The groups are repeated on every child so a menu is never left
+        reachable for a user who only holds the billing role.
+    -->
     <menuitem id="menu_fios_root" name="FIOS" sequence="95"
-              groups="base.group_system"/>
+              groups="base.group_system,field_service_extension.group_fsm_tech_team"/>
 
     <menuitem id="menu_fios_service_tier" name="Service Tiers"
-              parent="menu_fios_root" action="action_fios_service_tier" sequence="5"/>
+              parent="menu_fios_root" action="action_fios_service_tier" sequence="5"
+              groups="base.group_system,field_service_extension.group_fsm_tech_team"/>
 
     <menuitem id="menu_fios_api_log" name="API Log"
-              parent="menu_fios_root" action="action_fios_api_log" sequence="10"/>
+              parent="menu_fios_root" action="action_fios_api_log" sequence="10"
+              groups="base.group_system,field_service_extension.group_fsm_tech_team"/>
+
+    <menuitem id="menu_fios_device" name="Devices"
+              parent="menu_fios_root" action="action_fios_device" sequence="15"
+              groups="base.group_system,field_service_extension.group_fsm_tech_team"/>
 
     <menuitem id="menu_fios_session" name="Sessions"
-              parent="menu_fios_root" action="action_fios_session" sequence="20"/>
+              parent="menu_fios_root" action="action_fios_session" sequence="20"
+              groups="base.group_system,field_service_extension.group_fsm_tech_team"/>
 </odoo>

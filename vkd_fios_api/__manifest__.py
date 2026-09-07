@@ -14,16 +14,21 @@
     'author': 'VK DATA ApS',
     'website': 'https://vkdata.dk/',
     'category': 'Hidden',
-    'version': '19.0.2.3.0',
+    'version': '19.0.2.4.0',
     'license': 'OPL-1',
-    'depends': ['base', 'sale', 'sale_subscription', 'product'],
+    # field_service_extension is a dependency only for its group_fsm_tech_team
+    # record: the FIOS tech-team restrictions reuse that group rather than
+    # introducing a second "Tech Team" users have to be assigned to separately.
+    'depends': ['base', 'sale', 'sale_subscription', 'product', 'field_service_extension'],
     'data': [
+        'security/fios_security.xml',
         'security/ir.model.access.csv',
         'data/fios_service_tier_data.xml',
         'data/ir_config_parameter.xml',
         'data/ir_cron_data.xml',
         'views/fios_service_tier_views.xml',
         'views/fios_api_log_views.xml',
+        'views/fios_device_views.xml',
         'views/res_partner_views.xml',
         'views/res_users_views.xml',
         'views/product_template_views.xml',

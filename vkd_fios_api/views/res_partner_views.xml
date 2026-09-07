@@ -16,9 +16,11 @@
                         <button name="action_fios_refresh_devices" type="object"
                                 string="Refresh Devices"
                                 invisible="not fios_account_item_id"/>
+                        <!-- Billing-side action: deliberately not shown to the tech team. -->
                         <button name="action_fios_grant_grace" type="object"
                                 string="Grant 7-Day Grace Period"
                                 class="btn-warning"
+                                groups="vkd_fios_api.group_fios_billing_team,base.group_system"
                                 invisible="not fios_grace_available"
                                 confirm="Grant this customer a 7-day grace period? This restores FIOS access for 7 more days and can only be used once per billing cycle."/>
                         <button name="action_fios_debug_devices" type="object"
@@ -26,17 +28,33 @@
                                 groups="base.group_system"
                                 invisible="not fios_account_item_id"
                                 help="Dump the raw FIOS unit search response for this account."/>
+                        <button name="action_fios_open_devices" type="object"
+                                string="Export Devices" class="btn-secondary"
+                                invisible="not fios_device_ids"
+                                help="Open the device list in its own view, where the standard Odoo Export button produces an XLSX of Device / Plate and Status."/>
                         <field name="fios_grace_available" invisible="1"/>
+                        <!-- The buttons above evaluate `not fios_account_item_id`,
+                             so the field must stay in the arch for users who
+                             cannot see the administrator-only Identifiers block
+                             below. Mutually exclusive with that block, so the
+                             field is never rendered twice. -->
+                        <field name="fios_account_item_id" invisible="1"
+                               groups="!base.group_system"/>
                     </header>
                     <group>
                         <group string="Status">
                             <field name="is_fios_user"/>
-                            <field name="fios_tier_id"/>
+                            <!-- Service tier is editable by administrators only;
+                                 everyone else gets the same field read-only. -->
+                            <field name="fios_tier_id" groups="base.group_system"/>
+                            <field name="fios_tier_id" groups="!base.group_system"
+                                   readonly="1"/>
                             <field name="fios_provision_state"/>
                             <field name="fios_provision_pending"/>
                             <field name="fios_last_sync"/>
                         </group>
-                        <group string="FIOS Identifiers">
+                        <!-- Raw FIOS platform identifiers: administrators only. -->
+                        <group string="FIOS Identifiers" groups="base.group_system">
                             <field name="fios_user_id"/>
                             <field name="fios_resource_id"/>
                             <field name="fios_account_item_id"/>
@@ -92,10 +110,14 @@
                         <list limit="50" default_order="device_active desc, name"
                               decoration-muted="not device_active">
                             <field name="name" string="Device / Plate"/>
+                            <!-- IMEI / phone are technical identifiers: hidden
+                                 from the billing team. -->
                             <field name="imei" string="IMEI" widget="char"
-                                   class="text-nowrap"/>
+                                   class="text-nowrap"
+                                   groups="field_service_extension.group_fsm_tech_team,base.group_system"/>
                             <field name="phone" string="Phone" widget="char"
-                                   class="text-nowrap"/>
+                                   class="text-nowrap"
+                                   groups="field_service_extension.group_fsm_tech_team,base.group_system"/>
                             <field name="device_status" string="Status" widget="badge"
                                    decoration-success="device_status == 'activated'"
                                    decoration-danger="device_status == 'deactivated'"/>
