@@ -231,6 +231,22 @@ class ResPartner(models.Model):
             },
         }
 
+    def fios_report_devices(self):
+        """Devices for the printed list, activated first then by plate.
+
+        Kept in Python rather than sorting inside QWeb: the template stays
+        readable and the ordering is testable.
+        """
+        self.ensure_one()
+        return self.fios_device_ids.sorted(
+            key=lambda device: (not device.device_active, (device.name or '').lower()))
+
+    def action_fios_print_devices(self):
+        """Print this customer's device list (Device / Plate and Status)."""
+        self.ensure_one()
+        return self.env.ref(
+            'vkd_fios_api.action_report_fios_devices').report_action(self)
+
     fios_device_diagnostic = fields.Text(string='FIOS Device Diagnostic', copy=False,
                                          readonly=True)
 
@@ -263,8 +279,17 @@ class ResPartner(models.Model):
         }
 
     def action_fios_grant_grace(self):
-        """Grant this customer their once-per-cycle grace period (billing team)."""
+        """Grant this customer their once-per-cycle grace period (billing team).
+
+        Hiding the button in the view does not stop the RPC call behind it, so
+        the same rule is enforced here. FIOS Administrator implies FIOS User, so
+        this covers administrators too. The portal path (vkd_fios_signup) calls
+        fios.provisioning.grant_grace_period directly under sudo and is not
+        affected by this check.
+        """
         self.ensure_one()
+        if not self.env.user.has_group('vkd_fios_api.group_fios_user'):
+            raise UserError(_("Only the FIOS billing team can grant a grace period."))
         days = self.env['fios.provisioning'].grant_grace_period(self, source='backend')
         return {
             'type': 'ir.actions.client',

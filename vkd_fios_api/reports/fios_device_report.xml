@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Printable device list for one customer: Device / Plate and Status only.
+        This is what the "Export Devices" button on the contact FIOS tab prints.
+
+        binding_model_id is left unset on purpose - the report is reached from
+        that button, not from the Print menu of every contact.
+    -->
+    <record id="action_report_fios_devices" model="ir.actions.report">
+        <field name="name">FIOS Devices</field>
+        <field name="model">res.partner</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">vkd_fios_api.report_fios_devices</field>
+        <field name="report_file">vkd_fios_api.report_fios_devices</field>
+        <field name="print_report_name">'FIOS Devices - %s' % (object.display_name or '')</field>
+    </record>
+
+    <template id="report_fios_devices">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <h2 class="mb-0">FIOS Devices</h2>
+                        <div class="mb-4">
+                            <span t-field="doc.display_name"/>
+                        </div>
+
+                        <t t-set="devices" t-value="doc.fios_report_devices()"/>
+
+                        <table class="table table-sm o_main_table" t-if="devices">
+                            <thead>
+                                <tr>
+                                    <th>Device / Plate</th>
+                                    <th class="text-end">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="devices" t-as="device">
+                                    <td><span t-field="device.name"/></td>
+                                    <td class="text-end">
+                                        <span t-field="device.device_status"/>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <p t-if="not devices">
+                            No FIOS devices are recorded for this customer.
+                        </p>
+
+                        <div class="mt-4" t-if="devices">
+                            <small>
+                                <span t-esc="len(devices)"/> device(s) -
+                                <span t-esc="len(devices.filtered('device_active'))"/> activated,
+                                <span t-esc="len(devices) - len(devices.filtered('device_active'))"/> deactivated.
+                            </small>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

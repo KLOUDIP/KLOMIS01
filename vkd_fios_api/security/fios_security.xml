@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="0">
+
+        <!--
+            FIOS roles.
+
+            Three groups under one privilege, in the Odoo 19 shape
+            (ir.module.category -> res.groups.privilege -> res.groups):
+
+              Billing Team  - the commercial side. FIOS app with the Import
+                              Accounts menu only, and the contact FIOS tab
+                              without the platform identifiers, without the
+                              device IMEI / phone columns and with a read-only
+                              service tier. Holds the 7-day grace period button.
+              Tech Team     - the technical side, on the contact FIOS tab only:
+                              the FIOS Identifiers block, the device IMEI /
+                              phone columns and the device diagnostics. No FIOS
+                              app menu at all, no grace period button, and the
+                              service tier stays read-only.
+              Administrator - implies both of the above, and is the only role
+                              with the Service Tiers / API Log / Sessions menus,
+                              an editable service tier on a contact, and the
+                              grace period lock reset.
+
+            Billing Team and Tech Team are siblings, not levels: neither implies
+            the other, so a user placed in one does not inherit the other's
+            fields. Administrator implies both.
+
+            base.group_system is given Administrator so existing system
+            administrators keep everything they had before this change.
+        -->
+
+        <record id="module_category_fios" model="ir.module.category">
+            <field name="name">FIOS</field>
+            <field name="description">Access to the FIOS (Wialon) integration.</field>
+            <field name="sequence">30</field>
+        </record>
+
+        <record id="res_groups_privilege_fios" model="res.groups.privilege">
+            <field name="name">FIOS</field>
+            <field name="sequence">10</field>
+            <field name="category_id" ref="module_category_fios"/>
+        </record>
+
+        <!-- XML id kept as group_fios_user: this group already exists on the
+             instances where the earlier two-role version was installed, and
+             renaming the id would strand the users already assigned to it. -->
+        <record id="group_fios_user" model="res.groups">
+            <field name="name">Billing Team</field>
+            <field name="sequence">10</field>
+            <field name="privilege_id" ref="res_groups_privilege_fios"/>
+            <field name="comment">Billing-side FIOS access: the FIOS app with the Import
+                Accounts menu only, the 7-day grace period button, and the contact FIOS
+                tab without the platform identifiers or the device IMEI / phone
+                numbers.</field>
+        </record>
+
+        <record id="group_fios_tech_team" model="res.groups">
+            <field name="name">Tech Team</field>
+            <field name="sequence">20</field>
+            <field name="privilege_id" ref="res_groups_privilege_fios"/>
+            <field name="comment">Technical FIOS access on the contact FIOS tab: the
+                platform identifiers, the device IMEI / phone columns and the device
+                diagnostics. No FIOS app menu and no grace period button.</field>
+        </record>
+
+        <record id="group_fios_administrator" model="res.groups">
+            <field name="name">Administrator</field>
+            <field name="sequence">30</field>
+            <field name="privilege_id" ref="res_groups_privilege_fios"/>
+            <field name="implied_ids"
+                   eval="[(4, ref('group_fios_user')), (4, ref('group_fios_tech_team'))]"/>
+            <field name="comment">Full FIOS access: everything the Billing Team and the
+                Tech Team can see, plus the editable service tier on a contact and the
+                grace period lock reset.</field>
+        </record>
+
+        <!-- Keep system administrators whole: they held all of this before the
+             groups existed. (4, ...) adds without disturbing other implications. -->
+        <record id="base.group_system" model="res.groups">
+            <field name="implied_ids" eval="[(4, ref('group_fios_administrator'))]"/>
+        </record>
+
+    </data>
+</odoo>

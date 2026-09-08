@@ -16,22 +16,42 @@
                         <button name="action_fios_refresh_devices" type="object"
                                 string="Refresh Devices"
                                 invisible="not fios_account_item_id"/>
+                        <!-- Billing-side action: Billing Team only. Administrator
+                             implies Billing Team, so admins see it; the Tech Team
+                             does not. -->
                         <button name="action_fios_grant_grace" type="object"
                                 string="Grant 7-Day Grace Period"
                                 class="btn-warning"
+                                groups="vkd_fios_api.group_fios_user"
                                 invisible="not fios_grace_available"
                                 confirm="Grant this customer a 7-day grace period? This restores FIOS access for 7 more days and can only be used once per billing cycle."/>
                         <button name="action_fios_debug_devices" type="object"
                                 string="Diagnose Devices" class="btn-secondary"
-                                groups="base.group_system"
                                 invisible="not fios_account_item_id"
                                 help="Dump the raw FIOS unit search response for this account."/>
+                        <button name="action_fios_print_devices" type="object"
+                                string="Export Devices" class="btn-secondary"
+                                invisible="not fios_device_ids"
+                                help="Print this customer's device list (Device / Plate and Status) as a PDF."/>
                         <field name="fios_grace_available" invisible="1"/>
+                        <!-- The buttons above evaluate `not fios_account_item_id`,
+                             so the field must stay in the arch for users who
+                             cannot see the Tech Team Identifiers block below.
+                             Mutually exclusive with that block, so the field is
+                             never rendered twice. -->
+                        <field name="fios_account_item_id" invisible="1"
+                               groups="!vkd_fios_api.group_fios_tech_team"/>
                     </header>
                     <group>
                         <group string="Status">
                             <field name="is_fios_user"/>
-                            <field name="fios_tier_id"/>
+                            <!-- Service tier is editable by FIOS Administrator only;
+                                 everyone else gets the same field read-only. -->
+                            <field name="fios_tier_id"
+                                   groups="vkd_fios_api.group_fios_administrator"/>
+                            <field name="fios_tier_id"
+                                   groups="!vkd_fios_api.group_fios_administrator"
+                                   readonly="1"/>
                             <field name="fios_provision_state"/>
                             <field name="fios_provision_pending"/>
                             <field name="fios_last_sync"/>
@@ -79,7 +99,8 @@
                             <field name="fios_grace_cycle_ref"/>
                             <button name="action_fios_reset_grace" type="object"
                                     string="Reset grace period lock"
-                                    class="btn-link ps-0" groups="base.group_system"
+                                    class="btn-link ps-0"
+                                    groups="vkd_fios_api.group_fios_administrator"
                                     confirm="Reset the grace period lock? The customer will be able to use a grace period again in this billing cycle."/>
                         </group>
                     </group>
@@ -92,10 +113,14 @@
                         <list limit="50" default_order="device_active desc, name"
                               decoration-muted="not device_active">
                             <field name="name" string="Device / Plate"/>
+                            <!-- IMEI / phone are technical identifiers: Tech Team
+                                 (and admins) only, hidden from the Billing Team. -->
                             <field name="imei" string="IMEI" widget="char"
-                                   class="text-nowrap"/>
+                                   class="text-nowrap"
+                                   groups="vkd_fios_api.group_fios_tech_team"/>
                             <field name="phone" string="Phone" widget="char"
-                                   class="text-nowrap"/>
+                                   class="text-nowrap"
+                                   groups="vkd_fios_api.group_fios_tech_team"/>
                             <field name="device_status" string="Status" widget="badge"
                                    decoration-success="device_status == 'activated'"
                                    decoration-danger="device_status == 'deactivated'"/>
@@ -103,7 +128,8 @@
                                    widget="boolean_toggle" optional="hide"/>
                         </list>
                     </field>
-                    <group string="Device Diagnostic" groups="base.group_system"
+                    <group string="Device Diagnostic"
+                           groups="vkd_fios_api.group_fios_tech_team"
                            invisible="not fios_device_diagnostic">
                         <field name="fios_device_diagnostic" nolabel="1" readonly="1"
                                widget="text"/>
