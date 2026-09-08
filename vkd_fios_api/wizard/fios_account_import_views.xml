@@ -63,6 +63,8 @@
         <field name="target">new</field>
     </record>
 
+    <!-- The one FIOS menu the billing team gets. -->
     <menuitem id="menu_fios_account_import" name="Import Accounts"
-              parent="menu_fios_root" action="action_fios_account_import" sequence="8"/>
+              parent="menu_fios_root" action="action_fios_account_import" sequence="8"
+              groups="vkd_fios_api.group_fios_user"/>
 </odoo>

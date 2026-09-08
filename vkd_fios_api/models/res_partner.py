@@ -231,24 +231,21 @@ class ResPartner(models.Model):
             },
         }
 
-    def action_fios_open_devices(self):
-        """Open this customer's devices as a normal list view.
+    def fios_report_devices(self):
+        """Devices for the printed list, activated first then by plate.
 
-        Odoo renders the Export button on action-opened list views only, not on
-        the one2many embedded in the contact form. Opening the same records
-        through an action is therefore what gives the user the standard export
-        dialog - no custom XLSX writer needed, and the column-level `groups` on
-        IMEI / phone still apply, so a billing user exports Device / Plate and
-        Status only.
+        Kept in Python rather than sorting inside QWeb: the template stays
+        readable and the ordering is testable.
         """
         self.ensure_one()
-        action = self.env['ir.actions.act_window']._for_xml_id(
-            'vkd_fios_api.action_fios_device')
-        action['domain'] = [('partner_id', '=', self.id)]
-        action['context'] = {'default_partner_id': self.id}
-        action['name'] = _('FIOS Devices - %s', self.display_name)
-        action['display_name'] = action['name']
-        return action
+        return self.fios_device_ids.sorted(
+            key=lambda device: (not device.device_active, (device.name or '').lower()))
+
+    def action_fios_print_devices(self):
+        """Print this customer's device list (Device / Plate and Status)."""
+        self.ensure_one()
+        return self.env.ref(
+            'vkd_fios_api.action_report_fios_devices').report_action(self)
 
     fios_device_diagnostic = fields.Text(string='FIOS Device Diagnostic', copy=False,
                                          readonly=True)
@@ -284,16 +281,15 @@ class ResPartner(models.Model):
     def action_fios_grant_grace(self):
         """Grant this customer their once-per-cycle grace period (billing team).
 
-        The button is hidden from the tech team in the view, but hiding a button
-        does not stop the RPC call behind it, so the same rule is enforced here.
-        The portal path (vkd_fios_signup) calls
+        Hiding the button in the view does not stop the RPC call behind it, so
+        the same rule is enforced here. FIOS Administrator implies FIOS User, so
+        this covers administrators too. The portal path (vkd_fios_signup) calls
         fios.provisioning.grant_grace_period directly under sudo and is not
         affected by this check.
         """
         self.ensure_one()
-        if not (self.env.user.has_group('account.group_account_invoice')
-                or self.env.user.has_group('base.group_system')):
-            raise UserError(_("Only the billing team can grant a grace period."))
+        if not self.env.user.has_group('vkd_fios_api.group_fios_user'):
+            raise UserError(_("Only the FIOS billing team can grant a grace period."))
         days = self.env['fios.provisioning'].grant_grace_period(self, source='backend')
         return {
             'type': 'ir.actions.client',
