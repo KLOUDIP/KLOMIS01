@@ -11,3 +11,13 @@ access_fios_service_usage_system,fios.service.usage.system,model_fios_service_us
 access_fios_service_usage_user,fios.service.usage.user,model_fios_service_usage,base.group_user,1,0,0,0
 access_fios_account_import_system,fios.account.import.system,model_fios_account_import,base.group_system,1,1,1,1
 access_fios_account_import_line_system,fios.account.import.line.system,model_fios_account_import_line,base.group_system,1,1,1,1
+access_fios_service_tier_fios_admin,fios.service.tier.fios.admin,model_fios_service_tier,vkd_fios_api.group_fios_administrator,1,1,1,1
+access_fios_session_fios_admin,fios.session.fios.admin,model_fios_session,vkd_fios_api.group_fios_administrator,1,1,1,1
+access_fios_api_log_fios_admin,fios.api.log.fios.admin,model_fios_api_log,vkd_fios_api.group_fios_administrator,1,1,1,1
+access_fios_device_fios_admin,fios.device.fios.admin,model_fios_device,vkd_fios_api.group_fios_administrator,1,1,1,1
+access_fios_service_usage_fios_admin,fios.service.usage.fios.admin,model_fios_service_usage,vkd_fios_api.group_fios_administrator,1,1,1,1
+access_fios_account_import_fios_admin,fios.account.import.fios.admin,model_fios_account_import,vkd_fios_api.group_fios_administrator,1,1,1,1
+access_fios_account_import_line_fios_admin,fios.account.import.line.fios.admin,model_fios_account_import_line,vkd_fios_api.group_fios_administrator,1,1,1,1
+access_fios_account_import_fios_user,fios.account.import.fios.user,model_fios_account_import,vkd_fios_api.group_fios_user,1,1,1,1
+access_fios_account_import_line_fios_user,fios.account.import.line.fios.user,model_fios_account_import_line,vkd_fios_api.group_fios_user,1,1,1,1
+

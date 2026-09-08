@@ -1,14 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+    <!--
+        FIOS app menus.
+
+        The Tech Team gets no menu at all: their access is the technical part
+        of the contact FIOS tab, not the FIOS app.
+
+        Root      -> Billing Team (Administrator implies it, so admins see it).
+        Technical -> Administrator (Service Tiers, API Log, Sessions).
+        Import    -> Billing Team (declared in wizard/fios_account_import_views.xml).
+
+        base.group_system implies Administrator, so admins keep the full menu.
+
+        Groups are repeated on every leaf so a menu is never left reachable for
+        a user who only holds the Billing Team role.
+    -->
     <menuitem id="menu_fios_root" name="FIOS" sequence="95"
-              groups="base.group_system"/>
+              groups="vkd_fios_api.group_fios_user"/>
 
     <menuitem id="menu_fios_service_tier" name="Service Tiers"
-              parent="menu_fios_root" action="action_fios_service_tier" sequence="5"/>
+              parent="menu_fios_root" action="action_fios_service_tier" sequence="5"
+              groups="vkd_fios_api.group_fios_administrator"/>
 
     <menuitem id="menu_fios_api_log" name="API Log"
-              parent="menu_fios_root" action="action_fios_api_log" sequence="10"/>
+              parent="menu_fios_root" action="action_fios_api_log" sequence="10"
+              groups="vkd_fios_api.group_fios_administrator"/>
 
     <menuitem id="menu_fios_session" name="Sessions"
-              parent="menu_fios_root" action="action_fios_session" sequence="20"/>
+              parent="menu_fios_root" action="action_fios_session" sequence="20"
+              groups="vkd_fios_api.group_fios_administrator"/>
 </odoo>
