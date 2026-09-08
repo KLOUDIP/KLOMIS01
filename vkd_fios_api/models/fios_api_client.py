@@ -107,21 +107,11 @@ class FiosApiClient(models.AbstractModel):
         data = resp.json()
         if not isinstance(data, dict) or 'eid' not in data:
             code = data.get('error') if isinstance(data, dict) else None
-            _logger.warning("FIOS: token/login rejected for tier %s, full response=%s",
-                            tier.name, data)
-            raise FiosApiError(
-                code or FIOS_ERR_ACCESS_DENIED, 'token/login',
-                # Let _describe() name the code when FIOS gave us one; only fall
-                # back to the generic wording when it did not.
-                message=None if code else 'Login did not return a session id',
-                reason=_("tier '%s' - check the API Token on the tier record. FIOS "
-                         "rejects a token that has expired, been revoked, or is "
-                         "tied to a different IP address than this server") % tier.name)
+            raise FiosApiError(code or FIOS_ERR_ACCESS_DENIED, 'token/login',
+                               'Login did not return a session id')
 
         # Retire any previous active session for this tier, store the new one.
-        # sudo: fios.session is read-only for ordinary internal users, and
-        # session bookkeeping is infrastructure, not the caller's data.
-        self.env['fios.session'].sudo().get_active_session(tier).invalidate()
+        self.env['fios.session'].get_active_session(tier).invalidate()
         session = self.env['fios.session'].sudo().create({
             'sid': data['eid'],
             'tier_id': tier.id,
@@ -167,7 +157,7 @@ class FiosApiClient(models.AbstractModel):
             code = data['error']
             if code == FIOS_ERR_INVALID_SESSION and retry_on_expiry:
                 _logger.info("FIOS: session expired on '%s', re-logging in", svc)
-                self.env['fios.session'].sudo().get_active_session(tier).invalidate()
+                self.env['fios.session'].get_active_session(tier).invalidate()
                 self._login(tier)
                 return self.call(svc, params, tier=tier, retry_on_expiry=False)
             # `reason` carries a human-readable detail on many errors (e.g. 5).
@@ -176,9 +166,7 @@ class FiosApiClient(models.AbstractModel):
             raise FiosApiError(code, svc, reason=reason)
 
         # Refresh activity so the keep-alive cron knows the session is live.
-        # sudo for the same reason as above: this runs on every single API call,
-        # so without it no non-administrator could use FIOS at all.
-        self.env['fios.session'].sudo().get_active_session(tier).touch()
+        self.env['fios.session'].get_active_session(tier).touch()
         return data
 
     @api.model
