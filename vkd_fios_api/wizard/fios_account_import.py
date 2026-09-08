@@ -38,12 +38,19 @@ class FiosAccountImport(models.TransientModel):
             wizard.result_count = len(wizard.display_line_ids)
 
     def _reopen(self):
+        """Re-render this wizard in place.
+
+        target=current to match the menu action: the wizard is a full page
+        inside the FIOS app, not a dialog, so Fetch / Search must not bounce it
+        into one.
+        """
         return {
             'type': 'ir.actions.act_window',
+            'name': _('Import FIOS Accounts'),
             'res_model': self._name,
             'res_id': self.id,
             'view_mode': 'form',
-            'target': 'new',
+            'target': 'current',
         }
 
     def _apply_filter(self):
@@ -151,7 +158,16 @@ class FiosAccountImport(models.TransientModel):
                 'title': _('FIOS Import'),
                 'message': _('%s account(s) linked.') % len(to_import),
                 'type': 'success',
-                'next': {'type': 'ir.actions.act_window_close'},
+                # A fresh wizard rather than act_window_close: closing a
+                # full-page action here would drop the user out of the app, and
+                # reusing this record would show stale already_linked flags.
+                'next': {
+                    'type': 'ir.actions.act_window',
+                    'name': _('Import FIOS Accounts'),
+                    'res_model': self._name,
+                    'view_mode': 'form',
+                    'target': 'current',
+                },
             },
         }
 

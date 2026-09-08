@@ -4,54 +4,58 @@
         <field name="name">fios.account.import.form</field>
         <field name="model">fios.account.import</field>
         <field name="arch" type="xml">
+            <!-- Full-page form, not a dialog: the buttons live in <header> (a
+                 <footer> only renders in dialog mode) and the body sits in a
+                 <sheet> so it gets the normal page framing. -->
             <form string="Import FIOS Accounts">
-                <group>
-                    <group>
-                        <field name="tier_id"/>
-                    </group>
-                    <group>
-                        <label for="search_name"/>
-                        <div class="o_row">
-                            <field name="search_name" placeholder="Account name or item ID..."
-                                   class="oe_inline"/>
-                            <button name="action_search" type="object" string="Search"
-                                    icon="fa-search" class="btn-link"
-                                    title="Filter the fetched accounts"/>
-                            <button name="action_clear_search" type="object" string="Clear"
-                                    icon="fa-times" class="btn-link"
-                                    invisible="not search_name"/>
-                        </div>
-                        <field name="hide_linked"/>
-                    </group>
-                </group>
-                <div class="text-muted mb-2">
-                    Pick a tier and fetch its accounts, then set the Odoo customer on each
-                    row you want to link. Already-linked accounts are shown for reference.
-                    Type a name and hit <b>Fetch Accounts</b> to search FIOS directly, or
-                    <b>Search</b> to filter the list you already pulled.
-                </div>
-                <div class="text-muted mb-2" invisible="not line_ids">
-                    Showing <field name="result_count" class="oe_inline fw-bold" readonly="1"/>
-                    matching account(s).
-                </div>
-                <field name="line_ids" invisible="1"/>
-                <field name="display_line_ids">
-                    <list editable="bottom" create="false" delete="false">
-                        <field name="name" readonly="1"/>
-                        <field name="account_item_id" readonly="1"/>
-                        <field name="already_linked" readonly="1"/>
-                        <field name="partner_id"
-                               options="{'no_create': True}"
-                               readonly="already_linked"/>
-                    </list>
-                </field>
-                <footer>
+                <header>
                     <button name="action_fetch" type="object" string="Fetch Accounts"
                             class="btn-secondary"/>
                     <button name="action_import" type="object" string="Import Selected"
                             class="btn-primary"/>
-                    <button string="Close" class="btn-secondary" special="cancel"/>
-                </footer>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="tier_id"/>
+                        </group>
+                        <group>
+                            <label for="search_name"/>
+                            <div class="o_row">
+                                <field name="search_name" placeholder="Account name or item ID..."
+                                       class="oe_inline"/>
+                                <button name="action_search" type="object" string="Search"
+                                        icon="fa-search" class="btn-link"
+                                        title="Filter the fetched accounts"/>
+                                <button name="action_clear_search" type="object" string="Clear"
+                                        icon="fa-times" class="btn-link"
+                                        invisible="not search_name"/>
+                            </div>
+                            <field name="hide_linked"/>
+                        </group>
+                    </group>
+                    <div class="text-muted mb-2">
+                        Pick a tier and fetch its accounts, then set the Odoo customer on each
+                        row you want to link. Already-linked accounts are shown for reference.
+                        Type a name and hit <b>Fetch Accounts</b> to search FIOS directly, or
+                        <b>Search</b> to filter the list you already pulled.
+                    </div>
+                    <div class="text-muted mb-2" invisible="not line_ids">
+                        Showing <field name="result_count" class="oe_inline fw-bold" readonly="1"/>
+                        matching account(s).
+                    </div>
+                    <field name="line_ids" invisible="1"/>
+                    <field name="display_line_ids">
+                        <list editable="bottom" create="false" delete="false">
+                            <field name="name" readonly="1"/>
+                            <field name="account_item_id" readonly="1"/>
+                            <field name="already_linked" readonly="1"/>
+                            <field name="partner_id"
+                                   options="{'no_create': True}"
+                                   readonly="already_linked"/>
+                        </list>
+                    </field>
+                </sheet>
             </form>
         </field>
     </record>
@@ -60,7 +64,11 @@
         <field name="name">Import FIOS Accounts</field>
         <field name="res_model">fios.account.import</field>
         <field name="view_mode">form</field>
-        <field name="target">new</field>
+        <!-- target=current so clicking the FIOS app lands INSIDE the app, with
+             Import Accounts in the sidebar. Odoo opens an app's first available
+             leaf action on entry, and a target=new action there makes the whole
+             app read as a popup. -->
+        <field name="target">current</field>
         <field name="group_ids" eval="[(6, 0, [ref('vkd_fios_api.group_fios_user')])]"/>
     </record>
 
