@@ -15,7 +15,7 @@
     'website': 'https://vkdata.dk/',
     'category': 'Hidden',
     'version': '19.0.2.3.0',
-    # Pending release: 19.0.2.7.0 - FIOS Administrator / FIOS User groups,
+    # Pending release: 19.0.2.6.0 - FIOS Administrator / FIOS User groups,
     # menu and contact-tab gating, and the printable device list report.
     # Bump 'version' above to that value when this goes out.
     'license': 'OPL-1',
