@@ -28,6 +28,7 @@
                         <button name="action_fios_debug_devices" type="object"
                                 string="Diagnose Devices" class="btn-secondary"
                                 invisible="not fios_account_item_id"
+                                groups="vkd_fios_api.group_fios_administrator"
                                 help="Dump the raw FIOS unit search response for this account."/>
                         <button name="action_fios_print_devices" type="object"
                                 string="Export Devices" class="btn-secondary"
@@ -56,7 +57,7 @@
                             <field name="fios_provision_pending"/>
                             <field name="fios_last_sync"/>
                         </group>
-                        <group string="FIOS Identifiers">
+                        <group string="FIOS Identifiers" groups="vkd_fios_api.group_fios_administrator">
                             <field name="fios_user_id"/>
                             <field name="fios_resource_id"/>
                             <field name="fios_account_item_id"/>
