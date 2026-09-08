@@ -61,6 +61,7 @@
         <field name="res_model">fios.account.import</field>
         <field name="view_mode">form</field>
         <field name="target">new</field>
+        <field name="group_ids" eval="[(6, 0, [ref('vkd_fios_api.group_fios_user')])]"/>
     </record>
 
     <!-- The one FIOS menu the billing team gets. -->

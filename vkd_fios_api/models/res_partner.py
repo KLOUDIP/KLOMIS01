@@ -258,8 +258,8 @@ class ResPartner(models.Model):
         the server log) so it can be answered from evidence.
         """
         self.ensure_one()
-        if not self.env.user.has_group('base.group_system'):
-            raise UserError(_("Only a system administrator can run the FIOS diagnostic."))
+        if not self.env.user.has_group('vkd_fios_api.group_fios_administrator'):
+            raise UserError(_("Only a FIOS administrator can run the FIOS diagnostic."))
         try:
             report = self.env['fios.provisioning'].debug_device_payload(self)
         except UserError:
@@ -307,11 +307,12 @@ class ResPartner(models.Model):
         """Admin escape hatch: clear the once-per-cycle lock.
 
         Needed for accounts with no live subscription (no invoice date to roll
-        over on) and for correcting a grace granted in error.
+        over on) and for correcting a grace granted in error. base.group_system
+        implies FIOS Administrator, so system administrators keep this.
         """
         self.ensure_one()
-        if not self.env.user.has_group('base.group_system'):
-            raise UserError(_("Only a system administrator can reset a grace period."))
+        if not self.env.user.has_group('vkd_fios_api.group_fios_administrator'):
+            raise UserError(_("Only a FIOS administrator can reset a grace period."))
         self.sudo().write({
             'fios_grace_cycle_ref': False,
             'fios_grace_granted_on': False,

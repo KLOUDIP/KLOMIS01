@@ -43,5 +43,8 @@
         <field name="name">FIOS Service Tiers</field>
         <field name="res_model">fios.service.tier</field>
         <field name="view_mode">list,form</field>
+        <!-- Not just menu-hidden: refuse the action itself, so a FIOS User
+             cannot reach it by typing /odoo/action-NNNN. -->
+        <field name="group_ids" eval="[(6, 0, [ref('vkd_fios_api.group_fios_administrator')])]"/>
     </record>
 </odoo>

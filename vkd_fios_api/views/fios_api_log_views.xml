@@ -82,6 +82,7 @@
         <field name="res_model">fios.api.log</field>
         <field name="view_mode">list,form</field>
         <field name="search_view_id" ref="view_fios_api_log_search"/>
+        <field name="group_ids" eval="[(6, 0, [ref('vkd_fios_api.group_fios_administrator')])]"/>
     </record>
 
     <record id="view_fios_session_list" model="ir.ui.view">
@@ -102,5 +103,6 @@
         <field name="name">FIOS Sessions</field>
         <field name="res_model">fios.session</field>
         <field name="view_mode">list</field>
+        <field name="group_ids" eval="[(6, 0, [ref('vkd_fios_api.group_fios_administrator')])]"/>
     </record>
 </odoo>
