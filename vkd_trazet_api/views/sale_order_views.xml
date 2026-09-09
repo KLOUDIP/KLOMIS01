@@ -19,9 +19,12 @@
                 </button>
             </xpath>
             <xpath expr="//label[@for='pricelist_id']" position="before">
+                <field name="trazet_grace_available" invisible="1"/>
+                <field name="trazet_grace_granted_on" invisible="1"/>
                 <label name="grace_period_days_label" for="grace_period_days"/>
                 <div class="o_row">
                     <field name="grace_period_days"
+                           readonly="not trazet_grace_available and trazet_grace_granted_on"
                            invisible="not is_subscription or subscription_state not in ['3_progress', '4_paused']"/>
                     <button name="action_send_effective_date_to_trazet"
                             string="Send to Trazet"
@@ -30,7 +33,30 @@
                             invisible="not grace_period_days"
                             confirm="Are you sure you want to send the deactivation date to Trazet? This will schedule deactivation based on the selected grace period."
                             help="Send deactivation date to Trazet based on selected grace period"/>
+                    <!-- One-click equivalent of the customer's portal button, so
+                         both sides grant the same allowance and stamp the same lock. -->
+                    <button name="action_trazet_grant_grace"
+                            string="Grant Grace Period"
+                            type="object"
+                            class="btn-secondary"
+                            invisible="not trazet_grace_available or grace_period_days"
+                            confirm="Grant this customer their grace period for the current billing cycle? It can only be used once per cycle, from here or from the customer portal."/>
+                    <button name="action_trazet_reset_grace"
+                            string="Reset Grace Lock"
+                            type="object"
+                            class="btn-link text-danger"
+                            groups="base.group_system"
+                            invisible="not trazet_grace_granted_on"
+                            confirm="Clear the once-per-cycle lock so a grace period can be granted again? Use this only to correct a grace recorded in error."/>
                 </div>
+                <group string="Grace Period Used" invisible="not trazet_grace_granted_on"
+                       col="2">
+                    <field name="trazet_grace_source" readonly="1"/>
+                    <field name="trazet_grace_days_granted" readonly="1"/>
+                    <field name="trazet_grace_granted_by" readonly="1"/>
+                    <field name="trazet_grace_expiry" readonly="1"/>
+                    <field name="trazet_grace_cycle_ref" readonly="1"/>
+                </group>
             </xpath>
         </field>
     </record>

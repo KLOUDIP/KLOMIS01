@@ -16,6 +16,7 @@ import { CartService } from "@website_sale/js/cart_service";
 const GATED_ROUTES = new Set([
     '/shop/cart/add',
     '/website_sale/combo_configurator/get_data',
+    '/website_sale/product_configurator/get_values',
 ]);
 
 /**

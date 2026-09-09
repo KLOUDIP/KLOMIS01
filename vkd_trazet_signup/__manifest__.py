@@ -14,6 +14,7 @@
     'website': 'https://vkdata.dk/',
     'category': 'Website',
     'version': '19.0.1.1.0',
+    # 'version': '19.0.1.2.0',
     'license': 'OPL-1',
     'depends': ['website', 'website_sale', 'vkd_trazet_api'],
     'data': [
@@ -23,6 +24,7 @@
     'assets': {
         'web.assets_frontend': [
             'vkd_trazet_signup/static/src/js/cart_service_patch.js',
+            'vkd_trazet_signup/static/src/js/signup_gate.js',
             'vkd_trazet_signup/static/src/js/signup_form.js',
             'vkd_trazet_signup/static/src/css/signup_form.css',
         ],

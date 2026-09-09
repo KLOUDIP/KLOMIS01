@@ -12,6 +12,7 @@
     'website': 'https://vkdata.dk/',
     'category': 'Website',
     'version': '19.0.2.2.0',
+    # 'version': '19.0.2.3.0',
     'license': 'OPL-1',
     'depends': ['website', 'website_sale', 'portal', 'vkd_fios_api'],
     'data': [
@@ -21,6 +22,7 @@
     'assets': {
         'web.assets_frontend': [
             'vkd_fios_signup/static/src/js/cart_service_patch.js',
+            'vkd_fios_signup/static/src/js/signup_gate.js',
         ],
     },
     'installable': True,

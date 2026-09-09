@@ -24,5 +24,17 @@
             <field name="key">vkd_trazet_api.trazet_integrator_auth_token</field>
             <field name="value">8k8IggB3G18cpeZ1Nn38Wb6UpBY3J1KMr8hhUEsn8ZNHmn1uScEsIhlCMPCAJRzT</field>
         </record>
+
+        <!-- Length of the self-service grace period. Must be one of the values
+             sale.order.grace_period_days accepts, or the 7-day default stands. -->
+        <record id="trazet_grace_period_days_param" model="ir.config_parameter">
+            <field name="key">vkd_trazet_api.grace_period_days</field>
+            <field name="value">7</field>
+        </record>
+        <!-- Set to 0 to keep the grace period a billing-team-only action. -->
+        <record id="trazet_grace_portal_enabled_param" model="ir.config_parameter">
+            <field name="key">vkd_trazet_api.grace_portal_enabled</field>
+            <field name="value">1</field>
+        </record>
     </data>
 </odoo>

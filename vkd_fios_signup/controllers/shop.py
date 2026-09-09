@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
 
+from odoo import http
 from odoo.http import request, route
 
 from odoo.addons.website_sale.controllers.cart import Cart
@@ -8,10 +9,14 @@ from odoo.addons.website_sale.controllers.combo_configurator import (
     WebsiteSaleComboConfiguratorController,
 )
 from odoo.addons.website_sale.controllers.main import WebsiteSale
+from odoo.addons.website_sale.controllers.product_configurator import (
+    WebsiteSaleProductConfiguratorController,
+)
 
 _logger = logging.getLogger(__name__)
 
 SIGNUP_ROUTE = '/fios-signup'
+GATE_CHECK_ROUTE = '/fios-signup/gate/check'
 
 
 def _related_templates(tmpl):
@@ -87,6 +92,55 @@ class FiosComboConfiguratorGate(WebsiteSaleComboConfiguratorController):
         if tmpl and _is_fios_template(tmpl) and not _current_user_registered():
             return {'redirect_url': SIGNUP_ROUTE}
         return super().website_sale_combo_configurator_get_data(*args, **kwargs)
+
+
+class FiosProductConfiguratorGate(WebsiteSaleProductConfiguratorController):
+    """Gate the *product* configurator, the third way into the cart.
+
+    `CartService.add` opens this dialog for any product website_sale considers
+    configurable (variants, optional products, subscription plans) and only
+    posts to /shop/cart/add afterwards. Without this an unregistered visitor
+    would work through the whole dialog before being told to sign up - and,
+    worse, a dialog that fails to open looks exactly like a dead button.
+    """
+
+    @route()
+    def website_sale_product_configurator_get_values(self, *args, **kwargs):
+        tmpl_id = kwargs.get('product_template_id') or (args[0] if args else None)
+        tmpl = request.env['product.template'].browse(int(tmpl_id)).exists() if tmpl_id else None
+        if tmpl and _is_fios_template(tmpl) and not _current_user_registered():
+            return {'redirect_url': SIGNUP_ROUTE}
+        return super().website_sale_product_configurator_get_values(*args, **kwargs)
+
+
+class FiosSignupGateCheck(http.Controller):
+    """Tells the frontend which of the products on the current page are gated.
+
+    The redirect-on-response contract below only fires once website_sale has
+    already made its call, so anything that stops that call from being made -
+    or from returning cleanly - swallows the sign-up prompt with it. This route
+    lets static/src/js/signup_gate.js decide at *click* time instead, which is
+    the only point that is guaranteed to be reached.
+    """
+
+    @http.route(GATE_CHECK_ROUTE, type='jsonrpc', auth='public', website=True, readonly=True)
+    def fios_signup_gate_check(self, product_template_ids=None, **kwargs):
+        ids = []
+        for value in (product_template_ids or []):
+            try:
+                ids.append(int(value))
+            except (TypeError, ValueError):
+                continue
+        if not ids or _current_user_registered():
+            return {'gated_template_ids': []}
+        # sudo: this only reports whether templates the visitor already has on
+        # screen carry the FIOS markers, and a combo's choices need not be
+        # published for the combo itself to be.
+        templates = request.env['product.template'].sudo().browse(ids).exists()
+        return {
+            'gated_template_ids': [t.id for t in templates if _is_fios_template(t)],
+            'signup_url': SIGNUP_ROUTE,
+        }
 
 
 class FiosCartGate(Cart):

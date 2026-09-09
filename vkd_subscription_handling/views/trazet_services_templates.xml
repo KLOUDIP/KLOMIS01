@@ -27,6 +27,15 @@
                 <t t-set="title">Services</t>
             </t>
 
+            <div class="alert alert-danger alert-dismissible" t-if="grace_error">
+                <span t-out="grace_error"/>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"/>
+            </div>
+            <div class="alert alert-success alert-dismissible" t-if="grace_message">
+                <span t-out="grace_message"/>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"/>
+            </div>
+
             <t t-if="not services">
                 <p class="alert alert-warning">You don't have any active Trazet services yet.</p>
             </t>
@@ -46,6 +55,54 @@
                                 </div>
                             </div>
                         </div>
+                    </t>
+                </div>
+            </t>
+
+            <!-- Grace period. The same allowance the billing team grants from the
+                 subscription form: whichever side uses it first closes the other,
+                 so this block only ever shows one of offer / already-used. -->
+            <t t-if="grace_eligible">
+                <h5 class="mt-4">Payment grace period</h5>
+                <div class="border rounded p-3">
+                    <t t-if="grace_available">
+                        <p class="mb-2">
+                            Need a little more time to pay? You can keep your Trazet
+                            services running for
+                            <strong><t t-out="grace_days"/> more days</strong>
+                            past your next invoice date. This can be used
+                            <strong>once per billing cycle</strong>, and asking here is
+                            the same request as asking our billing team.
+                        </p>
+                        <form action="/my/services/grace" method="post">
+                            <input type="hidden" name="csrf_token"
+                                   t-att-value="request.csrf_token()"/>
+                            <button type="submit" class="btn btn-primary">
+                                Activate my <t t-out="grace_days"/>-day grace period
+                            </button>
+                        </form>
+                    </t>
+                    <t t-elif="grace_used">
+                        <p class="mb-0">
+                            You have already used your <t t-out="grace_used_days"/>-day
+                            grace period for this billing cycle<t t-if="grace_used_on">
+                            (activated on <t t-out="grace_used_on"
+                                             t-options="{'widget': 'date'}"/>)</t><t
+                                t-if="grace_used_source == 'backend'"> by our billing
+                            team</t>.
+                            <t t-if="grace_expiry">
+                                Your services stay on until
+                                <strong t-out="grace_expiry"
+                                        t-options="{'widget': 'date'}"/>.
+                            </t>
+                            It becomes available again on your next invoice date.
+                        </p>
+                    </t>
+                    <t t-else="">
+                        <p class="mb-0 text-muted">
+                            The grace period is not available online at the moment.
+                            Please contact support if you need more time to pay.
+                        </p>
                     </t>
                 </div>
             </t>

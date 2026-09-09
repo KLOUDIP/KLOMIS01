@@ -1,6 +1,7 @@
 {
     'name': 'Subscription Extensions',
     'version': '19.0.1.1.2',
+    # 'version': '19.0.1.1.4',
     'category': 'Subscriptions',
     'summary': 'Allow portal users to manage their subscription products',
     'description': """
