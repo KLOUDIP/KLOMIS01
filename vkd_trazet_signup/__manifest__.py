@@ -14,7 +14,7 @@
     'website': 'https://vkdata.dk/',
     'category': 'Website',
     'version': '19.0.1.1.0',
-    # 'version': '19.0.1.2.0',
+    # 'version': '19.0.1.3.0',
     'license': 'OPL-1',
     'depends': ['website', 'website_sale', 'vkd_trazet_api'],
     'data': [
