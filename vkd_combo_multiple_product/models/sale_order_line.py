@@ -93,27 +93,16 @@ class SaleOrderLine(models.Model):
         return res
 
     def _prepare_base_line_for_taxes_computation(self, **kwargs):
-        self.ensure_one()
-        # Custom quantity if combo item is set
-        quantity = kwargs.get('quantity')
-        if self.combo_item_id:
-            quantity = (
-                self.product_uom_qty / self.combo_item_id.product_quantity
-                if self.combo_item_id.product_quantity else 1.0
-            )
-            kwargs['quantity'] = quantity
+        """ Divide the combo child quantity by the combo item quantity.
 
-        return self.env['account.tax']._prepare_base_line_for_taxes_computation(
-            self,
-            **{
-                'tax_ids': self.tax_ids,
-                'quantity': quantity or self.product_uom_qty,
-                'partner_id': self.order_id.partner_id,
-                'currency_id': self.order_id.currency_id or self.order_id.company_id.currency_id,
-                'rate': self.order_id.currency_rate,
-                **kwargs,
-            }
-        )
+        Delegates to super() so core keys ('name', 'special_type', ...) survive;
+        an explicit quantity passed by the caller still wins.
+        """
+        self.ensure_one()
+        if 'quantity' not in kwargs and self.combo_item_id and self.combo_item_id.product_quantity:
+            kwargs['quantity'] = self.product_uom_qty / self.combo_item_id.product_quantity
+
+        return super()._prepare_base_line_for_taxes_computation(**kwargs)
 
     def _get_renew_upsell_values(self, subscription_state):
         order_lines = []
