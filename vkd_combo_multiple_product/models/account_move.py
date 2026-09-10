@@ -9,38 +9,21 @@ class AccountMove(models.Model):
     _inherit = 'account.move'
 
     def _prepare_product_base_line_for_taxes_computation(self, product_line):
-        """ Convert an account.move.line having display_type='product' into a base line for the taxes computation.
+        """ Divide the combo child quantity by the combo item quantity.
 
-        :param product_line: An account.move.line.
-        :return: A base line returned by '_prepare_base_line_for_taxes_computation'.
+        Delegates to super() so every key core puts in the base line dict
+        ('name', 'special_type', the currency rate helper, ...) is preserved.
+        Rebuilding the dict here silently drops those keys and breaks callers
+        such as the Factur-X/UBL export (KeyError: 'name').
         """
         self.ensure_one()
-        is_invoice = self.is_invoice(include_receipts=True)
-        sign = self.direction_sign if is_invoice else 1
-        if is_invoice:
-            rate = self.invoice_currency_rate
-        else:
-            rate = (abs(product_line.amount_currency) / abs(product_line.balance)) if product_line.balance else 0.0
-        if product_line.combo_item_id:
-            return self.env['account.tax']._prepare_base_line_for_taxes_computation(
-                product_line,
-                price_unit=product_line.price_unit if is_invoice else product_line.amount_currency,
-                quantity=product_line.quantity / product_line.combo_item_id.product_quantity or 1.0,
-                discount=product_line.discount if is_invoice else 0.0,
-                rate=rate,
-                sign=sign,
-                special_mode=False if is_invoice else 'total_excluded',
-            )
-        else:
-            return self.env['account.tax']._prepare_base_line_for_taxes_computation(
-                product_line,
-                price_unit=product_line.price_unit if is_invoice else product_line.amount_currency,
-                quantity=product_line.quantity if is_invoice else 1.0,
-                discount=product_line.discount if is_invoice else 0.0,
-                rate=rate,
-                sign=sign,
-                special_mode=False if is_invoice else 'total_excluded',
-            )
+        base_line = super()._prepare_product_base_line_for_taxes_computation(product_line)
+
+        combo_item = product_line.combo_item_id
+        if self.is_invoice(include_receipts=True) and combo_item and combo_item.product_quantity:
+            base_line['quantity'] = product_line.quantity / combo_item.product_quantity
+
+        return base_line
 
     def _post(self, soft=True):
         # Remove combo line sections before posting
