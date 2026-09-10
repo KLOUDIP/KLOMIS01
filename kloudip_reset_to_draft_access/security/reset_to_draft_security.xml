@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <record id="group_account_reset_to_draft" model="res.groups">
+            <field name="name">Reset Posted Entries to Draft</field>
+            <field name="comment">Allows the user to reset a posted (reviewed) journal entry or invoice back to draft, without the full Accounting Administrator role.</field>
+        </record>
+
+    </data>
+</odoo>
