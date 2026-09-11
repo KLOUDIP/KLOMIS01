@@ -20,11 +20,28 @@ class SubscriptionAdvancePaymentInv(models.TransientModel):
                                              compute="_check_coupon_visibility")
 
     def create_subscription_invoices(self):
-        orders = self.sale_order_ids
-        if orders.subscription_state == '7_upsell':
-            account_move = orders.with_context(refunded_amount=self.refunded_amount, deduct_down_payments=self.deduct_down_payments)._create_recurring_invoice()
-        else:
-            account_move = orders.with_context(refunded_amount=self.refunded_amount, deduct_down_payments=self.deduct_down_payments)._create_invoices(orders)
+        orders = self.sale_order_ids.with_context(refunded_amount=self.refunded_amount)
+        # Split instead of comparing orders.subscription_state directly: the wizard
+        # is also bound to the Sales Order list, and a multi-record comparison
+        # raises "Expected singleton".
+        upsell_orders = orders.filtered(lambda o: o.subscription_state == '7_upsell')
+        other_orders = orders - upsell_orders
+
+        account_move = self.env['account.move']
+        if upsell_orders:
+            upsell_moves = upsell_orders._create_recurring_invoice()
+            if upsell_moves:
+                account_move |= upsell_moves
+        if other_orders:
+            # Pass the arguments by keyword. The previous call,
+            # _create_invoices(orders), bound the orders to `grouped` and left
+            # `final=False`, so core skipped lines with a negative qty_to_invoice
+            # (returns) and never switched a negative invoice to a credit note.
+            # The coupon credit-note logic in sale.order._create_invoices is also
+            # gated on `final`. grouped=True keeps the old one-invoice-per-order
+            # behaviour (the recordset passed as `grouped` was truthy).
+            account_move |= other_orders._create_invoices(
+                grouped=True, final=self.deduct_down_payments)
         if account_move:
             return orders.action_view_invoice()
         else:

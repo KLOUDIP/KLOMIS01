@@ -15,15 +15,28 @@
         <field name="state">code</field>
         <field name="code">
             for rec in records:
-                if rec.x_vehicle_id.id and rec.state == 'done' and not rec.x_contract_id and not rec.move_id.origin_returned_move_id:
-                    contract = env['fleet.vehicle.log.contract'].with_context(active_id=False, active_ids=[], active_model=False).create({
-                        'vehicle_id': rec.x_vehicle_id.id,
-                        'x_lot_id': rec.lot_id.id,
-                        'user_id': rec.x_vehicle_id.manager_id.id or env.user.id,
-                        'expiration_date': False,
-                        'state': 'open',
-                    })
-                    rec.write({'x_contract_id': contract.id})
+                if rec.x_vehicle_id.id and rec.state == 'done' and not rec.x_contract_id:
+                    # Count how many returns deep this move is:
+                    #   0 = PICK / OUT
+                    #   1 = PKIN from PICK, IN from OUT       (unit comes back)
+                    #   2 = PICK from PKIN, OUT from IN       (unit goes out again)
+                    # An even depth sends the unit to the customer, so it needs a
+                    # contract. Only depth 0 used to qualify.
+                    return_depth = 0
+                    origin_move = rec.move_id.origin_returned_move_id
+                    for _step in range(50):
+                        if origin_move:
+                            return_depth += 1
+                            origin_move = origin_move.origin_returned_move_id
+                    if return_depth % 2 == 0:
+                        contract = env['fleet.vehicle.log.contract'].with_context(active_id=False, active_ids=[], active_model=False).create({
+                            'vehicle_id': rec.x_vehicle_id.id,
+                            'x_lot_id': rec.lot_id.id,
+                            'user_id': rec.x_vehicle_id.manager_id.id or env.user.id,
+                            'expiration_date': False,
+                            'state': 'open',
+                        })
+                        rec.write({'x_contract_id': contract.id})
         </field>
     </record>
 
@@ -41,15 +54,30 @@
         <field name="code">
             for rec in records:
                 if rec.origin_returned_move_id and rec.state == 'done':
-                    lines = rec.origin_returned_move_id.move_line_ids
-                    if any(line.x_contract_id for line in rec.origin_returned_move_id.move_orig_ids.move_line_ids):
-                        lines = rec.origin_returned_move_id.move_orig_ids.mapped('move_line_ids')
-                    for ml in lines:
-                        if ml.x_contract_id and ml.x_contract_id.state != 'closed':
-                            map_move_line = rec.move_line_ids.filtered(lambda l: l.lot_id == ml.lot_id and l.x_vehicle_id == ml.x_vehicle_id)
-                            if map_move_line:
-                                ml.x_contract_id.write({'state': 'closed', 'expiration_date': datetime.datetime.today()})
-                                map_move_line.write({'x_contract_id': ml.x_contract_id.id})
+                    # Same return depth as in "Create contract on add vehicle to move
+                    # line": only an odd depth brings the unit back. A return of a
+                    # return (PICK from PKIN, OUT from IN) must not expire anything.
+                    return_depth = 0
+                    origin_move = rec.origin_returned_move_id
+                    for _step in range(50):
+                        if origin_move:
+                            return_depth += 1
+                            origin_move = origin_move.origin_returned_move_id
+                    if return_depth % 2 == 1:
+                        returned_move = rec.origin_returned_move_id
+                        # Look at the returned move's own lines and at the lines of
+                        # the moves it came from (e.g. the PICK before an OUT).
+                        # These used to be either/or: once the origin lines carried
+                        # an old, closed contract, the open contract on the returned
+                        # move itself was never checked, so returning a re-delivered
+                        # unit would not expire its new contract.
+                        lines = returned_move.move_line_ids | returned_move.move_orig_ids.move_line_ids
+                        for ml in lines:
+                            if ml.x_contract_id and ml.x_contract_id.state != 'closed':
+                                map_move_line = rec.move_line_ids.filtered(lambda l: l.lot_id == ml.lot_id and l.x_vehicle_id == ml.x_vehicle_id)
+                                if map_move_line:
+                                    ml.x_contract_id.write({'state': 'closed', 'expiration_date': datetime.datetime.today()})
+                                    map_move_line.write({'x_contract_id': ml.x_contract_id.id})
         </field>
     </record>
 
