@@ -45,8 +45,16 @@ class IrisIntegrationController(http.Controller):
             partner = request.env['res.partner'].sudo().search(domain, limit=1) if domain else False
             partner_id = partner.id if partner else False
 
-            # Fetch default Helpdesk team to keep UI visible
-            team = request.env['helpdesk.team'].sudo().search([], limit=1)
+            # Target the 'Support' team explicitly under 'KLOUDIP (Pvt) Ltd'
+            team = request.env['helpdesk.team'].sudo().search([
+                ('name', '=', 'Support'),
+                ('company_id.name', '=ilike', 'KLOUDIP (Pvt) Ltd')
+            ], limit=1)
+
+            # Fallback: Search for any 'Support' team if company name varies
+            if not team:
+                team = request.env['helpdesk.team'].sudo().search([('name', '=', 'Support')], limit=1)
+
             team_id = team.id if team else False
 
             ticket = request.env['helpdesk.ticket'].sudo().create({
