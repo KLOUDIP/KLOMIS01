@@ -24,7 +24,7 @@ class IrisIntegrationController(http.Controller):
 
     @http.route('/api/voice/ticket/create', type='http', auth='public', methods=['POST'], csrf=False)
     def create_ticket(self, **kwargs):
-        """ Log a new query with flexible Phone or Email lookup."""
+        """Use Case 1: Log a new query with flexible Phone or Email lookup."""
         if not self._authenticate():
             return self._json_response({'error': 'Unauthorized'}, 401)
 
@@ -45,8 +45,16 @@ class IrisIntegrationController(http.Controller):
             partner = request.env['res.partner'].sudo().search(domain, limit=1) if domain else False
             partner_id = partner.id if partner else False
 
-            # Fetch default Helpdesk team to keep UI visible
-            team = request.env['helpdesk.team'].sudo().search([], limit=1)
+            # Target the 'Support' team explicitly under 'KLOUDIP (Pvt) Ltd'
+            team = request.env['helpdesk.team'].sudo().search([
+                ('name', '=', 'Support'),
+                ('company_id.name', '=ilike', 'KLOUDIP (Pvt) Ltd')
+            ], limit=1)
+
+            # Fallback: Search for any 'Support' team if company name varies
+            if not team:
+                team = request.env['helpdesk.team'].sudo().search([('name', '=', 'Support')], limit=1)
+
             team_id = team.id if team else False
 
             ticket = request.env['helpdesk.ticket'].sudo().create({
@@ -65,7 +73,7 @@ class IrisIntegrationController(http.Controller):
 
     @http.route('/api/voice/ticket/status', type='http', auth='public', methods=['POST'], csrf=False)
     def check_status(self, **kwargs):
-        """Check ticket status using ticket_number."""
+        """Use Case 2: Check ticket status using ticket_number."""
         if not self._authenticate():
             return self._json_response({'error': 'Unauthorized'}, 401)
 
@@ -108,7 +116,7 @@ class IrisIntegrationController(http.Controller):
 
     @http.route('/api/voice/ticket/comment', type='http', auth='public', methods=['POST'], csrf=False)
     def add_comment(self, **kwargs):
-        """Add a voice comment styled from Iris Voice AI."""
+        """Use Case 3: Add a voice comment styled from Iris Voice AI."""
         if not self._authenticate():
             return self._json_response({'error': 'Unauthorized'}, 401)
 
