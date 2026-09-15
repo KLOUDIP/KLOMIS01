@@ -1,6 +1,6 @@
 import json
 from markupsafe import Markup, escape
-from odoo import http
+from odoo import SUPERUSER_ID, http
 from odoo.http import request, Response
 
 
@@ -45,24 +45,39 @@ class IrisIntegrationController(http.Controller):
             partner = request.env['res.partner'].sudo().search(domain, limit=1) if domain else False
             partner_id = partner.id if partner else False
 
-            # Target the 'Support' team explicitly under 'KLOUDIP (Pvt) Ltd'
-            team = request.env['helpdesk.team'].sudo().search([
-                ('name', '=', 'Support'),
-                ('company_id.name', '=ilike', 'KLOUDIP (Pvt) Ltd')
+            # Explicitly fetch target company 'KLOUDIP (Pvt) Ltd'
+            target_company = request.env['res.company'].sudo().search([
+                ('name', '=ilike', 'KLOUDIP (Pvt) Ltd')
             ], limit=1)
 
-            # Fallback: Search for any 'Support' team if company name varies
+            # Look for the 'Support' team under the target company
+            team_domain = [('name', '=', 'Support')]
+            if target_company:
+                team_domain.append(('company_id', '=', target_company.id))
+
+            team = request.env['helpdesk.team'].sudo().search(team_domain, limit=1)
+
+            # Fallback: Search for any 'Support' team if company-specific record is missing
             if not team:
                 team = request.env['helpdesk.team'].sudo().search([('name', '=', 'Support')], limit=1)
 
             team_id = team.id if team else False
 
-            ticket = request.env['helpdesk.ticket'].sudo().create({
+            ticket_vals = {
                 'name': payload.get('issue_title', 'Voice AI Support Query'),
                 'description': payload.get('issue_description'),
                 'partner_id': partner_id,
-                'team_id': team_id
-            })
+                'team_id': team_id,
+                'company_id': target_company.id if target_company else False,
+            }
+
+            # Switch execution environment to SUPERUSER_ID and target company context
+            # This fixes email auto-responder attribution from "Public User for KLOUDIP INC"
+            ticket_env = request.env['helpdesk.ticket'].sudo().with_user(SUPERUSER_ID)
+            if target_company:
+                ticket_env = ticket_env.with_company(target_company)
+
+            ticket = ticket_env.create(ticket_vals)
 
             return self._json_response({
                 'status': 'success',
@@ -87,7 +102,7 @@ class IrisIntegrationController(http.Controller):
             ticket = request.env['helpdesk.ticket'].sudo().browse(int(ticket_id))
 
             if not ticket.exists():
-                return self._json_response({'error': 'Ticket not found'}, 444)
+                return self._json_response({'error': 'Ticket not found'}, 404)
 
             stage_name = ticket.stage_id.name or 'New'
 
