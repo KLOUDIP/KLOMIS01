@@ -12,7 +12,7 @@ Odoo 19 · Modules: `vkd_fios_api`, `vkd_fios_signup`, `vkd_subscription_handlin
 | **FIOS Service** | The billable thing a product provisions on FIOS: **Units** (`avl_unit`), **Users** (`storage_user`), **Geofences** (`zones_library`), **Google Maps** (`own_google_service`), **Ecodriving** (`ecodriving`), **Data Streaming** (`avl_retranslator`). |
 | **Quantity vs Feature service** | *Quantity* (Units/Users/Geofences): the subscribed quantity becomes the limit. *Feature* (Maps/Ecodriving/Streaming): enabled when purchased, disabled when removed. |
 | **Provision-at-purchase** | Registration only creates the Odoo user. The **FIOS account is created after the first purchase**, under the purchased product's tier, **in the background**. |
-| **Days** | The FIOS block-by-days counter is set from the subscription's **next invoice date** (no fixed trial days). |
+| **Days** | The FIOS block-by-days counter (Days Left) is set to the days until the customer's **next due date**: the earliest of the open invoices' **Due Date** and the next subscription invoice (next invoice date + payment term). Re-synced whenever a customer invoice is **paid**. |
 
 **End-to-end flow:**
 ```
@@ -21,7 +21,7 @@ Register (Odoo user only, "registered")
    → Background cron provisions the FIOS account under that tier
         create_user → user_flags(4) → create_resource → create_account(plan)
         → batch(default services + block-by-days) → set limits from products
-        → set days from next_invoice_date  → state "active"
+        → set days from next due date      → state "active"
    → Add / reduce services  → limits re-synced to FIOS
    → Non-payment / close     → account disabled when no active subscription remains
 ```
@@ -58,6 +58,8 @@ On each product's form (General Information), set:
 |-----|---------|---------|
 | `vkd_fios_api.keepalive_active` | `1` | Enable the session keep-alive cron |
 | `vkd_fios_api.account_flags` | `32` | Account block-by-days flag |
+| `vkd_fios_api.days_left_invoice_scope` | `all` | Which open invoices set Days Left: `all` customer invoices, or `fios` = only invoices with FIOS products |
+| `vkd_fios_api.days_left_include_draft` | `0` | `1` = also count draft invoices (off: a draft without an invoice date has a sliding due date) |
 | `vkd_fios_api.signup_otp_enabled` | `1` | Require email OTP on public signup |
 | `vkd_fios_api.signup_otp_debug` | `0` | **TEST ONLY** — show the OTP on screen (staging without mail). Keep `0` in production |
 | `vkd_fios_api.pwd_secret` | *(auto)* | Encryption key for the pending signup password (auto-generated) |
@@ -163,7 +165,8 @@ Closing a subscription recomputes limits; if the customer has **no active subscr
 | **T2** | OTP verify | Submit signup form | OTP page; correct code → user created (`registered`); redirected to login → cart. **No API log yet** |
 | **T3** | OTP wrong/resend | Enter wrong code ×; Resend | "Incorrect code" (5 tries), 60s resend cooldown |
 | **T4** | Purchase provisions | Log in, buy the Lite combo, pay | Checkout returns fast. Within ~2 min: partner state **active**; **API Log** shows create_user → update_user_flags → create_resource → create_account → core/batch |
-| **T5** | Days from invoice | After T4, open contact → Refresh FIOS Status | Days Left ≈ (next invoice − today); `do_payment` in API Log with that delta |
+| **T5** | Days from invoice | After T4, open contact → Refresh FIOS Status | Days Left = (next due date − today), next due date = next invoice date + payment term when nothing is open; `do_payment` in API Log with that delta |
+| **T5b** | Days after payment | Customer has two open invoices (due in 10 and 24 days). Register payment on the first | Invoice chatter: "FIOS days left … set to 24"; API Log `do_payment` with description "Invoice paid: …"; Refresh FIOS Status → Days Left 24 |
 | **T6** | Limits from products | After T4 | `avl_unit`/`storage_user`/`zones_library` limits = purchased quantities (usage table) |
 | **T7** | Add service | Upsell: add more Units | Limit rises to current + added; core/batch update in API Log |
 | **T8** | Reduce (allowed) | Units limit 10, usage 5 (create 5 units in FIOS), reduce to 6 | Allowed; limit set to 6 |
@@ -171,7 +174,7 @@ Closing a subscription recomputes limits; if the customer has **no active subscr
 | **T10** | Feature service | Buy Google Maps product | `own_google_service` enabled; remove → disabled |
 | **T11** | Tier exclusion | As a Lite customer, add a Premium product | Blocked at cart/checkout with tier warning |
 | **T12** | Close → disable | Close the only subscription | Account **disabled** on FIOS (Refresh Status → Enabled = false) |
-| **T13** | Devices list | Contact → Refresh Devices | Lists units (Name/IMEI/Phone/Activated) |
+| **T13** | Devices list | Contact → Refresh Devices | Lists units (Name/IMEI/Phone/Status); deactivated units show a grey **Inactive** badge |
 | **T14** | Portal usage | Customer portal → My FIOS Services | Card on `/my/home`; usage table on `/my/fios-services` |
 | **T15** | Import | FIOS → Import Accounts → pick tier → Fetch → match → Import | Partner linked, state active, tier set |
 | **T16** | Resume after failure | If a purchase provision failed, click **Provision / Resume** | Resumes (create_account handles "already exists"), completes to active |

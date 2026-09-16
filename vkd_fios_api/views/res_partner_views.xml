@@ -124,7 +124,7 @@
                                    groups="vkd_fios_api.group_fios_tech_team"/>
                             <field name="device_status" string="Status" widget="badge"
                                    decoration-success="device_status == 'activated'"
-                                   decoration-danger="device_status == 'deactivated'"/>
+                                   decoration-muted="device_status == 'deactivated'"/>
                             <field name="device_active" string="Activated"
                                    widget="boolean_toggle" optional="hide"/>
                         </list>
