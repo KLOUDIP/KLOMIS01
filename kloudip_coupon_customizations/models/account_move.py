@@ -46,6 +46,50 @@ class AccountMove(models.Model):
         # For all other standard invoices, let Odoo 19's core engine handle it
         return super(AccountMove, self).action_switch_move_type()
 
+    def _switch_zero_total_return_to_credit_note(self):
+        """Turn a returned-but-zero-value invoice into a credit note.
+
+        Core only converts a freshly created invoice into a credit note when its
+        total is negative (sale/models/sale_order.py: it switches
+        ``moves.filtered(lambda m: m.amount_total < 0)``). A return of a line
+        that carries a 100% discount - or any zero-priced line - nets to exactly
+        0.00, so the document stays an ordinary invoice with a negative
+        quantity on every line. That is the case handled here.
+
+        Only documents that are entirely a return are touched: draft, never
+        posted, zero total, and no product line with a positive quantity.
+        """
+        for move in self:
+            if move.move_type != 'out_invoice' or move.state != 'draft' or move.posted_before:
+                continue
+            if not move.currency_id.is_zero(move.amount_total):
+                continue
+            product_lines = move.invoice_line_ids.filtered(lambda l: l.display_type == 'product')
+            if not product_lines:
+                continue
+            if any(line.quantity > 0 for line in product_lines):
+                continue
+            if all(line.quantity == 0 for line in product_lines):
+                continue
+
+            move.name = False
+            move.write({
+                'move_type': 'out_refund',
+                'partner_bank_id': False,
+                'currency_id': move.currency_id.id,
+            })
+            # Core negates the quantities only when the total is negative, so
+            # for a zero-total document it has to be done here, otherwise the
+            # credit note would keep showing -1.000.
+            move.write({
+                'line_ids': [
+                    Command.update(line.id, {'quantity': -line.quantity})
+                    for line in move.line_ids
+                    if line.display_type == 'product'
+                ]
+            })
+        return True
+
     @api.depends('coupon_ids')
     def _compute_visible_coupon_group(self):
         """Compute either coupon group is visible or not"""
