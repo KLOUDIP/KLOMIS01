@@ -24,6 +24,40 @@ class ProjectTaskLine(models.Model):
         readonly=False
     )
 
+    # Contact email on the task.
+    # v17: the column was declared by timesheet_customization (a plain Char shown
+    # after the Customer). Odoo 17+ no longer ships project.task.partner_email, and
+    # in v19 timesheet_customization is a load-only removal shell with its views
+    # deactivated, so the email was neither filled nor shown. The field is declared
+    # here as well (same column, same label) so it survives the shell's uninstall,
+    # and it now follows the customer like partner_phone / partner_mobile do.
+    partner_email = fields.Char(
+        string="Email",
+        compute='_compute_partner_email',
+        store=True,
+        readonly=False,
+        copy=False,
+    )
+
+    @api.depends('partner_id', 'partner_id.email')
+    def _compute_partner_email(self):
+        for task in self:
+            task.partner_email = task.partner_id.email or False
+
+    def init(self):
+        super().init()
+        # Existing column: Odoo does not recompute a stored compute field on
+        # module update, so fill only the tasks that have no email yet.
+        # Idempotent - runs on every update of this module, never overwrites.
+        self.env.cr.execute("""
+            UPDATE project_task t
+               SET partner_email = p.email
+              FROM res_partner p
+             WHERE t.partner_id = p.id
+               AND COALESCE(t.partner_email, '') = ''
+               AND COALESCE(p.email, '') <> ''
+        """)
+
     @api.depends('partner_id.phone')
     def _compute_partner_mobile(self):
         for task in self:

@@ -7,14 +7,22 @@
             <attribute name="id">o_fsm_worksheet_portal</attribute>
         </xpath>
 
-        <xpath expr="//div[hasclass('o_portal_sidebar')]" position="inside">
+        <!--
+            "Back to edit mode" link to the same task.
+            Odoo 18+ only passes t-set values that are DIRECT children of the
+            t-call to the called layout; a t-set nested inside the page body
+            (where v17 had it) is local to the body, so web.frontend_layout never
+            saw o_portal_fullwidth_alert and the link disappeared.
+            Same pattern as sale.sale_order_portal_template in 19.0.
+            backend_url is built in the controller.
+        -->
+        <xpath expr="//t[@t-call='portal.portal_layout']" position="inside">
             <t t-set="o_portal_fullwidth_alert" groups="project.group_project_user">
-                <t t-call="portal.portal_back_in_edit_mode">
-                    <t t-set="source_action_id" t-value="sheet.env.ref('industry_fsm.project_task_action_fsm').id if source == 'fsm' else sheet.env.ref('project.action_view_task').id"/>
-                    <t t-set="backend_url" t-value="'/web#model=project.task&amp;id=%s&amp;action=%s&amp;view_type=form' % (sheet.project_task_id.id, source_action_id)"/>
-                </t>
+                <t t-call="portal.portal_back_in_edit_mode"/>
             </t>
+        </xpath>
 
+        <xpath expr="//div[hasclass('o_portal_sidebar')]" position="inside">
             <div class="row">
                 <t t-call="portal.portal_record_sidebar">
                     <t t-set="classes" t-value="'col-lg-auto d-print-none'"/>

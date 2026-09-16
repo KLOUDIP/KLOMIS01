@@ -27,7 +27,28 @@ class CustomerPortalWorksheet(CustomerPortal):
             worksheet = request.env[x_model].sudo().search([('x_studio_line_id', '=', task_sudo.id)], limit=1, order="create_date DESC")  # take the last one
             worksheet_map[task_sudo.id] = worksheet
 
-        return request.render("field_service_worksheet_template.portal_my_worksheet_new", {'worksheet_map': worksheet_map, 'sheet': task_sudo, 'message': message, 'source': source})
+        return request.render("field_service_worksheet_template.portal_my_worksheet_new", {
+            'worksheet_map': worksheet_map,
+            'sheet': task_sudo,
+            'message': message,
+            'source': source,
+            'backend_url': self._get_worksheet_backend_url(task_sudo, source),
+        })
+
+    def _get_worksheet_backend_url(self, sheet, source):
+        """URL of the task the worksheet belongs to, for the "Back to edit mode" link.
+
+        Same actions as v17 (FSM "My Tasks" when opened from Field Service,
+        otherwise Project > Tasks), in the v19 /odoo/... URL format.
+        """
+        task = sheet.project_task_id
+        if not task:
+            return False
+        xmlid = 'industry_fsm.project_task_action_fsm' if source == 'fsm' else 'project.action_view_task'
+        action = request.env.ref(xmlid, raise_if_not_found=False)
+        if action:
+            return '/odoo/action-%s/%s' % (action.id, task.id)
+        return '/odoo/project.task/%s' % task.id
 
 
     @http.route(['/my/sheet/<int:sheet_id>/worksheet/customer_sign/<string:source>'], type='jsonrpc', auth="public", website=True)
