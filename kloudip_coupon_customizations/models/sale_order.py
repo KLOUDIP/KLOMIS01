@@ -79,6 +79,11 @@ class SaleOrder(models.Model):
                         subtype_xmlid='mail.mt_note'
                     )
 
+        # 4) A return whose value is zero (100% discount, free replacement, zero
+        #    price) leaves an invoice with negative quantities, because core only
+        #    switches documents with a negative total. Convert those as well.
+        moves.sudo()._switch_zero_total_return_to_credit_note()
+
         return moves
 
     def _check_multiple_coupons_status(self, coupon):
