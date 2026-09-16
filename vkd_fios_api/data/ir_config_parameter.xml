@@ -79,10 +79,11 @@
             <field name="value">1</field>
         </record>
 
-        <!-- FIOS "days left" sync (runs when a customer invoice is paid and on
+        <!-- FIOS "days left" sync (runs when a customer invoice is posted,
+             paid, reset to draft / cancelled or has a payment removed, and on
              every subscription billing sync). Days left = days until the
-             earliest due date among the customer's open invoices and the next
-             subscription invoice (next invoice date + payment term).
+             earliest due date among the customer's open invoices; when nothing
+             is open, days until the paid subscription period runs out.
              Scope: all = every open customer invoice counts,
                     fios = only invoices containing FIOS products. -->
         <record id="fios_days_left_invoice_scope_param" model="ir.config_parameter">
@@ -95,6 +96,15 @@
         <record id="fios_days_left_include_draft_param" model="ir.config_parameter">
             <field name="key">vkd_fios_api.days_left_include_draft</field>
             <field name="value">0</field>
+        </record>
+
+        <!-- When the customer owes nothing, days left runs to the paid
+             subscription period:
+               next_invoice_date = the day the next period's invoice is raised
+               period_end        = the last day of the paid period (next invoice date - 1) -->
+        <record id="fios_days_left_paid_up_basis_param" model="ir.config_parameter">
+            <field name="key">vkd_fios_api.days_left_paid_up_basis</field>
+            <field name="value">next_invoice_date</field>
         </record>
 
         <!-- Require email OTP verification on public FIOS signup (1 = enabled). -->
