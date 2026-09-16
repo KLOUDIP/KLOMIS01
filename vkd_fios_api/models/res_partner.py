@@ -182,7 +182,7 @@ class ResPartner(models.Model):
             'tag': 'display_notification',
             'params': {
                 'title': _('FIOS Devices'),
-                'message': _('%(total)s device(s) loaded - %(on)s activated, %(off)s deactivated.')
+                'message': _('%(total)s device(s) loaded - %(on)s activated, %(off)s inactive.')
                 % {'total': len(devices), 'on': activated, 'off': deactivated},
                 'type': 'success',
                 'next': {'type': 'ir.actions.client', 'tag': 'soft_reload'},

@@ -145,16 +145,106 @@ class SaleOrder(models.Model):
         ]
         return min(dates) if dates else False
 
-    def _sync_fios_billing_date(self, partner, description=None):
-        if partner.fios_provision_state != 'active' or not partner.fios_account_item_id:
-            return True, None
-        next_date = self._fios_earliest_next_invoice_date(partner)
-        if not next_date:
-            return True, None
+    # ------------------------------------------------------------------
+    # FIOS "days left" (block-by-days counter)
+    # ------------------------------------------------------------------
+    # The counter FIOS shows as "Days Left" is kept equal to the number of days
+    # until the customer's NEXT invoice falls due. "Next" is the earliest of:
+    #   - the due date of any still-open customer invoice, and
+    #   - the due date the next subscription invoice will get
+    #     (next_invoice_date + the subscription's payment term).
+    # Due dates therefore always follow the payment term, exactly like the
+    # Due Date column on the invoice list.
 
-        target = (next_date - fields.Date.today()).days
+    def _fios_icp_flag(self, key, default='0'):
+        value = self.env['ir.config_parameter'].sudo().get_param(key, default)
+        return str(value).strip().lower() in ('1', 'true', 'yes')
+
+    def _fios_invoice_scope_is_fios_only(self):
+        """'all' (default): every open customer invoice of the customer counts.
+        'fios': only invoices carrying at least one FIOS product."""
+        scope = self.env['ir.config_parameter'].sudo().get_param(
+            'vkd_fios_api.days_left_invoice_scope', 'all')
+        return str(scope).strip().lower() == 'fios'
+
+    @api.model
+    def _fios_invoice_domain_fios_only(self):
+        return ['|',
+                ('invoice_line_ids.product_id.product_tmpl_id.fios_service', '!=', False),
+                ('invoice_line_ids.product_id.product_tmpl_id.fios_tier_id', '!=', False)]
+
+    def _fios_open_invoices(self, partner):
+        """Customer invoices of the partner's commercial entity that still have
+        something to pay. Invoice-type child addresses ("..., Contact - I") are
+        included through the commercial partner."""
+        commercial = partner.commercial_partner_id or partner
+        states = ['posted']
+        # Drafts are ignored by default: a draft without an invoice date gets a
+        # due date computed from *today*, so it would slide every day.
+        if self._fios_icp_flag('vkd_fios_api.days_left_include_draft'):
+            states.append('draft')
+        domain = [
+            ('move_type', '=', 'out_invoice'),
+            ('commercial_partner_id', '=', commercial.id),
+            ('state', 'in', states),
+            ('invoice_date_due', '!=', False),
+            ('payment_state', 'in', ('not_paid', 'partial')),
+        ]
+        if self._fios_invoice_scope_is_fios_only():
+            domain += self._fios_invoice_domain_fios_only()
+        return self.env['account.move'].sudo().search(domain)
+
+    @api.model
+    def _fios_term_due_date(self, payment_term, date_ref):
+        """Due date an invoice dated `date_ref` gets under `payment_term`
+        (the last instalment, same as account.move.invoice_date_due)."""
+        if not payment_term or not payment_term.line_ids:
+            return date_ref
+        try:
+            return max(line._get_due_date(date_ref) for line in payment_term.line_ids)
+        except Exception as e:  # never let a term misconfiguration break billing
+            _logger.warning("FIOS: could not apply payment term %s to %s: %s",
+                            payment_term.id, date_ref, e)
+            return date_ref
+
+    def _fios_next_due_info(self, partner):
+        """(due_date, source label) of the earliest upcoming due date, or (False, None)."""
+        candidates = []
+        for inv in self._fios_open_invoices(partner):
+            candidates.append((inv.invoice_date_due, inv.name if inv.name and inv.name != '/'
+                               else _("draft invoice %s") % inv.id))
+        for sub in self.sudo()._partner_active_subscriptions(partner):
+            if sub.next_invoice_date:
+                due = self._fios_term_due_date(sub.payment_term_id, sub.next_invoice_date)
+                candidates.append((due, _("next invoice of %s") % sub.name))
+        if not candidates:
+            return False, None
+        return min(candidates, key=lambda c: c[0])
+
+    def _fios_push_days_left(self, partner, description=None):
+        """Set the FIOS days counter to the days left until the next due date.
+
+        Returns a dict: ok, error, changed, days, due_date, source.
+        """
+        res = {'ok': True, 'error': None, 'changed': False,
+               'days': None, 'due_date': False, 'source': None}
+        partner = partner.sudo()
+        if partner.fios_provision_state != 'active' or not partner.fios_account_item_id:
+            return res
+        due_date, source = self._fios_next_due_info(partner)
+        if not due_date:
+            return res
+
+        today = fields.Date.context_today(self)
+        target = (due_date - today).days
         if target < 0:
+            # Something is already overdue. 0 keeps today's access; FIOS blocks
+            # when its own daily decrement takes the counter to -1.
             target = 0
+        # Never cut into a grace period that is still running.
+        if partner.fios_grace_expiry and partner.fios_grace_expiry >= today:
+            target = max(target, (partner.fios_grace_expiry - today).days)
+        res.update(days=target, due_date=due_date, source=source)
 
         client = self.env['fios.api.client']
         log = self.env['fios.api.log']
@@ -164,12 +254,15 @@ class SaleOrder(models.Model):
                                tier=partner.fios_tier_id)
         except Exception as e:
             _logger.warning("FIOS: could not read daysCounter for partner %s: %s", partner.id, e)
-            return False, str(e)
+            res.update(ok=False, error=str(e))
+            return res
 
         current = data.get('daysCounter') or 0
         delta = target - current
         if delta == 0:
-            return True, None
+            if partner.fios_days_counter != target:
+                partner.fios_days_counter = target
+            return res
 
         params = {
             'itemId': item_id,
@@ -180,13 +273,28 @@ class SaleOrder(models.Model):
         try:
             result = client.call('account/do_payment', params, tier=partner.fios_tier_id)
         except Exception as e:
-            log.log_failure('account/do_payment', params, partner=partner, error_msg=str(e), retryable=True)
-            return False, str(e)
+            # retryable=False on purpose: do_payment applies a *delta* and the
+            # retry cron replays the stored params as-is, which would add the
+            # delta twice if FIOS had in fact applied it. The next sync
+            # recomputes the correct delta from the live counter instead.
+            log.log_failure('account/do_payment', params, partner=partner,
+                            error_msg=str(e), retryable=False)
+            res.update(ok=False, error=str(e))
+            return res
         log.log_success('account/do_payment', params, partner=partner, response_data=result,
-                        message=_("FIOS billing date synced (target %s days, delta %s)") % (target, delta))
-        _logger.info("FIOS: billing date synced for partner %s (target=%s, delta=%s)",
-                     partner.id, target, delta)
-        return True, None
+                        message=_("FIOS days left set to %(target)s (was %(current)s, delta "
+                                  "%(delta)s) - next due %(due)s from %(source)s")
+                        % {'target': target, 'current': current, 'delta': delta,
+                           'due': due_date, 'source': source})
+        partner.fios_days_counter = target
+        _logger.info("FIOS: days left synced for partner %s (target=%s, delta=%s, due=%s, %s)",
+                     partner.id, target, delta, due_date, source)
+        res['changed'] = True
+        return res
+
+    def _sync_fios_billing_date(self, partner, description=None):
+        res = self._fios_push_days_left(partner, description=description)
+        return res['ok'], res['error']
 
     def _fios_set_enabled(self, partner, enabled):
         if partner.fios_provision_state != 'active' or not partner.fios_account_item_id:

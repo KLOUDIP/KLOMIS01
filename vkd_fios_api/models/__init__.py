@@ -11,3 +11,4 @@ from . import res_users
 from . import product_template
 from . import sale_subscription_plan
 from . import sale_order
+from . import account_move

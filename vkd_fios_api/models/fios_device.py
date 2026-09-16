@@ -21,7 +21,7 @@ class FiosDevice(models.Model):
 
     device_status = fields.Selection([
         ('activated', 'Activated'),
-        ('deactivated', 'Deactivated'),
+        ('deactivated', 'Inactive'),  # key kept: stored values stay valid
     ], string='Status', compute='_compute_device_status', store=True)
 
     @api.depends('device_active')
