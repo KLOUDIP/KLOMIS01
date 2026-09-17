@@ -289,6 +289,24 @@
             </field>
         </record>
 
+        <!--
+            Contact email on the task form (v17: timesheet_customization.view_task_form2_view).
+            Low priority so it is applied before industry_fsm's own "after partner_id"
+            additions (address / itinerary / Contact Number), which keeps the email
+            below them.
+        -->
+        <record id="view_task_form2_partner_email" model="ir.ui.view">
+            <field name="name">project.task.form.partner.email</field>
+            <field name="model">project.task</field>
+            <field name="inherit_id" ref="project.view_task_form2"/>
+            <field name="priority">1</field>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='partner_id']" position="after">
+                    <field name="partner_email" widget="email" invisible="not partner_id"/>
+                </xpath>
+            </field>
+        </record>
+
         <record id="view_task_kanban" model="ir.ui.view">
             <field name='name'>task.view</field>
             <field name="model">project.task</field>
