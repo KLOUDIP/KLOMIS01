@@ -53,7 +53,7 @@
                             <small>
                                 <span t-esc="len(devices)"/> device(s) -
                                 <span t-esc="len(devices.filtered('device_active'))"/> activated,
-                                <span t-esc="len(devices) - len(devices.filtered('device_active'))"/> deactivated.
+                                <span t-esc="len(devices) - len(devices.filtered('device_active'))"/> inactive.
                             </small>
                         </div>
                     </div>

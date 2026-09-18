@@ -16,6 +16,11 @@
                         <button name="action_fios_refresh_devices" type="object"
                                 string="Refresh Devices"
                                 invisible="not fios_account_item_id"/>
+                        <button name="action_fios_sync_days_left" type="object"
+                                string="Sync Days Left"
+                                groups="vkd_fios_api.group_fios_user"
+                                invisible="not fios_account_item_id or fios_provision_state != 'active'"
+                                help="Recompute FIOS days left from the customer's open invoices (or the paid subscription period) and push it to FIOS."/>
                         <!-- Billing-side action: Billing Team only. Administrator
                              implies Billing Team, so admins see it; the Tech Team
                              does not. -->
@@ -77,6 +82,9 @@
                         </group>
                         <group>
                             <field name="fios_status_synced"/>
+                            <field name="fios_next_due_date" invisible="not fios_days_left_synced"/>
+                            <field name="fios_days_left_source" invisible="not fios_days_left_synced"/>
+                            <field name="fios_days_left_synced" invisible="not fios_days_left_synced"/>
                         </group>
                         <field name="fios_service_usage_ids" nolabel="1" colspan="2" readonly="1">
                             <list>
@@ -124,7 +132,7 @@
                                    groups="vkd_fios_api.group_fios_tech_team"/>
                             <field name="device_status" string="Status" widget="badge"
                                    decoration-success="device_status == 'activated'"
-                                   decoration-danger="device_status == 'deactivated'"/>
+                                   decoration-muted="device_status == 'deactivated'"/>
                             <field name="device_active" string="Activated"
                                    widget="boolean_toggle" optional="hide"/>
                         </list>

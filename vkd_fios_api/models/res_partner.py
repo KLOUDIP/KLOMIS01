@@ -74,6 +74,18 @@ class ResPartner(models.Model):
                                         help='Effective usage / limit per tracked FIOS service.')
     fios_status_synced = fields.Datetime(string='FIOS Status Read At', copy=False, readonly=True)
 
+    # What the days-left counter was last synced to, and why - so the billing
+    # team can see which invoice (or paid subscription period) drives it.
+    fios_next_due_date = fields.Date(
+        string='Days Left Run To', copy=False, readonly=True,
+        help='Due date of the earliest open invoice or, when everything is paid, '
+             'the end of the paid subscription period.')
+    fios_days_left_source = fields.Char(
+        string='Days Left Based On', copy=False, readonly=True,
+        help='The invoice or subscription the days-left counter was last synced from.')
+    fios_days_left_synced = fields.Datetime(string='Days Left Synced At', copy=False,
+                                            readonly=True)
+
     # Human-readable access state. FIOS blocks the account when the block-by-days
     # counter drops to -1, which the raw `enabled` flag does not always reflect,
     # so both are taken into account.
@@ -182,7 +194,7 @@ class ResPartner(models.Model):
             'tag': 'display_notification',
             'params': {
                 'title': _('FIOS Devices'),
-                'message': _('%(total)s device(s) loaded - %(on)s activated, %(off)s deactivated.')
+                'message': _('%(total)s device(s) loaded - %(on)s activated, %(off)s inactive.')
                 % {'total': len(devices), 'on': activated, 'off': deactivated},
                 'type': 'success',
                 'next': {'type': 'ir.actions.client', 'tag': 'soft_reload'},
@@ -328,6 +340,38 @@ class ResPartner(models.Model):
                 'title': _('FIOS Grace Period'),
                 'message': _('Grace period reset - it can be granted again this cycle.'),
                 'type': 'warning',
+                'next': {'type': 'ir.actions.client', 'tag': 'soft_reload'},
+            },
+        }
+
+    def action_fios_sync_days_left(self):
+        """Billing team: recompute FIOS days left from the invoices now."""
+        self.ensure_one()
+        if not self.env.user.has_group('vkd_fios_api.group_fios_user'):
+            raise UserError(_("Only the FIOS billing team can sync days left."))
+        if self.fios_provision_state != 'active' or not self.fios_account_item_id:
+            raise UserError(_("This customer has no active FIOS account."))
+        res = self.env['sale.order'].sudo()._fios_push_days_left(
+            self, description=_("Manual days-left sync"))
+        if not res['ok']:
+            raise UserError(_("Could not update FIOS days left: %s") % res['error'])
+        if res['days'] is None:
+            message, kind = _("No open invoice and no paid subscription period ahead - "
+                              "days left left unchanged."), 'warning'
+        else:
+            message = _("Days left %(state)s %(days)s (runs to %(due)s - %(source)s).") % {
+                'state': _('set to') if res['changed'] else _('already'),
+                'days': res['days'], 'due': res['due_date'], 'source': res['source']}
+            kind = 'success'
+            if res['changed']:
+                self.message_post(body=_("FIOS days left synced manually: %s") % message)
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': _('FIOS Days Left'),
+                'message': message,
+                'type': kind,
                 'next': {'type': 'ir.actions.client', 'tag': 'soft_reload'},
             },
         }
