@@ -3,7 +3,9 @@ import uuid
 import logging
 from urllib.parse import urljoin
 from datetime import datetime
-from odoo import _, models
+from markupsafe import Markup
+
+from odoo import _, api, models
 from odoo.exceptions import ValidationError
 from odoo.addons.payment_sampath.controllers.main import SampathController
 
@@ -76,35 +78,78 @@ class PaymentTransaction(models.Model):
         }
 
     # ------------------------------------------------------------------
-    # Odoo 19 renamed the notification hooks:
-    #   _get_tx_from_notification_data -> _search_by_reference
-    #   _process_notification_data     -> _apply_updates
-    #   _handle_notification_data      -> _process
+    # Odoo 19 notification hooks. `_process()` runs, in this order:
+    #   _search_by_reference -> _validate_amount (-> _extract_amount_data)
+    #   -> _apply_updates
     # ------------------------------------------------------------------
 
-    def _search_by_reference(self, provider_code, payment_data):
-        """ Find the transaction from the `reqid` Paycorp sends back. """
-        tx = super()._search_by_reference(provider_code, payment_data)
+    @api.model
+    def _extract_reference(self, provider_code, payment_data):
+        """ Return the Odoo reference Paycorp echoes back as `clientRef`. """
         if provider_code != 'sampath':
-            return tx
+            return super()._extract_reference(provider_code, payment_data)
+        response_data = (payment_data or {}).get('responseData') or {}
+        return payment_data.get('clientRef') or response_data.get('clientRef')
 
+    @api.model
+    def _search_by_reference(self, provider_code, payment_data):
+        """ Find the transaction from the `reqid` (primary) or `clientRef`. """
+        if provider_code != 'sampath':
+            return super()._search_by_reference(provider_code, payment_data)
+
+        tx = self.browse()
         reqid = payment_data.get('reqid')
-        client_ref = payment_data.get('clientRef')
         if reqid:
             tx = self.search([
                 ('provider_reference', '=', reqid),
                 ('provider_code', '=', 'sampath'),
             ], limit=1)
-        if not tx and client_ref:
-            tx = self.search([
-                ('reference', '=', client_ref),
-                ('provider_code', '=', 'sampath'),
-            ], limit=1)
         if not tx:
-            raise ValidationError("Sampath: " + _(
-                "No transaction found matching reqid %s.", reqid,
-            ))
+            client_ref = self._extract_reference(provider_code, payment_data)
+            if client_ref:
+                tx = self.search([
+                    ('reference', '=', client_ref),
+                    ('provider_code', '=', 'sampath'),
+                ], limit=1)
+        if not tx:
+            _logger.warning(
+                "Sampath: no transaction found for reqid %s / clientRef %s",
+                reqid, payment_data.get('clientRef'),
+            )
         return tx
+
+    def _extract_amount_data(self, payment_data):
+        """ Give `_validate_amount` the amount Paycorp actually charged.
+
+        Without this override the base method returns `{}` and
+        `_validate_amount` crashes with KeyError('amount') *before*
+        `_apply_updates` runs, so the transaction never leaves draft: no
+        "confirmed" message, no order confirmation, no account.payment.
+        """
+        if self.provider_code != 'sampath':
+            return super()._extract_amount_data(payment_data)
+
+        response_data = (payment_data or {}).get('responseData') or {}
+        if response_data.get('responseCode') != '00':
+            return None  # Nothing was charged; _apply_updates sets the failure state.
+
+        amount_vals = response_data.get('transactionAmount') or {}
+        minor_amount = amount_vals.get('paymentAmount')
+        if minor_amount in (None, ''):
+            _logger.warning(
+                "Sampath: PAYMENT_COMPLETE for %s carries no paymentAmount, "
+                "skipping the amount check. responseData: %s",
+                self.reference, response_data,
+            )
+            return None
+
+        return {
+            # PAYMENT_INIT sends the amount in minor units (cents); Paycorp
+            # echoes it back the same way.
+            'amount': float(minor_amount) / 100.0,
+            'currency_code': amount_vals.get('currency') or self.currency_id.name,
+            'precision_digits': 2,
+        }
 
     def _apply_updates(self, payment_data):
         """ Set the transaction state from the PAYMENT_COMPLETE response. """
@@ -114,6 +159,7 @@ class PaymentTransaction(models.Model):
 
         response_data = (payment_data or {}).get('responseData') or {}
         status_code = response_data.get('responseCode')
+        response_text = response_data.get('responseText') or ''
 
         if status_code == "00":
             self._set_done()
@@ -125,7 +171,31 @@ class PaymentTransaction(models.Model):
             error_msg = _(
                 "Sampath: payment failed with code %(code)s (%(desc)s)",
                 code=status_code or 'n/a',
-                desc=response_data.get('responseText') or _("no detail"),
+                desc=response_text or _("no detail"),
             )
             _logger.warning("Payment failed for transaction %s: %s", self.reference, error_msg)
             self._set_error(error_msg)
+
+        self._sampath_log_gateway_response(response_data)
+
+    def _sampath_log_gateway_response(self, response_data):
+        """ Post the Paycorp result on the linked sale order / invoice chatter. """
+        self.ensure_one()
+        card = response_data.get('creditCard') or {}
+        details = [
+            (_("Transaction"), self.reference),
+            (_("Status"), "%s %s" % (response_data.get('responseCode') or '',
+                                    response_data.get('responseText') or '')),
+            (_("Paycorp txn reference"), response_data.get('txnReference')),
+            (_("Auth code"), response_data.get('authCode')),
+            (_("Card"), card.get('number')),
+            (_("Paycorp reqid"), self.provider_reference),
+        ]
+        rows = Markup('').join(
+            Markup('<li>%s: %s</li>') % (label, value)
+            for label, value in details if value and str(value).strip()
+        )
+        message = Markup('<p>%s</p><ul>%s</ul>') % (
+            _("Sampath Bank (Paycorp) payment response"), rows,
+        )
+        self._log_message_on_linked_documents(message)
