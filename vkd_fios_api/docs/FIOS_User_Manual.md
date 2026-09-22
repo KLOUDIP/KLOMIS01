@@ -153,6 +153,7 @@ Closing a subscription recomputes limits; if the customer has **no active subscr
 1. Select a **Service Tier** → **Fetch Accounts** (lists that tier's accounts via its token).
 2. For each row set the **Odoo Customer** (manual match by account name; already-linked rows are read-only).
 3. **Import Selected** → links partner + FIOS ids + tier, marks **active**. No FIOS calls.
+4. **Linked to the wrong customer?** Click **Unlink** on that row (confirm). The FIOS details are cleared from the wrong contact (a note is logged on it) and the row opens again — set the right customer and **Import Selected**. Nothing is changed on FIOS. Importing onto a customer that already holds a different FIOS account is refused until that account is unlinked.
 
 ---
 
@@ -182,5 +183,6 @@ Closing a subscription recomputes limits; if the customer has **no active subscr
 | **T13** | Devices list | Contact → Refresh Devices | Lists units (Name/IMEI/Phone/Status); deactivated units show a grey **Inactive** badge |
 | **T14** | Portal usage | Customer portal → My FIOS Services | Card on `/my/home`; usage table on `/my/fios-services` |
 | **T15** | Import | FIOS → Import Accounts → pick tier → Fetch → match → Import | Partner linked, state active, tier set |
+| **T15b** | Fix a wrong link | Import Accounts → Fetch → **Unlink** on a linked row → pick the right customer → Import | Old contact: FIOS fields cleared, Is FIOS User off, chatter note. New contact linked and active |
 | **T16** | Resume after failure | If a purchase provision failed, click **Provision / Resume** | Resumes (create_account handles "already exists"), completes to active |
 | **T17** | Keep-alive | Wait > 5 min idle, then any FIOS action | Session auto re-logs in (see Sessions / API Log) |

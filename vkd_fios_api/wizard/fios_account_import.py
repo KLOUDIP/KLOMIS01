@@ -130,6 +130,13 @@ class FiosAccountImport(models.TransientModel):
                      'first': seen[line.partner_id.id],
                      'second': line.account_item_id})
             seen[line.partner_id.id] = line.account_item_id
+            # Linking would silently overwrite the customer's existing account.
+            current = line.partner_id.sudo().fios_account_item_id
+            if current and current != line.account_item_id:
+                raise UserError(_(
+                    "Customer '%(partner)s' is already linked to FIOS account %(current)s. "
+                    "Unlink that account first if it is wrong."
+                ) % {'partner': line.partner_id.display_name, 'current': current})
 
         for line in to_import:
             partner = line.partner_id.sudo()
@@ -168,3 +175,19 @@ class FiosAccountImportLine(models.TransientModel):
     partner_id = fields.Many2one('res.partner', string='Odoo Customer',
                                  help="Manually match this FIOS account to an Odoo customer.")
     already_linked = fields.Boolean(string='Already Linked', readonly=True)
+
+    def action_unlink(self):
+        """Remove a wrong link: detach this FIOS account from the Odoo customer
+        it was matched to, then leave the row open to pick the right one."""
+        self.ensure_one()
+        if not self.env.user.has_group('vkd_fios_api.group_fios_user'):
+            raise UserError(_("Only the FIOS billing team can unlink an account."))
+        Partner = self.env['res.partner'].sudo()
+        # Look the link up afresh rather than trusting the row: the account may
+        # have been relinked since the list was fetched.
+        partner = Partner.search([('fios_account_item_id', '=', self.account_item_id)], limit=1)
+        if partner:
+            partner._fios_unlink_account()
+        self.write({'partner_id': False, 'already_linked': False})
+        return self.wizard_id._reopen()
+

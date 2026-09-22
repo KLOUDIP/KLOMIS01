@@ -315,6 +315,58 @@ class ResPartner(models.Model):
             },
         }
 
+    def _fios_unlink_account(self):
+        """Detach the FIOS account from this contact (Odoo side only).
+
+        Used to undo an import that matched a FIOS account to the wrong
+        customer. Nothing is changed on FIOS itself: the account, its devices
+        and its days counter stay as they are, so it can be linked to the
+        right customer straight away.
+        """
+        self.ensure_one()
+        partner = self.sudo()
+        account_item_id = partner.fios_account_item_id
+        if not account_item_id:
+            raise UserError(_("%s has no FIOS account linked.") % partner.display_name)
+        # search + unlink rather than through the o2m, same as the device refresh.
+        self.env['fios.device'].sudo().search([('partner_id', '=', partner.id)]).unlink()
+        self.env['fios.service.usage'].sudo().search([('partner_id', '=', partner.id)]).unlink()
+        partner.write({
+            'is_fios_user': False,
+            'fios_tier_id': False,
+            'fios_provision_pending': False,
+            'fios_user_id': False,
+            'fios_resource_id': False,
+            'fios_account_item_id': False,
+            'fios_provision_state': 'not_started',
+            'fios_last_sync': False,
+            'fios_last_error': False,
+            'fios_account_enabled': False,
+            'fios_days_counter': 0,
+            'fios_current_plan': False,
+            'fios_services_summary': False,
+            'fios_status_synced': False,
+            'fios_next_due_date': False,
+            'fios_days_left_source': False,
+            'fios_days_left_synced': False,
+            'fios_grace_cycle_ref': False,
+            'fios_grace_granted_on': False,
+            'fios_grace_granted_by': False,
+            'fios_grace_source': False,
+            'fios_grace_days_granted': 0,
+            'fios_grace_expiry': False,
+            'fios_device_diagnostic': False,
+        })
+        partner.message_post(
+            body=_("FIOS account %s unlinked from this contact by %s "
+                   "(linked to the wrong customer). Nothing was changed on FIOS.")
+            % (account_item_id, self.env.user.name),
+            author_id=self.env.user.partner_id.id,
+        )
+        _logger.info("FIOS: account %s unlinked from partner %s by user %s",
+                     account_item_id, partner.id, self.env.user.id)
+        return account_item_id
+
     def action_fios_reset_grace(self):
         """Admin escape hatch: clear the once-per-cycle lock.
 
