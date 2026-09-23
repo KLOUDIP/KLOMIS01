@@ -775,7 +775,7 @@ class FiosProvisioning(models.AbstractModel):
         # Refresh the structured usage records (shown on the contact form).
         partner.fios_service_usage_ids.unlink()
         if usage_vals:
-            self.env['fios.service.usage'].create(usage_vals)
+            self.env['fios.service.usage'].sudo().create(usage_vals)
 
         partner.write({
             'fios_account_enabled': bool(data.get('enabled')),
