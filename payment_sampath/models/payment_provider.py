@@ -12,7 +12,6 @@ from odoo.exceptions import ValidationError
 _logger = logging.getLogger(__name__)
 
 SAMPATH_LIVE_API_URL = 'https://sampath.paycorp.lk/rest/service/proxy'
-SAMPATH_TEST_API_URL = 'https://test-sampath.paycorp.lk/rest/service/proxy'
 
 
 class PaymentProvider(models.Model):
@@ -41,17 +40,16 @@ class PaymentProvider(models.Model):
     def _sampath_get_api_url(self):
         """ Return the Paycorp endpoint for the provider state.
 
-        Test Mode must hit Paycorp's test gateway: the Sampath test cards are
-        only accepted there. Sent to the live gateway they come back as
-        "07 PICK-UP CARD (TEST TRANSACTION ONLY)". Override the test URL with
-        the system parameter `payment_sampath.test_api_url`.
+        In Test Mode the endpoint can be overridden with the system parameter
+        `payment_sampath.test_api_url` (URL supplied by Sampath). Without it,
+        the standard Paycorp endpoint is used.
         """
         self.ensure_one()
         if self.state == 'test':
             # System parameter (no DB column, so no module upgrade needed).
             url = self.env['ir.config_parameter'].sudo().get_param(
-                'payment_sampath.test_api_url', SAMPATH_TEST_API_URL)
-            return (url or '').strip() or SAMPATH_TEST_API_URL
+                'payment_sampath.test_api_url')
+            return (url or '').strip() or SAMPATH_LIVE_API_URL
         return SAMPATH_LIVE_API_URL
 
     def _sampath_make_request(self, payload=None):
