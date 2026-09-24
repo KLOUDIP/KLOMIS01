@@ -24,25 +24,41 @@ class IrisIntegrationController(http.Controller):
 
     @http.route('/api/voice/ticket/create', type='http', auth='public', methods=['POST'], csrf=False)
     def create_ticket(self, **kwargs):
-        """Use Case 1: Log a new query with flexible Phone or Email lookup."""
+        """Log a new query with Customer ID, Phone, or Email lookup."""
         if not self._authenticate():
             return self._json_response({'error': 'Unauthorized'}, 401)
 
         try:
             payload = json.loads(request.httprequest.data)
+            customer_id = payload.get('customer_id') or payload.get('partner_id')
             caller_phone = payload.get('caller_phone')
             caller_email = payload.get('caller_email')
 
-            domain = []
-            if caller_phone:
-                domain.append(('phone', 'ilike', caller_phone))
-            if caller_email:
-                domain.append(('email', '=ilike', caller_email.strip()))
+            partner = False
 
-            if len(domain) == 2:
-                domain = ['|'] + domain
+            # 1. Direct Lookup by Odoo Customer ID
+            if customer_id:
+                try:
+                    p = request.env['res.partner'].sudo().browse(int(customer_id))
+                    if p.exists():
+                        partner = p
+                except (ValueError, TypeError):
+                    pass
 
-            partner = request.env['res.partner'].sudo().search(domain, limit=1) if domain else False
+            # 2. Fallback to Phone or Email lookup if Customer ID was not provided or not found
+            if not partner:
+                domain = []
+                if caller_phone:
+                    domain.append(('phone', 'ilike', caller_phone))
+                if caller_email:
+                    domain.append(('email', '=ilike', caller_email.strip()))
+
+                if len(domain) == 2:
+                    domain = ['|'] + domain
+
+                if domain:
+                    partner = request.env['res.partner'].sudo().search(domain, limit=1)
+
             partner_id = partner.id if partner else False
 
             # Explicitly fetch target company 'KLOUDIP (Pvt) Ltd'
@@ -57,7 +73,6 @@ class IrisIntegrationController(http.Controller):
 
             team = request.env['helpdesk.team'].sudo().search(team_domain, limit=1)
 
-            # Fallback: Search for any 'Support' team if company-specific record is missing
             if not team:
                 team = request.env['helpdesk.team'].sudo().search([('name', '=', 'Support')], limit=1)
 
@@ -72,7 +87,6 @@ class IrisIntegrationController(http.Controller):
             }
 
             # Switch execution environment to SUPERUSER_ID and target company context
-            # This fixes email auto-responder attribution from "Public User for KLOUDIP INC"
             ticket_env = request.env['helpdesk.ticket'].sudo().with_user(SUPERUSER_ID)
             if target_company:
                 ticket_env = ticket_env.with_company(target_company)
@@ -88,7 +102,7 @@ class IrisIntegrationController(http.Controller):
 
     @http.route('/api/voice/ticket/status', type='http', auth='public', methods=['POST'], csrf=False)
     def check_status(self, **kwargs):
-        """Use Case 2: Check ticket status using ticket_number."""
+        """check ticket status using ticket_number."""
         if not self._authenticate():
             return self._json_response({'error': 'Unauthorized'}, 401)
 
@@ -106,7 +120,6 @@ class IrisIntegrationController(http.Controller):
 
             stage_name = ticket.stage_id.name or 'New'
 
-            # Security Rule: Hide finance/payment hold stages
             if 'Payment Hold' in stage_name or 'Finance' in stage_name:
                 return self._json_response({
                     'status': 'success',
@@ -131,7 +144,6 @@ class IrisIntegrationController(http.Controller):
 
     @http.route('/api/voice/ticket/comment', type='http', auth='public', methods=['POST'], csrf=False)
     def add_comment(self, **kwargs):
-        """Use Case 3: Add a voice comment styled from Iris Voice AI."""
         if not self._authenticate():
             return self._json_response({'error': 'Unauthorized'}, 401)
 
@@ -150,7 +162,6 @@ class IrisIntegrationController(http.Controller):
 
             iris_partner = self._get_iris_partner()
 
-            # Wrap in Markup so Odoo renders rich HTML in Chatter while escaping raw user text safely
             formatted_body = Markup("<p><strong>Voice Call Note:</strong></p><p>%s</p>") % escape(comment_text)
 
             ticket.sudo().message_post(
@@ -166,28 +177,43 @@ class IrisIntegrationController(http.Controller):
 
     @http.route('/api/voice/contact/search', type='http', auth='public', methods=['POST'], csrf=False)
     def search_contact(self, **kwargs):
-        """Verifies if a caller exists by phone or email."""
+        """Verifies if a caller exists by Customer ID, Phone, or Email."""
         if not self._authenticate():
             return self._json_response({'error': 'Unauthorized'}, 401)
 
         try:
             payload = json.loads(request.httprequest.data)
+            customer_id = payload.get('customer_id') or payload.get('partner_id')
             phone = payload.get('caller_phone')
             email = payload.get('caller_email')
 
-            domain = []
-            if phone:
-                domain.append(('phone', 'ilike', phone))
-            if email:
-                domain.append(('email', '=ilike', email.strip()))
+            partner = False
 
-            if len(domain) == 2:
-                domain = ['|'] + domain
+            # 1. Search by Odoo Customer ID
+            if customer_id:
+                try:
+                    p = request.env['res.partner'].sudo().browse(int(customer_id))
+                    if p.exists():
+                        partner = p
+                except (ValueError, TypeError):
+                    pass
 
-            if not domain:
-                return self._json_response({'error': 'Provide caller_phone or caller_email'}, 400)
+            # 2. Search by Phone/Email if ID not supplied
+            if not partner:
+                domain = []
+                if phone:
+                    domain.append(('phone', 'ilike', phone))
+                if email:
+                    domain.append(('email', '=ilike', email.strip()))
 
-            partner = request.env['res.partner'].sudo().search(domain, limit=1)
+                if len(domain) == 2:
+                    domain = ['|'] + domain
+
+                if domain:
+                    partner = request.env['res.partner'].sudo().search(domain, limit=1)
+
+            if not customer_id and not phone and not email:
+                return self._json_response({'error': 'Provide customer_id, caller_phone, or caller_email'}, 400)
 
             if partner:
                 return self._json_response({
