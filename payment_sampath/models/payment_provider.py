@@ -11,6 +11,9 @@ from odoo.exceptions import ValidationError
 
 _logger = logging.getLogger(__name__)
 
+SAMPATH_LIVE_API_URL = 'https://sampath.paycorp.lk/rest/service/proxy'
+SAMPATH_TEST_API_URL = 'https://test-sampath.paycorp.lk/rest/service/proxy'
+
 
 class PaymentProvider(models.Model):
     _inherit = 'payment.provider'
@@ -35,14 +38,25 @@ class PaymentProvider(models.Model):
         groups='base.group_system'
     )
 
+    sampath_test_api_url = fields.Char(
+        string="Test API URL",
+        default=lambda self: SAMPATH_TEST_API_URL,
+        help="Paycorp endpoint used while the provider is in Test Mode. "
+             "Use the test gateway URL and test ClientID given by Sampath.",
+        groups='base.group_system',
+    )
+
     def _sampath_get_api_url(self):
-        """ Return the API URL according to the provider state. """
+        """ Return the Paycorp endpoint for the provider state.
+
+        Test Mode must hit Paycorp's test gateway: the Sampath test cards are
+        only accepted there. Sent to the live gateway they come back as
+        "07 PICK-UP CARD (TEST TRANSACTION ONLY)".
+        """
         self.ensure_one()
-        # If Sampath provides a UAT/Sandbox URL, you can return it for self.state == 'test'
-        if self.state == 'enabled':
-            return 'https://sampath.paycorp.lk/rest/service/proxy'
-        else:
-            return 'https://sampath.paycorp.lk/rest/service/proxy'
+        if self.state == 'test':
+            return (self.sampath_test_api_url or '').strip() or SAMPATH_TEST_API_URL
+        return SAMPATH_LIVE_API_URL
 
     def _sampath_make_request(self, payload=None):
         """ Post to the Paycorp proxy and ALWAYS return a parsed dict.
