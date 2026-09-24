@@ -38,24 +38,20 @@ class PaymentProvider(models.Model):
         groups='base.group_system'
     )
 
-    sampath_test_api_url = fields.Char(
-        string="Test API URL",
-        default=lambda self: SAMPATH_TEST_API_URL,
-        help="Paycorp endpoint used while the provider is in Test Mode. "
-             "Use the test gateway URL and test ClientID given by Sampath.",
-        groups='base.group_system',
-    )
-
     def _sampath_get_api_url(self):
         """ Return the Paycorp endpoint for the provider state.
 
         Test Mode must hit Paycorp's test gateway: the Sampath test cards are
         only accepted there. Sent to the live gateway they come back as
-        "07 PICK-UP CARD (TEST TRANSACTION ONLY)".
+        "07 PICK-UP CARD (TEST TRANSACTION ONLY)". Override the test URL with
+        the system parameter `payment_sampath.test_api_url`.
         """
         self.ensure_one()
         if self.state == 'test':
-            return (self.sampath_test_api_url or '').strip() or SAMPATH_TEST_API_URL
+            # System parameter (no DB column, so no module upgrade needed).
+            url = self.env['ir.config_parameter'].sudo().get_param(
+                'payment_sampath.test_api_url', SAMPATH_TEST_API_URL)
+            return (url or '').strip() or SAMPATH_TEST_API_URL
         return SAMPATH_LIVE_API_URL
 
     def _sampath_make_request(self, payload=None):

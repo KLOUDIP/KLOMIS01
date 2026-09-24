@@ -20,9 +20,6 @@
                     <field name="sampath_hmac_secret"
                            required="code == 'sampath' and state != 'disabled'"
                            password="True"/>
-
-                    <field name="sampath_test_api_url"
-                           invisible="state != 'test'"/>
                 </group>
             </group>
         </field>
