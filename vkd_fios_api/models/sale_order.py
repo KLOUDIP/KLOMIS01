@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import logging
+from datetime import timedelta
 
 from odoo import models, fields, api, _
 
@@ -148,13 +149,22 @@ class SaleOrder(models.Model):
     # ------------------------------------------------------------------
     # FIOS "days left" (block-by-days counter)
     # ------------------------------------------------------------------
-    # The counter FIOS shows as "Days Left" is kept equal to the number of days
-    # until the customer's NEXT invoice falls due. "Next" is the earliest of:
-    #   - the due date of any still-open customer invoice, and
-    #   - the due date the next subscription invoice will get
-    #     (next_invoice_date + the subscription's payment term).
-    # Due dates therefore always follow the payment term, exactly like the
-    # Due Date column on the invoice list.
+    # The counter FIOS shows as "Days Left" is driven by the customer's
+    # invoices, and only falls back to the subscription when nothing is owed:
+    #
+    #   1. Open invoices exist (hardware, subscription, anything - not paid or
+    #      partly paid): days left = days until the EARLIEST invoice due date.
+    #      Paying that invoice moves the counter on to the next one due.
+    #   2. Everything is paid: days left = days until the paid subscription
+    #      period runs out (see _fios_paid_up_until). An early payer, or an
+    #      annual subscription paid up front, keeps access for the period
+    #      already paid for.
+    #   3. Nothing to go on (no open invoice, no subscription period ahead of
+    #      today - e.g. a new subscription whose first invoice is not raised
+    #      yet): the counter is left as it is.
+    #
+    # The counter is re-synced whenever an invoice is posted, paid, reset to
+    # draft / cancelled, or has a payment removed (see account_move.py).
 
     def _fios_icp_flag(self, key, default='0'):
         value = self.env['ir.config_parameter'].sudo().get_param(key, default)
@@ -207,44 +217,87 @@ class SaleOrder(models.Model):
                             payment_term.id, date_ref, e)
             return date_ref
 
+    def _fios_days_left_subscriptions(self, partner):
+        """Live subscriptions of the customer (whole commercial entity, like the
+        invoices), limited to FIOS subscriptions when the scope is 'fios'."""
+        commercial = partner.commercial_partner_id or partner
+        subs = self.env['sale.order'].sudo().search([
+            ('partner_id', 'child_of', commercial.id),
+            ('is_subscription', '=', True),
+            ('subscription_state', 'in', ACTIVE_SUB_STATES),
+            ('state', '=', 'sale'),
+        ])
+        if self._fios_invoice_scope_is_fios_only():
+            subs = subs.filtered(lambda s: any(
+                line.product_id.product_tmpl_id.fios_service
+                or line.product_id.product_tmpl_id.fios_tier_id
+                for line in s.order_line))
+        return subs
+
+    def _fios_paid_up_until(self, subscription):
+        """Date access runs to when the subscription has nothing left to pay.
+
+        `vkd_fios_api.days_left_paid_up_basis`:
+          next_invoice_date (default) - up to and including the day the next
+              period's invoice is raised. That invoice is synced as soon as it
+              is posted, so the customer is never cut off in the gap between
+              one period ending and its invoice being generated.
+          period_end - up to the last day of the paid period
+              (next invoice date - 1 day).
+        A subscription end date earlier than that wins in both cases.
+        """
+        next_date = subscription.next_invoice_date
+        if not next_date:
+            return False
+        basis = self.env['ir.config_parameter'].sudo().get_param(
+            'vkd_fios_api.days_left_paid_up_basis', 'next_invoice_date')
+        until = next_date
+        if str(basis).strip().lower() == 'period_end':
+            until = next_date - timedelta(days=1)
+        end_date = getattr(subscription, 'end_date', False)
+        if end_date and end_date < until:
+            until = end_date
+        return until
+
     def _fios_next_due_info(self, partner):
-        """(due_date, source label) of the earliest upcoming due date, or (False, None)."""
+        """(date, source label, basis) that the days-left counter should run to.
+
+        basis is 'invoice', 'subscription' or None (nothing to sync from).
+        """
+        invoices = self._fios_open_invoices(partner)
+        if invoices:
+            inv = min(invoices, key=lambda m: (m.invoice_date_due, m.id))
+            label = inv.name if inv.name and inv.name != '/' else _("draft invoice %s") % inv.id
+            return inv.invoice_date_due, label, 'invoice'
+
+        # Nothing owed: fall back to the paid subscription period. A date that
+        # is not after today means the period's invoice is due to be raised
+        # (or the subscription has not been invoiced yet) - leave the counter
+        # alone rather than cut access before that invoice exists.
+        today = fields.Date.context_today(self)
         candidates = []
-        for inv in self._fios_open_invoices(partner):
-            candidates.append((inv.invoice_date_due, inv.name if inv.name and inv.name != '/'
-                               else _("draft invoice %s") % inv.id))
-        for sub in self.sudo()._partner_active_subscriptions(partner):
-            if sub.next_invoice_date:
-                due = self._fios_term_due_date(sub.payment_term_id, sub.next_invoice_date)
-                candidates.append((due, _("next invoice of %s") % sub.name))
+        for sub in self._fios_days_left_subscriptions(partner):
+            until = self._fios_paid_up_until(sub)
+            if until and until > today:
+                candidates.append((until, sub.id, _("paid subscription period of %s") % sub.name))
         if not candidates:
-            return False, None
-        return min(candidates, key=lambda c: c[0])
+            return False, None, None
+        until, _sub_id, label = min(candidates)
+        return until, label, 'subscription'
 
     def _fios_push_days_left(self, partner, description=None):
         """Set the FIOS days counter to the days left until the next due date.
 
-        Returns a dict: ok, error, changed, days, due_date, source.
+        Returns a dict: ok, error, changed, days, due_date, source, basis.
         """
         res = {'ok': True, 'error': None, 'changed': False,
-               'days': None, 'due_date': False, 'source': None}
+               'days': None, 'due_date': False, 'source': None, 'basis': None}
         partner = partner.sudo()
         if partner.fios_provision_state != 'active' or not partner.fios_account_item_id:
             return res
-        due_date, source = self._fios_next_due_info(partner)
+        due_date, source, basis = self._fios_next_due_info(partner)
         if not due_date:
             return res
-
-        today = fields.Date.context_today(self)
-        target = (due_date - today).days
-        if target < 0:
-            # Something is already overdue. 0 keeps today's access; FIOS blocks
-            # when its own daily decrement takes the counter to -1.
-            target = 0
-        # Never cut into a grace period that is still running.
-        if partner.fios_grace_expiry and partner.fios_grace_expiry >= today:
-            target = max(target, (partner.fios_grace_expiry - today).days)
-        res.update(days=target, due_date=due_date, source=source)
 
         client = self.env['fios.api.client']
         log = self.env['fios.api.log']
@@ -256,19 +309,37 @@ class SaleOrder(models.Model):
             _logger.warning("FIOS: could not read daysCounter for partner %s: %s", partner.id, e)
             res.update(ok=False, error=str(e))
             return res
-
         current = data.get('daysCounter') or 0
+
+        today = fields.Date.context_today(self)
+        target = (due_date - today).days
+        if target < 0:
+            # An invoice is overdue. An account that FIOS has already blocked
+            # (counter below zero) stays blocked - paying some other invoice or
+            # raising a new one must not reopen it. Otherwise 0 keeps today's
+            # access and FIOS blocks on its next daily decrement.
+            target = current if current < 0 else 0
+        # Never cut into a grace period that is still running.
+        if partner.fios_grace_expiry and partner.fios_grace_expiry >= today:
+            target = max(target, (partner.fios_grace_expiry - today).days)
+        res.update(days=target, due_date=due_date, source=source, basis=basis)
+
+        sync_vals = {
+            'fios_next_due_date': due_date,
+            'fios_days_left_source': source,
+            'fios_days_left_synced': fields.Datetime.now(),
+        }
         delta = target - current
         if delta == 0:
-            if partner.fios_days_counter != target:
-                partner.fios_days_counter = target
+            sync_vals['fios_days_counter'] = target
+            partner.write(sync_vals)
             return res
 
         params = {
             'itemId': item_id,
             'balanceUpdate': 0,
             'daysUpdate': delta,
-            'description': description or _("Subscription billing update"),
+            'description': (description or _("Subscription billing update"))[:250],
         }
         try:
             result = client.call('account/do_payment', params, tier=partner.fios_tier_id)
@@ -283,11 +354,12 @@ class SaleOrder(models.Model):
             return res
         log.log_success('account/do_payment', params, partner=partner, response_data=result,
                         message=_("FIOS days left set to %(target)s (was %(current)s, delta "
-                                  "%(delta)s) - next due %(due)s from %(source)s")
+                                  "%(delta)s) - runs to %(due)s from %(source)s")
                         % {'target': target, 'current': current, 'delta': delta,
                            'due': due_date, 'source': source})
-        partner.fios_days_counter = target
-        _logger.info("FIOS: days left synced for partner %s (target=%s, delta=%s, due=%s, %s)",
+        sync_vals['fios_days_counter'] = target
+        partner.write(sync_vals)
+        _logger.info("FIOS: days left synced for partner %s (target=%s, delta=%s, date=%s, %s)",
                      partner.id, target, delta, due_date, source)
         res['changed'] = True
         return res

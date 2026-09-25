@@ -74,6 +74,18 @@ class ResPartner(models.Model):
                                         help='Effective usage / limit per tracked FIOS service.')
     fios_status_synced = fields.Datetime(string='FIOS Status Read At', copy=False, readonly=True)
 
+    # What the days-left counter was last synced to, and why - so the billing
+    # team can see which invoice (or paid subscription period) drives it.
+    fios_next_due_date = fields.Date(
+        string='Days Left Run To', copy=False, readonly=True,
+        help='Due date of the earliest open invoice or, when everything is paid, '
+             'the end of the paid subscription period.')
+    fios_days_left_source = fields.Char(
+        string='Days Left Based On', copy=False, readonly=True,
+        help='The invoice or subscription the days-left counter was last synced from.')
+    fios_days_left_synced = fields.Datetime(string='Days Left Synced At', copy=False,
+                                            readonly=True)
+
     # Human-readable access state. FIOS blocks the account when the block-by-days
     # counter drops to -1, which the raw `enabled` flag does not always reflect,
     # so both are taken into account.
@@ -303,6 +315,58 @@ class ResPartner(models.Model):
             },
         }
 
+    def _fios_unlink_account(self):
+        """Detach the FIOS account from this contact (Odoo side only).
+
+        Used to undo an import that matched a FIOS account to the wrong
+        customer. Nothing is changed on FIOS itself: the account, its devices
+        and its days counter stay as they are, so it can be linked to the
+        right customer straight away.
+        """
+        self.ensure_one()
+        partner = self.sudo()
+        account_item_id = partner.fios_account_item_id
+        if not account_item_id:
+            raise UserError(_("%s has no FIOS account linked.") % partner.display_name)
+        # search + unlink rather than through the o2m, same as the device refresh.
+        self.env['fios.device'].sudo().search([('partner_id', '=', partner.id)]).unlink()
+        self.env['fios.service.usage'].sudo().search([('partner_id', '=', partner.id)]).unlink()
+        partner.write({
+            'is_fios_user': False,
+            'fios_tier_id': False,
+            'fios_provision_pending': False,
+            'fios_user_id': False,
+            'fios_resource_id': False,
+            'fios_account_item_id': False,
+            'fios_provision_state': 'not_started',
+            'fios_last_sync': False,
+            'fios_last_error': False,
+            'fios_account_enabled': False,
+            'fios_days_counter': 0,
+            'fios_current_plan': False,
+            'fios_services_summary': False,
+            'fios_status_synced': False,
+            'fios_next_due_date': False,
+            'fios_days_left_source': False,
+            'fios_days_left_synced': False,
+            'fios_grace_cycle_ref': False,
+            'fios_grace_granted_on': False,
+            'fios_grace_granted_by': False,
+            'fios_grace_source': False,
+            'fios_grace_days_granted': 0,
+            'fios_grace_expiry': False,
+            'fios_device_diagnostic': False,
+        })
+        partner.message_post(
+            body=_("FIOS account %s unlinked from this contact by %s "
+                   "(linked to the wrong customer). Nothing was changed on FIOS.")
+            % (account_item_id, self.env.user.name),
+            author_id=self.env.user.partner_id.id,
+        )
+        _logger.info("FIOS: account %s unlinked from partner %s by user %s",
+                     account_item_id, partner.id, self.env.user.id)
+        return account_item_id
+
     def action_fios_reset_grace(self):
         """Admin escape hatch: clear the once-per-cycle lock.
 
@@ -328,6 +392,38 @@ class ResPartner(models.Model):
                 'title': _('FIOS Grace Period'),
                 'message': _('Grace period reset - it can be granted again this cycle.'),
                 'type': 'warning',
+                'next': {'type': 'ir.actions.client', 'tag': 'soft_reload'},
+            },
+        }
+
+    def action_fios_sync_days_left(self):
+        """Billing team: recompute FIOS days left from the invoices now."""
+        self.ensure_one()
+        if not self.env.user.has_group('vkd_fios_api.group_fios_user'):
+            raise UserError(_("Only the FIOS billing team can sync days left."))
+        if self.fios_provision_state != 'active' or not self.fios_account_item_id:
+            raise UserError(_("This customer has no active FIOS account."))
+        res = self.env['sale.order'].sudo()._fios_push_days_left(
+            self, description=_("Manual days-left sync"))
+        if not res['ok']:
+            raise UserError(_("Could not update FIOS days left: %s") % res['error'])
+        if res['days'] is None:
+            message, kind = _("No open invoice and no paid subscription period ahead - "
+                              "days left left unchanged."), 'warning'
+        else:
+            message = _("Days left %(state)s %(days)s (runs to %(due)s - %(source)s).") % {
+                'state': _('set to') if res['changed'] else _('already'),
+                'days': res['days'], 'due': res['due_date'], 'source': res['source']}
+            kind = 'success'
+            if res['changed']:
+                self.message_post(body=_("FIOS days left synced manually: %s") % message)
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': _('FIOS Days Left'),
+                'message': message,
+                'type': kind,
                 'next': {'type': 'ir.actions.client', 'tag': 'soft_reload'},
             },
         }

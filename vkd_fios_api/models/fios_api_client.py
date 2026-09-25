@@ -65,6 +65,19 @@ class FiosApiClient(models.AbstractModel):
     _DEFAULT_TIMEOUT = 30
 
     @api.model
+    def _fios_sessions(self):
+        """fios.session in sudo.
+
+        The session row is technical plumbing of the API client (the cached
+        Wialon SID), not something a user edits. Every FIOS call touches it -
+        login creates it, each call bumps last_activity, an expired SID is
+        invalidated - so it must not depend on the caller's ACLs. Without this,
+        Billing Team / Tech Team users hit "You are not allowed to modify
+        'FIOS API Session'" on any FIOS button (refresh status, fetch/import).
+        """
+        return self.env['fios.session'].sudo()
+
+    @api.model
     def _default_tier(self):
         tier = self.env['fios.service.tier'].search([], order='sequence, id', limit=1)
         if not tier:
@@ -111,8 +124,8 @@ class FiosApiClient(models.AbstractModel):
                                'Login did not return a session id')
 
         # Retire any previous active session for this tier, store the new one.
-        self.env['fios.session'].get_active_session(tier).invalidate()
-        session = self.env['fios.session'].sudo().create({
+        self._fios_sessions().get_active_session(tier).invalidate()
+        session = self._fios_sessions().create({
             'sid': data['eid'],
             'tier_id': tier.id,
             'auth_user': data.get('au'),
@@ -125,7 +138,7 @@ class FiosApiClient(models.AbstractModel):
 
     @api.model
     def _get_sid(self, tier):
-        session = self.env['fios.session'].get_active_session(tier)
+        session = self._fios_sessions().get_active_session(tier)
         if not session:
             session = self._login(tier)
         return session.sid
@@ -157,7 +170,7 @@ class FiosApiClient(models.AbstractModel):
             code = data['error']
             if code == FIOS_ERR_INVALID_SESSION and retry_on_expiry:
                 _logger.info("FIOS: session expired on '%s', re-logging in", svc)
-                self.env['fios.session'].get_active_session(tier).invalidate()
+                self._fios_sessions().get_active_session(tier).invalidate()
                 self._login(tier)
                 return self.call(svc, params, tier=tier, retry_on_expiry=False)
             # `reason` carries a human-readable detail on many errors (e.g. 5).
@@ -166,7 +179,7 @@ class FiosApiClient(models.AbstractModel):
             raise FiosApiError(code, svc, reason=reason)
 
         # Refresh activity so the keep-alive cron knows the session is live.
-        self.env['fios.session'].get_active_session(tier).touch()
+        self._fios_sessions().get_active_session(tier).touch()
         return data
 
     @api.model
@@ -177,7 +190,7 @@ class FiosApiClient(models.AbstractModel):
 
         # Ping each active tier session (one live SID per token). One bad session
         # must not abort the whole cron.
-        for session in self.env['fios.session'].search([('active', '=', True)]):
+        for session in self._fios_sessions().search([('active', '=', True)]):
             # Stale session from before tiers existed (no tier) - drop it.
             if not session.tier_id:
                 session.invalidate()

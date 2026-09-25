@@ -26,7 +26,9 @@
                 </group>
                 <div class="text-muted mb-2">
                     Pick a tier and fetch its accounts, then set the Odoo customer on each
-                    row you want to link. Already-linked accounts are shown for reference.
+                    row you want to link. Already-linked accounts are shown for reference;
+                    use <b>Unlink</b> on a row that is linked to the wrong customer, then set
+                    the right one and <b>Import Selected</b>.
                     Type a name and hit <b>Fetch Accounts</b> to search FIOS directly, or
                     <b>Search</b> to filter the list you already pulled.
                 </div>
@@ -43,6 +45,11 @@
                         <field name="partner_id"
                                options="{'no_create': True}"
                                readonly="already_linked"/>
+                        <button name="action_unlink" type="object" string="Unlink"
+                                icon="fa-chain-broken" class="btn-link text-danger"
+                                invisible="not already_linked"
+                                title="Linked to the wrong customer? Remove the link, then pick the right customer and Import Selected."
+                                confirm="Unlink this FIOS account from the customer? Its FIOS details are cleared from that contact. Nothing is changed on FIOS itself."/>
                     </list>
                 </field>
                 <footer>

@@ -12,7 +12,7 @@ Odoo 19 · Modules: `vkd_fios_api`, `vkd_fios_signup`, `vkd_subscription_handlin
 | **FIOS Service** | The billable thing a product provisions on FIOS: **Units** (`avl_unit`), **Users** (`storage_user`), **Geofences** (`zones_library`), **Google Maps** (`own_google_service`), **Ecodriving** (`ecodriving`), **Data Streaming** (`avl_retranslator`). |
 | **Quantity vs Feature service** | *Quantity* (Units/Users/Geofences): the subscribed quantity becomes the limit. *Feature* (Maps/Ecodriving/Streaming): enabled when purchased, disabled when removed. |
 | **Provision-at-purchase** | Registration only creates the Odoo user. The **FIOS account is created after the first purchase**, under the purchased product's tier, **in the background**. |
-| **Days** | The FIOS block-by-days counter (Days Left) is set to the days until the customer's **next due date**: the earliest of the open invoices' **Due Date** and the next subscription invoice (next invoice date + payment term). Re-synced whenever a customer invoice is **paid**. |
+| **Days** | The FIOS block-by-days counter (Days Left) follows the customer's invoices. **Open invoices** (any kind — subscription or hardware, not paid or partly paid): days until the **earliest Due Date**. **Everything paid**: days until the paid **subscription period** runs out (next invoice date by default, see `days_left_paid_up_basis`). Neither: left unchanged. An overdue customer that FIOS has already blocked stays blocked until the overdue invoice is paid. Re-synced whenever a customer invoice is **posted, paid, reset to draft / cancelled, or has a payment removed**, and on demand with **Sync Days Left**. |
 
 **End-to-end flow:**
 ```
@@ -21,7 +21,7 @@ Register (Odoo user only, "registered")
    → Background cron provisions the FIOS account under that tier
         create_user → user_flags(4) → create_resource → create_account(plan)
         → batch(default services + block-by-days) → set limits from products
-        → set days from next due date      → state "active"
+        → set days from invoices / period  → state "active"
    → Add / reduce services  → limits re-synced to FIOS
    → Non-payment / close     → account disabled when no active subscription remains
 ```
@@ -60,6 +60,7 @@ On each product's form (General Information), set:
 | `vkd_fios_api.account_flags` | `32` | Account block-by-days flag |
 | `vkd_fios_api.days_left_invoice_scope` | `all` | Which open invoices set Days Left: `all` customer invoices, or `fios` = only invoices with FIOS products |
 | `vkd_fios_api.days_left_include_draft` | `0` | `1` = also count draft invoices (off: a draft without an invoice date has a sliding due date) |
+| `vkd_fios_api.days_left_paid_up_basis` | `next_invoice_date` | When nothing is owed, Days Left runs to: `next_invoice_date` = the day the next period's invoice is raised (no gap before that invoice is synced), or `period_end` = the last day of the paid period (next invoice date − 1). A subscription end date that comes earlier wins |
 | `vkd_fios_api.signup_otp_enabled` | `1` | Require email OTP on public signup |
 | `vkd_fios_api.signup_otp_debug` | `0` | **TEST ONLY** — show the OTP on screen (staging without mail). Keep `0` in production |
 | `vkd_fios_api.pwd_secret` | *(auto)* | Encryption key for the pending signup password (auto-generated) |
@@ -106,11 +107,11 @@ Repeat with a **Premium** set to test tier mutual-exclusion.
 | **Sessions** | FIOS → Sessions | Live SIDs per tier |
 
 ### Backend — Contact form **FIOS tab** (a contact that is a FIOS customer)
-- **Header buttons:** **Provision / Resume** (create/repair + re-sync), **Refresh FIOS Status** (read live status + usage), **Refresh Devices** (list units).
+- **Header buttons:** **Provision / Resume** (create/repair + re-sync), **Refresh FIOS Status** (read live status + usage), **Refresh Devices** (list units), **Sync Days Left** (billing team — recompute Days Left from the invoices now and push it to FIOS).
 - **Status:** Is FIOS User, Service Tier, Provisioning state, Provisioning Pending, Last Sync.
 - **FIOS Identifiers:** User ID, Resource ID, Account Item ID.
 - **Last Error** (only if any).
-- **Live Account Status:** Enabled, Plan, Days Left, Balance, **Service Usage table** (Service / Used / Limit / Enabled), Status Read At.
+- **Live Account Status:** Enabled, Plan, Days Left, Balance, **Service Usage table** (Service / Used / Limit / Enabled), Status Read At, and — once synced — **Days Left Run To** / **Days Left Based On** / **Days Left Synced At** (which invoice or subscription period the counter follows).
 - **FIOS Devices:** Device/Plate, IMEI, Phone, Activated.
 
 ### Product form
@@ -152,6 +153,7 @@ Closing a subscription recomputes limits; if the customer has **no active subscr
 1. Select a **Service Tier** → **Fetch Accounts** (lists that tier's accounts via its token).
 2. For each row set the **Odoo Customer** (manual match by account name; already-linked rows are read-only).
 3. **Import Selected** → links partner + FIOS ids + tier, marks **active**. No FIOS calls.
+4. **Linked to the wrong customer?** Click **Unlink** on that row (confirm). The FIOS details are cleared from the wrong contact (a note is logged on it) and the row opens again — set the right customer and **Import Selected**. Nothing is changed on FIOS. Importing onto a customer that already holds a different FIOS account is refused until that account is unlinked.
 
 ---
 
@@ -165,7 +167,11 @@ Closing a subscription recomputes limits; if the customer has **no active subscr
 | **T2** | OTP verify | Submit signup form | OTP page; correct code → user created (`registered`); redirected to login → cart. **No API log yet** |
 | **T3** | OTP wrong/resend | Enter wrong code ×; Resend | "Incorrect code" (5 tries), 60s resend cooldown |
 | **T4** | Purchase provisions | Log in, buy the Lite combo, pay | Checkout returns fast. Within ~2 min: partner state **active**; **API Log** shows create_user → update_user_flags → create_resource → create_account → core/batch |
-| **T5** | Days from invoice | After T4, open contact → Refresh FIOS Status | Days Left = (next due date − today), next due date = next invoice date + payment term when nothing is open; `do_payment` in API Log with that delta |
+| **T5** | Days from invoice | After T4, create and **post** the subscription invoice (30-day term) | On posting: Days Left = 30; invoice chatter "FIOS days left … set to 30"; contact shows Days Left Based On = that invoice; `do_payment` in API Log with description "Invoice posted: …" |
+| **T5a** | Hardware invoice in between | T5 open (30 days). Post a hardware invoice with a 5-day term | Days Left = 5. Pay the hardware invoice → Days Left back to the subscription invoice's remaining days |
+| **T5c** | Everything paid | Pay all open invoices | Days Left = days until the subscription's next invoice date (e.g. ~365 for an annual plan paid up front); Days Left Based On = "paid subscription period of …" |
+| **T5d** | Overdue stays blocked | Invoice A overdue and account blocked (Days Left −1). Post or pay another invoice B | Days Left stays −1. Pay A → counter moves to B's due date and access returns |
+| **T5e** | New subscription not invoiced yet | New account (initial days), confirm a subscription starting today, do not invoice | Days Left unchanged; posting the first invoice then sets it |
 | **T5b** | Days after payment | Customer has two open invoices (due in 10 and 24 days). Register payment on the first | Invoice chatter: "FIOS days left … set to 24"; API Log `do_payment` with description "Invoice paid: …"; Refresh FIOS Status → Days Left 24 |
 | **T6** | Limits from products | After T4 | `avl_unit`/`storage_user`/`zones_library` limits = purchased quantities (usage table) |
 | **T7** | Add service | Upsell: add more Units | Limit rises to current + added; core/batch update in API Log |
@@ -177,5 +183,6 @@ Closing a subscription recomputes limits; if the customer has **no active subscr
 | **T13** | Devices list | Contact → Refresh Devices | Lists units (Name/IMEI/Phone/Status); deactivated units show a grey **Inactive** badge |
 | **T14** | Portal usage | Customer portal → My FIOS Services | Card on `/my/home`; usage table on `/my/fios-services` |
 | **T15** | Import | FIOS → Import Accounts → pick tier → Fetch → match → Import | Partner linked, state active, tier set |
+| **T15b** | Fix a wrong link | Import Accounts → Fetch → **Unlink** on a linked row → pick the right customer → Import | Old contact: FIOS fields cleared, Is FIOS User off, chatter note. New contact linked and active |
 | **T16** | Resume after failure | If a purchase provision failed, click **Provision / Resume** | Resumes (create_account handles "already exists"), completes to active |
 | **T17** | Keep-alive | Wait > 5 min idle, then any FIOS action | Session auto re-logs in (see Sessions / API Log) |
