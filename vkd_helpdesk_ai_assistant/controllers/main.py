@@ -1,6 +1,7 @@
 import json
 from markupsafe import Markup, escape
 from odoo import SUPERUSER_ID, http
+from odoo.exceptions import UserError
 from odoo.http import request, Response
 
 
@@ -24,7 +25,7 @@ class IrisIntegrationController(http.Controller):
 
     @http.route('/api/voice/ticket/create', type='http', auth='public', methods=['POST'], csrf=False)
     def create_ticket(self, **kwargs):
-        """Log a new query with Customer ID, Phone, or Email lookup."""
+        """Use Case 1: Log a new query with Customer ID, Phone, or Email lookup."""
         if not self._authenticate():
             return self._json_response({'error': 'Unauthorized'}, 401)
 
@@ -45,7 +46,7 @@ class IrisIntegrationController(http.Controller):
                 except (ValueError, TypeError):
                     pass
 
-            # 2. Fallback to Phone or Email lookup if Customer ID was not provided or not found
+            # 2. Fallback to Phone or Email lookup
             if not partner:
                 domain = []
                 if caller_phone:
@@ -86,7 +87,6 @@ class IrisIntegrationController(http.Controller):
                 'company_id': target_company.id if target_company else False,
             }
 
-            # Switch execution environment to SUPERUSER_ID and target company context
             ticket_env = request.env['helpdesk.ticket'].sudo().with_user(SUPERUSER_ID)
             if target_company:
                 ticket_env = ticket_env.with_company(target_company)
@@ -102,7 +102,7 @@ class IrisIntegrationController(http.Controller):
 
     @http.route('/api/voice/ticket/status', type='http', auth='public', methods=['POST'], csrf=False)
     def check_status(self, **kwargs):
-        """check ticket status using ticket_number."""
+        """Use Case 2: Check ticket status using ticket_number."""
         if not self._authenticate():
             return self._json_response({'error': 'Unauthorized'}, 401)
 
@@ -144,6 +144,7 @@ class IrisIntegrationController(http.Controller):
 
     @http.route('/api/voice/ticket/comment', type='http', auth='public', methods=['POST'], csrf=False)
     def add_comment(self, **kwargs):
+        """Use Case 3: Add a voice comment styled from Iris Voice AI."""
         if not self._authenticate():
             return self._json_response({'error': 'Unauthorized'}, 401)
 
@@ -189,7 +190,6 @@ class IrisIntegrationController(http.Controller):
 
             partner = False
 
-            # 1. Search by Odoo Customer ID
             if customer_id:
                 try:
                     p = request.env['res.partner'].sudo().browse(int(customer_id))
@@ -198,7 +198,6 @@ class IrisIntegrationController(http.Controller):
                 except (ValueError, TypeError):
                     pass
 
-            # 2. Search by Phone/Email if ID not supplied
             if not partner:
                 domain = []
                 if phone:
@@ -228,5 +227,69 @@ class IrisIntegrationController(http.Controller):
                 })
 
             return self._json_response({'status': 'success', 'found': False, 'message': 'Contact not found'})
+        except Exception as e:
+            return self._json_response({'error': str(e)}, 500)
+
+    @http.route('/api/voice/grace_period/grant', type='http', auth='public', methods=['POST'], csrf=False)
+    def grant_grace_period(self, **kwargs):
+        """Use Case 4: Grants a 7-day FIOS grace period via voice command."""
+        if not self._authenticate():
+            return self._json_response({'error': 'Unauthorized'}, 401)
+
+        try:
+            payload = json.loads(request.httprequest.data)
+            customer_id = payload.get('customer_id') or payload.get('partner_id')
+            phone = payload.get('caller_phone')
+            email = payload.get('caller_email')
+
+            partner = False
+
+            # 1. Lookup by Customer ID
+            if customer_id:
+                try:
+                    p = request.env['res.partner'].sudo().browse(int(customer_id))
+                    if p.exists():
+                        partner = p
+                except (ValueError, TypeError):
+                    pass
+
+            # 2. Search by Phone/Email
+            if not partner:
+                domain = []
+                if phone:
+                    domain.append(('phone', 'ilike', phone))
+                if email:
+                    domain.append(('email', '=ilike', email.strip()))
+
+                if len(domain) == 2:
+                    domain = ['|'] + domain
+
+                if domain:
+                    partner = request.env['res.partner'].sudo().search(domain, limit=1)
+
+            if not partner:
+                return self._json_response({'error': 'Customer not found'}, 404)
+
+            # 3. Call FIOS Grace Period Provisioning Logic
+            try:
+                days = request.env['fios.provisioning'].sudo().grant_grace_period(partner, source='portal')
+                expiry_date = partner.fios_grace_expiry.strftime('%Y-%m-%d') if partner.fios_grace_expiry else ''
+
+                return self._json_response({
+                    'status': 'success',
+                    'grace_granted': True,
+                    'days_granted': days,
+                    'expiry_date': expiry_date,
+                    'spoken_status': f"A {days}-day grace period has been granted. Your service access has been restored until {expiry_date}."
+                })
+            except UserError as ue:
+                # Returns clean human-readable reasons (e.g., account not blocked, grace already used)
+                return self._json_response({
+                    'status': 'error',
+                    'grace_granted': False,
+                    'spoken_status': str(ue),
+                    'error': str(ue)
+                }, 400)
+
         except Exception as e:
             return self._json_response({'error': str(e)}, 500)

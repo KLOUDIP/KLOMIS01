@@ -1,6 +1,6 @@
 {
     'name': "Helpdesk Voice Integration (Iris AI)",
-    'version': '19.0.1.0.8',
+    'version': '19.0.1.0.9',
     'category': 'Helpdesk',
     'summary': 'Custom REST endpoints for Iris Voice AI Helpdesk integration',
     'description': """
@@ -11,7 +11,7 @@
     """,
     'author': "VK Data ApS",
     'website': "https://vkdata.dk",
-    'depends': ['base', 'helpdesk', 'mail'],
+    'depends': ['base', 'helpdesk', 'mail', 'vkd_fios_api',],
     'data': [],
     'demo': [],
     'license': 'OPL-1',
