@@ -11,6 +11,7 @@
     'website': 'https://vkdata.dk/',
     'category': 'Hidden',
     'version': '19.0.1.0.6',
+    # 'version': '19.0.1.0.7',
     'license': 'OPL-1',
     'depends': ['base', 'product', 'sale', 'sale_subscription', 'account_accountant'],
     'data': [

@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 
 import json
-from odoo import http, _
+from urllib.parse import urlencode
+
+from odoo import fields, http, _
 from odoo.http import request
 from odoo.addons.sale_subscription.controllers.portal import CustomerPortal
-from odoo.exceptions import AccessError, MissingError, ValidationError
+from odoo.exceptions import AccessError, MissingError, UserError, ValidationError
 import werkzeug
 import logging
 
@@ -51,8 +53,73 @@ class SubscriptionPortal(CustomerPortal):
         values = {
             'page_name': 'trazet_services',
             'services': self._prepare_trazet_services(limits),
+            'grace_message': kw.get('grace_message'),
+            'grace_error': kw.get('grace_error'),
         }
+        values.update(self._trazet_grace_values(partner))
         return request.render('vkd_subscription_handling.portal_my_trazet_services', values)
+
+    @staticmethod
+    def _trazet_grace_values(partner):
+        """Grace-period state for the portal page.
+
+        Read through the same `_trazet_grace_state` the backend button uses, so
+        a grace granted by the billing team closes this page's button without a
+        second rule having to stay in agreement with the first.
+        """
+        if not partner.is_trazet_user:
+            return {'grace_eligible': False, 'grace_available': False, 'grace_used': False}
+        # sudo: a portal user has no read access to the subscription carrying
+        # the grace fields, but is entitled to know whether they can still ask.
+        state = request.env['sale.order'].sudo()._trazet_grace_state(partner)
+        expiry = state['expiry']
+        return {
+            'grace_eligible': state['eligible'],
+            'grace_available': state['available'],
+            'grace_days': state['days'],
+            'grace_used': state['locked'],
+            'grace_used_days': state['granted_days'],
+            'grace_used_on': state['granted_on'],
+            'grace_used_source': state['granted_source'],
+            'grace_expiry': expiry,
+            'grace_active': bool(expiry and expiry >= fields.Date.today()),
+        }
+
+    @staticmethod
+    def _trazet_services_redirect(**params):
+        return request.redirect('/my/services?%s' % urlencode(params))
+
+    @http.route(['/my/services/grace'], type='http', auth='user', website=True,
+                methods=['POST'], csrf=True)
+    def portal_trazet_grant_grace(self, **post):
+        """Self-service grace period.
+
+        Every rule lives in `sale.order.trazet_grant_partner_grace`, which the
+        backend button calls too, so replaying this POST cannot produce a second
+        grace period and neither can alternating between the two entry points.
+        """
+        partner = request.env.user.partner_id
+        SaleOrder = request.env['sale.order'].sudo()
+        if not SaleOrder._trazet_grace_portal_enabled():
+            return self._trazet_services_redirect(
+                grace_error=_("The grace period is not available online. "
+                              "Please contact support."))
+        try:
+            days = SaleOrder.trazet_grant_partner_grace(partner, source='portal')
+        except UserError as e:
+            _logger.info("Trazet portal: grace refused for partner %s: %s", partner.id, e)
+            return self._trazet_services_redirect(grace_error=str(e))
+        except Exception as e:
+            _logger.exception("Trazet portal: grace failed for partner %s: %s", partner.id, e)
+            return self._trazet_services_redirect(
+                grace_error=_("We could not activate your grace period right now. "
+                              "Please try again shortly."))
+
+        _logger.info("Trazet portal: %s-day grace period self-granted by partner %s",
+                     days, partner.id)
+        return self._trazet_services_redirect(
+            grace_message=_("Your %s-day grace period is active. Your service stays on "
+                            "while you arrange payment.") % days)
 
     @http.route(['/my/subscriptions/<int:order_id>/decrease'], type='http', auth="public")
     def subscription_portal_decrease(self, order_id, access_token=None, **kw):
