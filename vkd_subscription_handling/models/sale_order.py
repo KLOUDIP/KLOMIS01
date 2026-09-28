@@ -85,6 +85,14 @@ class SaleOrder(models.Model):
         if has_free_plan_products:
             return False
 
+        # The block only makes sense for a FIOS or Trazet subscription, where
+        # _add_optional_products() narrows the catalogue to that platform. For
+        # any other subscription (e.g. a backend "FiOS - Managed" contract with
+        # no fios_service set) the platform filter does nothing and every
+        # recurring saleable product - legacy ones included - was injected.
+        if not self._detect_subscription_platform():
+            return False
+
         return True
 
     def _sync_optional_products(self):

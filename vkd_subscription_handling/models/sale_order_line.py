@@ -9,6 +9,17 @@ _logger = logging.getLogger(__name__)
 class SaleOrderLine(models.Model):
     _inherit = 'sale.order.line'
 
+    @api.depends('parent_id.is_optional', 'parent_id.parent_id.is_optional', 'product_uom_qty')
+    def _compute_sale_line_warn_msg(self):
+        """Optional-product placeholders (qty 0 under an optional section) are
+        not products on the order, so their product warnings must not feed the
+        order's warning banner. Once the quantity is raised the warning returns."""
+        super()._compute_sale_line_warn_msg()
+        for line in self:
+            if (line.sale_line_warn_msg and not line.display_type
+                    and not line.product_uom_qty and line._is_line_optional()):
+                line.sale_line_warn_msg = ""
+
     def can_decrease_quantity(self):
         """Check if line quantity can be decreased"""
         self.ensure_one()

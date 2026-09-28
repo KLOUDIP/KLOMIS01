@@ -1,116 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- TRAZET tab on the contact form, laid out like the FIOS tab
-         (vkd_fios_api.view_partner_form_fios). "Is Trazet User?" moved here
-         from the Misc group so the flag and what it drives sit together. -->
     <record id="view_partner_form" model="ir.ui.view">
         <field name="name">res.partner.form.inherit.vkd_trazet_api</field>
         <field name="model">res.partner</field>
         <field name="inherit_id" ref="base.view_partner_form"/>
         <field name="arch" type="xml">
-            <notebook position="inside">
-                <page string="TRAZET" name="trazet">
-                    <header>
-                        <button name="action_trazet_sync_limits" type="object"
-                                string="Sync Limits" class="btn-primary"
-                                groups="sales_team.group_sale_salesman"
-                                invisible="not is_trazet_user or not trazet_user_id"
-                                confirm="Send this customer's current product limits to Trazet?"
-                                help="Recompute the product limits from all active subscriptions and PATCH them to Trazet (same call as on order confirmation)."/>
-                        <button name="action_trazet_sync_effective_date" type="object"
-                                string="Sync Access Date"
-                                groups="sales_team.group_sale_salesman"
-                                invisible="not is_trazet_user or not trazet_user_id or not trazet_effective_date"
-                                confirm="Send the access-valid-until date to Trazet?"
-                                help="Send the earliest next invoice date (+ grace period) to Trazet as the deactivation date (same call as the daily cron)."/>
-                        <button name="action_trazet_grant_grace" type="object"
-                                string="Grant Grace Period"
-                                class="btn-warning"
-                                groups="sales_team.group_sale_salesman"
-                                invisible="not trazet_grace_available"
-                                confirm="Grant this customer their grace period for the current billing cycle? It can only be used once per cycle, from here, the subscription or the customer portal."/>
-                        <button name="action_trazet_view_api_logs" type="object"
-                                string="API Logs" class="btn-secondary"
-                                groups="sales_team.group_sale_manager,base.group_system"
-                                invisible="not trazet_api_log_count"/>
-                        <field name="trazet_grace_available" invisible="1"/>
-                        <field name="trazet_api_log_count" invisible="1"/>
-                    </header>
-                    <group>
-                        <group string="Status">
-                            <field name="is_trazet_user"/>
-                            <field name="trazet_effective_date" invisible="not is_trazet_user"/>
-                            <field name="trazet_effective_subscription_id" invisible="not trazet_effective_subscription_id"/>
-                            <field name="trazet_effective_note" invisible="not is_trazet_user"/>
-                            <field name="trazet_last_sync" invisible="not is_trazet_user"/>
-                        </group>
-                        <group string="Trazet Account" invisible="not is_trazet_user">
-                            <field name="trazet_user_id" invisible="not trazet_user_id"/>
-                            <field name="trazet_login" invisible="not trazet_user_id"/>
-                            <field name="trazet_is_integrator" invisible="not trazet_user_id"/>
-                            <div colspan="2" class="text-warning" invisible="trazet_user_id">
-                                No portal user yet - nothing can be synced to Trazet until one exists.
-                            </div>
-                        </group>
-                    </group>
-                    <group string="Last Error" invisible="not is_trazet_user or not trazet_last_error">
-                        <field name="trazet_last_error" nolabel="1" readonly="1" colspan="2"/>
-                    </group>
-                    <group invisible="not is_trazet_user">
-                        <group string="Limits Sent to Trazet">
-                            <field name="trazet_limits_html" nolabel="1" readonly="1" colspan="2"/>
-                        </group>
-                        <group string="Grace Period">
-                            <field name="trazet_grace_days" string="Allowance (days)"/>
-                            <field name="trazet_grace_granted_on" invisible="not trazet_grace_granted_on"/>
-                            <field name="trazet_grace_source" invisible="not trazet_grace_granted_on"/>
-                            <field name="trazet_grace_days_granted" invisible="not trazet_grace_granted_on"/>
-                            <field name="trazet_grace_expiry" invisible="not trazet_grace_granted_on"/>
-                            <field name="trazet_grace_subscription_id" invisible="not trazet_grace_granted_on"/>
-                            <div colspan="2" class="text-muted"
-                                 invisible="trazet_grace_granted_on or trazet_grace_available">
-                                No eligible active Trazet subscription.
-                            </div>
-                            <div colspan="2" class="text-success"
-                                 invisible="trazet_grace_granted_on or not trazet_grace_available">
-                                Available for the current billing cycle.
-                            </div>
-                        </group>
-                    </group>
-                    <!-- Outside a <group> so the lists get the full page width. -->
-                    <separator string="Trazet Subscriptions" invisible="not trazet_subscription_ids"/>
-                    <field name="trazet_subscription_ids" nolabel="1" readonly="1"
-                           invisible="not trazet_subscription_ids">
-                        <list>
-                            <field name="name"/>
-                            <field name="plan_id"/>
-                            <field name="next_invoice_date"/>
-                            <field name="grace_period_days" optional="show"/>
-                            <field name="subscription_state" widget="badge"
-                                   decoration-success="subscription_state == '3_progress'"
-                                   decoration-warning="subscription_state == '4_paused'"/>
-                        </list>
-                    </field>
-                    <separator string="Recent API Calls"
-                               groups="sales_team.group_sale_manager,base.group_system"
-                               invisible="not trazet_api_log_ids"/>
-                    <field name="trazet_api_log_ids" nolabel="1" readonly="1"
-                           groups="sales_team.group_sale_manager,base.group_system"
-                           invisible="not trazet_api_log_ids">
-                        <list limit="10" decoration-success="state == 'success'"
-                              decoration-danger="state == 'failed'"
-                              decoration-warning="state == 'pending'">
-                            <field name="create_date" string="Date"/>
-                            <field name="api_endpoint"/>
-                            <field name="sale_order_id" optional="show"/>
-                            <field name="state" widget="badge"/>
-                            <field name="retry_count" optional="hide"/>
-                            <field name="response_status_code" optional="hide"/>
-                            <field name="last_error" optional="show"/>
-                        </list>
-                    </field>
-                </page>
-            </notebook>
+            <group name="misc" position="inside">
+                <field name="is_trazet_user" string="Is Trazet User?"/>
+            </group>
         </field>
     </record>
 </odoo>
