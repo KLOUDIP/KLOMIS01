@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="group_vkd_task_status_manager" model="res.groups">
+        <field name="name">Task Status Manager</field>
+        <field name="comment">Can change the Task Status (Ontime / Late / Priority) on project and Field Service tasks.</field>
+    </record>
+</odoo>
