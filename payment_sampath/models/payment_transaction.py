@@ -199,3 +199,39 @@ class PaymentTransaction(models.Model):
             _("Sampath Bank (Paycorp) payment response"), rows,
         )
         self._log_message_on_linked_documents(message)
+
+    def _sampath_log_post_process_result(self):
+        """ After post-processing a done Sampath tx, explain on the chatter why
+        a linked quotation was NOT confirmed or an invoice got no payment.
+        Odoo skips these cases silently, which is what hid the problem.
+        """
+        for tx in self.filtered(lambda t: t.state == 'done' and t.operation != 'validation'):
+            reasons = []
+            orders = tx.sale_order_ids if 'sale_order_ids' in tx._fields else self.env['payment.transaction']
+            for order in orders.filtered(lambda so: so.state in ('draft', 'sent')):
+                if len(orders) != 1:
+                    why = _("the transaction is linked to %s orders (Odoo only auto-confirms one)", len(orders))
+                elif order._has_to_be_signed():
+                    why = _("the quotation requires an online signature")
+                elif not order._is_confirmation_amount_reached():
+                    why = _(
+                        "paid %(paid)s is below the amount required to confirm (%(req)s); "
+                        "order total is now %(total)s",
+                        paid=order.amount_paid,
+                        req=order._get_prepayment_required_amount(),
+                        total=order.amount_total,
+                    )
+                else:
+                    why = _("reason unknown - check the server log")
+                reasons.append(_("%(so)s not confirmed: %(why)s", so=order.name, why=why))
+            if 'invoice_ids' in tx._fields and tx.invoice_ids and not tx.payment_id:
+                reasons.append(_("no payment was created for invoice(s) %s",
+                                 ", ".join(tx.invoice_ids.mapped('name'))))
+            if reasons:
+                _logger.warning("Sampath: %s post-processed with issues: %s", tx.reference, reasons)
+                tx._log_message_on_linked_documents(
+                    Markup('<p>%s</p><ul>%s</ul>') % (
+                        _("Sampath Bank: payment %s received, but:", tx.reference),
+                        Markup('').join(Markup('<li>%s</li>') % r for r in reasons),
+                    )
+                )

@@ -4,7 +4,7 @@ import pprint
 import uuid
 from datetime import datetime
 
-from odoo import http
+from odoo import _, http
 from odoo.http import request
 
 _logger = logging.getLogger(__name__)
@@ -33,6 +33,32 @@ class SampathController(http.Controller):
             },
         }
         return provider._sampath_make_request(values)
+
+    def _sampath_post_process(self, tx):
+        """ Run Odoo's post-processing for `tx` and surface any failure.
+
+        Same call `/payment/status/poll` makes, but executed in the tx's own
+        company (KLOUDIP INC / KLOUDIP (Pvt) Ltd) and with the error written
+        to the order / invoice chatter instead of only the server log.
+        """
+        if not tx or tx.is_post_processed:
+            return
+        try:
+            tx.with_company(tx.company_id)._post_process()
+            request.env.cr.commit()
+        except Exception as e:  # noqa: BLE001
+            _logger.exception("Sampath: post-processing failed for %s", tx.reference)
+            request.env.cr.rollback()
+            tx = tx.browse(tx.id)
+            tx._log_message_on_linked_documents(_(
+                "Sampath Bank: payment %(ref)s is confirmed but post-processing failed, "
+                "so the order was not confirmed / the payment was not reconciled. "
+                "Error: %(err)s",
+                ref=tx.reference, err=e,
+            ))
+            request.env.cr.commit()
+            return
+        tx._sampath_log_post_process_result()
 
     @http.route(_return_url, type='http', auth='public', methods=['POST', 'GET'],
                 csrf=False, save_session=False)
@@ -64,9 +90,17 @@ class SampathController(http.Controller):
                 "Sampath Bank: PAYMENT_COMPLETE failed for %s: %s" % (tx.reference, e)
             )
 
-        # Make sure the order gets confirmed and the payment gets created even
-        # if the /payment/status poll never runs (session lost on the way back
-        # from the bank, shopper closes the tab, ...).
+        # Persist the gateway result (tx -> done/error) BEFORE post-processing,
+        # so a failure further down can never roll the paid state back.
+        request.env.cr.commit()
+
+        # Post-process right here instead of relying only on the
+        # /payment/status poll (needs the shopper's session) or the cron.
+        # This is the step that confirms the SO and creates + reconciles the
+        # account.payment (invoice -> In Payment).
+        self._sampath_post_process(Transaction.browse(tx.id))
+
+        # Fallback: if post-processing failed above, the cron retries it.
         cron = request.env.ref('payment.cron_post_process_payment_tx', raise_if_not_found=False)
         if cron:
             cron.sudo()._trigger()
