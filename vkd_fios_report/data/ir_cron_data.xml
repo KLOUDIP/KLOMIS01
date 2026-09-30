@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Nightly read of status and devices for every active FIOS account, so the
+        FIOS Accounts / FIOS Units reports are at most a day old. Read-only
+        towards FIOS: nothing is pushed.
+
+        noupdate: once installed, the schedule and the active flag belong to the
+        administrator (Settings > Technical > Scheduled Actions).
+        First run: 19:00 UTC, i.e. 00:30 in Colombo.
+    -->
+    <data noupdate="1">
+        <record id="ir_cron_fios_report_refresh" model="ir.cron">
+            <field name="name">FIOS Report: Refresh Account Status and Devices</field>
+            <field name="model_id" ref="model_vkd_fios_account_report"/>
+            <field name="state">code</field>
+            <field name="code">model._cron_refresh_fios_accounts()</field>
+            <field name="interval_number">1</field>
+            <field name="interval_type">days</field>
+            <field name="nextcall" eval="(DateTime.now() + timedelta(days=1)).strftime('%Y-%m-%d 19:00:00')"/>
+            <field name="active">True</field>
+        </record>
+    </data>
+</odoo>

@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- vkd_fios_api only shows devices inside the contact form; these views
+         give them a list of their own, grouped by contact. -->
+    <record id="view_vkd_fios_unit_list" model="ir.ui.view">
+        <field name="name">fios.device.report.list</field>
+        <field name="model">fios.device</field>
+        <field name="priority">50</field>
+        <field name="arch" type="xml">
+            <list string="FIOS Units" create="0" edit="0" delete="0"
+                  decoration-muted="not device_active">
+                <field name="partner_id"/>
+                <field name="name" string="Device / Plate"/>
+                <!-- Technical identifiers: Tech Team (and admins) only, as on
+                     the contact FIOS tab. -->
+                <field name="imei" class="text-nowrap"
+                       groups="vkd_fios_api.group_fios_tech_team"/>
+                <field name="phone" class="text-nowrap"
+                       groups="vkd_fios_api.group_fios_tech_team"/>
+                <field name="device_status" widget="badge"
+                       decoration-success="device_status == 'activated'"
+                       decoration-muted="device_status == 'deactivated'"/>
+                <field name="device_active" column_invisible="1"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_vkd_fios_unit_pivot" model="ir.ui.view">
+        <field name="name">fios.device.report.pivot</field>
+        <field name="model">fios.device</field>
+        <field name="priority">50</field>
+        <field name="arch" type="xml">
+            <pivot string="FIOS Units">
+                <field name="partner_id" type="row"/>
+                <field name="device_status" type="col"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="view_vkd_fios_unit_search" model="ir.ui.view">
+        <field name="name">fios.device.report.search</field>
+        <field name="model">fios.device</field>
+        <field name="priority">50</field>
+        <field name="arch" type="xml">
+            <search string="FIOS Units">
+                <field name="partner_id"/>
+                <field name="name" string="Device / Plate"/>
+                <field name="imei" groups="vkd_fios_api.group_fios_tech_team"/>
+                <filter name="activated" string="Activated"
+                        domain="[('device_active', '=', True)]"/>
+                <filter name="inactive" string="Inactive"
+                        domain="[('device_active', '=', False)]"/>
+                <separator/>
+                <filter name="account_active" string="Account Active"
+                        domain="[('partner_id.fios_account_status', '=', 'active')]"/>
+                <filter name="account_blocked" string="Account Blocked"
+                        domain="[('partner_id.fios_account_status', '=', 'blocked')]"/>
+                <group>
+                    <filter name="group_partner" string="Contact"
+                            context="{'group_by': 'partner_id'}"/>
+                    <filter name="group_status" string="Status"
+                            context="{'group_by': 'device_status'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Same "synced contacts only" rule as the FIOS Accounts report. -->
+    <record id="action_vkd_fios_units" model="ir.actions.act_window">
+        <field name="name">FIOS Units</field>
+        <field name="res_model">fios.device</field>
+        <field name="view_mode">list,pivot</field>
+        <field name="domain">[
+            ('partner_id.active', '=', True),
+            ('partner_id.fios_provision_state', '=', 'active'),
+            ('partner_id.fios_account_item_id', '!=', False),
+            ('partner_id.fios_status_synced', '!=', False),
+            ('partner_id.fios_account_status', 'in', ['active', 'blocked']),
+        ]</field>
+        <field name="context">{'search_default_group_partner': 1, 'search_default_group_status': 1}</field>
+        <field name="search_view_id" ref="view_vkd_fios_unit_search"/>
+        <field name="view_ids" eval="[(5, 0, 0),
+            (0, 0, {'view_mode': 'list', 'view_id': ref('view_vkd_fios_unit_list')}),
+            (0, 0, {'view_mode': 'pivot', 'view_id': ref('view_vkd_fios_unit_pivot')})]"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No FIOS units</p>
+            <p>Units are loaded with Refresh Devices on the contact or by the nightly
+                scheduled action.</p>
+        </field>
+    </record>
+</odoo>

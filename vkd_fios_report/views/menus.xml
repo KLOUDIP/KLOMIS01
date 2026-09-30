@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_fios_reporting" name="Reporting"
+              parent="vkd_fios_api.menu_fios_root" sequence="50"
+              groups="vkd_fios_api.group_fios_user"/>
+
+    <menuitem id="menu_fios_account_report" name="FIOS Accounts"
+              parent="menu_fios_reporting" action="action_vkd_fios_account_report"
+              sequence="10" groups="vkd_fios_api.group_fios_user"/>
+
+    <menuitem id="menu_fios_units_report" name="FIOS Units"
+              parent="menu_fios_reporting" action="action_vkd_fios_units"
+              sequence="20" groups="vkd_fios_api.group_fios_user"/>
+</odoo>

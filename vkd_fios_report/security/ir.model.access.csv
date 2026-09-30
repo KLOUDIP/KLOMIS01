@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_vkd_fios_account_report_billing,vkd.fios.account.report.billing,model_vkd_fios_account_report,vkd_fios_api.group_fios_user,1,0,0,0
+access_vkd_fios_account_report_tech,vkd.fios.account.report.tech,model_vkd_fios_account_report,vkd_fios_api.group_fios_tech_team,1,0,0,0

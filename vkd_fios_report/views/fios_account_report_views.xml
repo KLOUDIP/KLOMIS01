@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_vkd_fios_account_report_list" model="ir.ui.view">
+        <field name="name">vkd.fios.account.report.list</field>
+        <field name="model">vkd.fios.account.report</field>
+        <field name="arch" type="xml">
+            <list string="FIOS Accounts" create="0" edit="0" delete="0"
+                  decoration-danger="account_status == 'blocked'"
+                  decoration-warning="account_status == 'active' and days_left &lt;= 3">
+                <header>
+                    <button name="action_refresh_from_fios" type="object"
+                            string="Refresh from FIOS"
+                            groups="vkd_fios_api.group_fios_user"/>
+                </header>
+                <field name="partner_id"/>
+                <field name="tier_id" optional="hide"/>
+                <field name="current_plan" optional="hide"/>
+                <field name="account_status" widget="badge"
+                       decoration-success="account_status == 'active'"
+                       decoration-danger="account_status == 'blocked'"/>
+                <field name="active_unit_count" sum="Active Units"/>
+                <field name="inactive_unit_count" sum="Inactive Units"/>
+                <field name="unit_count" sum="Total Units" optional="hide"/>
+                <field name="days_left"/>
+                <field name="block_date"/>
+                <field name="next_due_date" optional="show"/>
+                <field name="days_left_source" optional="hide"/>
+                <field name="days_counter" optional="hide"/>
+                <field name="grace_status" widget="badge"
+                       decoration-warning="grace_status == 'in_use'"/>
+                <field name="grace_expiry" optional="show"/>
+                <field name="grace_granted_on" optional="hide"/>
+                <field name="grace_source" optional="hide"/>
+                <field name="grace_granted_by" optional="hide"/>
+                <field name="counter_synced" optional="hide"/>
+                <field name="status_synced" optional="show"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_vkd_fios_account_report_form" model="ir.ui.view">
+        <field name="name">vkd.fios.account.report.form</field>
+        <field name="model">vkd.fios.account.report</field>
+        <field name="arch" type="xml">
+            <form string="FIOS Account" create="0" edit="0" delete="0">
+                <header>
+                    <button name="action_open_partner" type="object"
+                            string="Open Contact" class="btn-primary"/>
+                    <button name="action_refresh_from_fios" type="object"
+                            string="Refresh from FIOS"
+                            groups="vkd_fios_api.group_fios_user"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="partner_id"/></h1>
+                    </div>
+                    <group>
+                        <group string="Account">
+                            <field name="account_status" widget="badge"
+                                   decoration-success="account_status == 'active'"
+                                   decoration-danger="account_status == 'blocked'"/>
+                            <field name="tier_id"/>
+                            <field name="current_plan"/>
+                            <field name="status_synced"/>
+                        </group>
+                        <group string="Units">
+                            <field name="active_unit_count"/>
+                            <field name="inactive_unit_count"/>
+                            <field name="unit_count"/>
+                        </group>
+                        <group string="Days Left">
+                            <field name="days_left"/>
+                            <field name="block_date"/>
+                            <field name="days_counter"/>
+                            <field name="counter_synced"/>
+                            <field name="next_due_date"/>
+                            <field name="days_left_source"/>
+                        </group>
+                        <group string="7-Day Grace Period">
+                            <field name="grace_status"/>
+                            <field name="grace_expiry"/>
+                            <field name="grace_granted_on"/>
+                            <field name="grace_source"/>
+                            <field name="grace_granted_by"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_vkd_fios_account_report_pivot" model="ir.ui.view">
+        <field name="name">vkd.fios.account.report.pivot</field>
+        <field name="model">vkd.fios.account.report</field>
+        <field name="arch" type="xml">
+            <pivot string="FIOS Accounts" sample="1">
+                <field name="partner_id" type="row"/>
+                <field name="account_status" type="col"/>
+                <field name="active_unit_count" type="measure"/>
+                <field name="inactive_unit_count" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="view_vkd_fios_account_report_search" model="ir.ui.view">
+        <field name="name">vkd.fios.account.report.search</field>
+        <field name="model">vkd.fios.account.report</field>
+        <field name="arch" type="xml">
+            <search string="FIOS Accounts">
+                <field name="partner_id"/>
+                <field name="tier_id"/>
+                <filter name="active_accounts" string="Active"
+                        domain="[('account_status', '=', 'active')]"/>
+                <filter name="blocked_accounts" string="Blocked"
+                        domain="[('account_status', '=', 'blocked')]"/>
+                <separator/>
+                <filter name="blocking_soon" string="Blocks Within 3 Days"
+                        domain="[('account_status', '=', 'active'), ('days_left', '&lt;=', 3)]"/>
+                <filter name="blocking_week" string="Blocks Within 7 Days"
+                        domain="[('account_status', '=', 'active'), ('days_left', '&lt;=', 7)]"/>
+                <separator/>
+                <filter name="grace_in_use" string="Grace In Use"
+                        domain="[('grace_status', '=', 'in_use')]"/>
+                <filter name="grace_not_in_use" string="Grace Not In Use"
+                        domain="[('grace_status', '=', 'not_in_use')]"/>
+                <separator/>
+                <filter name="has_inactive_units" string="Has Inactive Units"
+                        domain="[('inactive_unit_count', '&gt;', 0)]"/>
+                <filter name="no_units" string="No Units"
+                        domain="[('unit_count', '=', 0)]"/>
+                <group>
+                    <filter name="group_status" string="Status"
+                            context="{'group_by': 'account_status'}"/>
+                    <filter name="group_grace" string="Grace Period"
+                            context="{'group_by': 'grace_status'}"/>
+                    <filter name="group_tier" string="Service Tier"
+                            context="{'group_by': 'tier_id'}"/>
+                    <filter name="group_block_date" string="Blocks On"
+                            context="{'group_by': 'block_date:day'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_vkd_fios_account_report" model="ir.actions.act_window">
+        <field name="name">FIOS Accounts</field>
+        <field name="res_model">vkd.fios.account.report</field>
+        <field name="view_mode">list,pivot,form</field>
+        <field name="search_view_id" ref="view_vkd_fios_account_report_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No synced FIOS accounts yet</p>
+            <p>
+                A contact appears here once its FIOS status has been read, either with
+                Refresh FIOS Status on the contact or by the nightly scheduled action.
+            </p>
+        </field>
+    </record>
+</odoo>
