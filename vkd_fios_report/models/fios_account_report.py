@@ -198,9 +198,16 @@ class VkdFiosAccountReport(models.Model):
         }
 
     def action_refresh_from_fios(self):
-        """Re-read status and devices from FIOS for the selected lines."""
-        if not self.env.user.has_group('vkd_fios_api.group_fios_user'):
-            raise UserError(_("Only the FIOS billing team can refresh FIOS accounts."))
+        """Re-read status and devices from FIOS for the selected lines.
+
+        Open to every FIOS role (Billing Team, Tech Team, Administrator): it only
+        reads from FIOS, so it cannot change a customer's access.
+        """
+        user = self.env.user
+        if not (user.has_group('vkd_fios_api.group_fios_user')
+                or user.has_group('vkd_fios_api.group_fios_tech_team')):
+            raise UserError(_("Only FIOS users (Billing Team, Tech Team or Administrator) "
+                              "can refresh FIOS accounts."))
         if len(self) > MANUAL_REFRESH_LIMIT:
             raise UserError(_(
                 "Select at most %(limit)s lines to refresh at once (%(count)s selected). "

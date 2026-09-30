@@ -10,7 +10,7 @@
                 <header>
                     <button name="action_refresh_from_fios" type="object"
                             string="Refresh from FIOS"
-                            groups="vkd_fios_api.group_fios_user"/>
+                            groups="vkd_fios_api.group_fios_user,vkd_fios_api.group_fios_tech_team"/>
                 </header>
                 <field name="partner_id"/>
                 <field name="tier_id" optional="hide"/>
@@ -48,7 +48,7 @@
                             string="Open Contact" class="btn-primary"/>
                     <button name="action_refresh_from_fios" type="object"
                             string="Refresh from FIOS"
-                            groups="vkd_fios_api.group_fios_user"/>
+                            groups="vkd_fios_api.group_fios_user,vkd_fios_api.group_fios_tech_team"/>
                 </header>
                 <sheet>
                     <div class="oe_title">
