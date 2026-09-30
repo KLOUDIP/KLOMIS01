@@ -1,22 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <!--
-        Reporting is open to all three FIOS roles: Billing Team, Tech Team and
-        Administrator (Administrator implies the other two, so listing Billing
-        Team and Tech Team covers it).
+        The FIOS reports live in the Contacts app: Contacts > FIOS Reporting >
+        FIOS Accounts / FIOS Units. They are open to all three FIOS roles:
+        Billing Team, Tech Team and Administrator (Administrator implies the
+        other two, so listing Billing Team and Tech Team covers it). Users
+        without a FIOS role do not see the menu.
 
-        vkd_fios_api shows the FIOS root menu to the Billing Team only. The Tech
-        Team is added to it here so they can reach Reporting; every other FIOS
-        menu keeps its own groups, so they still see nothing else in the app.
-        menuitem `groups` are written with Command.link, so an upgrade of
-        vkd_fios_api adds its group back without removing this one.
+        The FIOS app itself (Import Accounts, Service Tiers, API Log, Sessions)
+        is left exactly as vkd_fios_api defines it.
     -->
-    <record id="vkd_fios_api.menu_fios_root" model="ir.ui.menu">
-        <field name="group_ids" eval="[(4, ref('vkd_fios_api.group_fios_tech_team'))]"/>
-    </record>
-
-    <menuitem id="menu_fios_reporting" name="Reporting"
-              parent="vkd_fios_api.menu_fios_root" sequence="50"
+    <menuitem id="menu_fios_reporting" name="FIOS Reporting"
+              parent="contacts.menu_contacts" sequence="30"
               groups="vkd_fios_api.group_fios_user,vkd_fios_api.group_fios_tech_team"/>
 
     <menuitem id="menu_fios_account_report" name="FIOS Accounts"
@@ -28,4 +23,16 @@
               parent="menu_fios_reporting" action="action_vkd_fios_units"
               sequence="20"
               groups="vkd_fios_api.group_fios_user,vkd_fios_api.group_fios_tech_team"/>
+
+    <!--
+        An earlier version of this module added the Tech Team to the FIOS app
+        menu so they could reach the reports there. The reports have moved to
+        Contacts, so that link is removed again and the FIOS app goes back to
+        vkd_fios_api's own access (Billing Team and Administrator only).
+        Unlinking a group that is not linked is a no-op, so this is safe on a
+        fresh install too.
+    -->
+    <record id="vkd_fios_api.menu_fios_root" model="ir.ui.menu">
+        <field name="group_ids" eval="[(3, ref('vkd_fios_api.group_fios_tech_team'))]"/>
+    </record>
 </odoo>

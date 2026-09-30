@@ -3,7 +3,7 @@
     'name': "FIOS Account Report",
     'summary': "Billing report of synced FIOS accounts: status, days left, units and grace period",
     'description': """
-        Reporting on top of vkd_fios_api (FIOS > Reporting):
+        Reporting on top of vkd_fios_api (Contacts > FIOS Reporting):
 
         - FIOS Accounts: one line per synced FIOS contact with account status
           (Active / Blocked), days left and estimated block date, active /
@@ -20,7 +20,7 @@
     'category': 'Hidden',
     'version': '19.0.1.0.0',
     'license': 'OPL-1',
-    'depends': ['vkd_fios_api'],
+    'depends': ['contacts', 'vkd_fios_api'],
     'data': [
         'security/ir.model.access.csv',
         'data/ir_cron_data.xml',
