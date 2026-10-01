@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        The FIOS reports live in the Contacts app: Contacts > FIOS Reporting >
+        FIOS Accounts / FIOS Units.
+
+        Access:
+          Billing Team  - both reports, without the device IMEI / phone columns.
+          Administrator - both reports in full (implies Billing Team, so the
+                          menus need only list that group).
+          Tech Team     - no access: no menu, no model access, no refresh.
+        Users without a FIOS role do not see the menu either.
+
+        "-vkd_fios_api.group_fios_tech_team" removes the Tech Team that an
+        earlier version linked to these menus: menuitem groups are only ever
+        added on upgrade, so dropping the group from the list is not enough.
+
+        The FIOS app itself (Import Accounts, Service Tiers, API Log, Sessions)
+        is left exactly as vkd_fios_api defines it.
+    -->
+    <menuitem id="menu_fios_reporting" name="FIOS Reporting"
+              parent="contacts.menu_contacts" sequence="30"
+              groups="vkd_fios_api.group_fios_user,-vkd_fios_api.group_fios_tech_team"/>
+
+    <menuitem id="menu_fios_account_report" name="FIOS Accounts"
+              parent="menu_fios_reporting" action="action_vkd_fios_account_report"
+              sequence="10"
+              groups="vkd_fios_api.group_fios_user,-vkd_fios_api.group_fios_tech_team"/>
+
+    <menuitem id="menu_fios_units_report" name="FIOS Units"
+              parent="menu_fios_reporting" action="action_vkd_fios_units"
+              sequence="20"
+              groups="vkd_fios_api.group_fios_user,-vkd_fios_api.group_fios_tech_team"/>
+
+    <!--
+        An earlier version of this module added the Tech Team to the FIOS app
+        menu so they could reach the reports there. The reports have moved to
+        Contacts, so that link is removed again and the FIOS app goes back to
+        vkd_fios_api's own access (Billing Team and Administrator only).
+        Unlinking a group that is not linked is a no-op, so this is safe on a
+        fresh install too.
+    -->
+    <record id="vkd_fios_api.menu_fios_root" model="ir.ui.menu">
+        <field name="group_ids" eval="[(3, ref('vkd_fios_api.group_fios_tech_team'))]"/>
+    </record>
+</odoo>

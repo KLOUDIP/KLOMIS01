@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        FIOS Units report (vkd.fios.unit.report): devices of synced FIOS
+        contacts, grouped by contact. Billing Team and Administrator only (model
+        access); the IMEI / phone columns are for Administrators only (field
+        groups on the model, so they are also kept out of Export and filters).
+    -->
+    <record id="view_vkd_fios_unit_report_list" model="ir.ui.view">
+        <field name="name">vkd.fios.unit.report.list</field>
+        <field name="model">vkd.fios.unit.report</field>
+        <field name="arch" type="xml">
+            <list string="FIOS Units" create="0" edit="0" delete="0"
+                  decoration-muted="not device_active">
+                <field name="partner_id"/>
+                <field name="name"/>
+                <field name="imei" class="text-nowrap"/>
+                <field name="phone" class="text-nowrap"/>
+                <field name="device_status" widget="badge"
+                       decoration-success="device_status == 'activated'"
+                       decoration-muted="device_status == 'deactivated'"/>
+                <field name="account_status" optional="hide"/>
+                <field name="device_active" column_invisible="1"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_vkd_fios_unit_report_pivot" model="ir.ui.view">
+        <field name="name">vkd.fios.unit.report.pivot</field>
+        <field name="model">vkd.fios.unit.report</field>
+        <field name="arch" type="xml">
+            <pivot string="FIOS Units">
+                <field name="partner_id" type="row"/>
+                <field name="device_status" type="col"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="view_vkd_fios_unit_report_search" model="ir.ui.view">
+        <field name="name">vkd.fios.unit.report.search</field>
+        <field name="model">vkd.fios.unit.report</field>
+        <field name="arch" type="xml">
+            <search string="FIOS Units">
+                <field name="partner_id"/>
+                <field name="name"/>
+                <field name="imei"/>
+                <filter name="activated" string="Activated"
+                        domain="[('device_active', '=', True)]"/>
+                <filter name="inactive" string="Inactive"
+                        domain="[('device_active', '=', False)]"/>
+                <separator/>
+                <filter name="account_active" string="Account Active"
+                        domain="[('account_status', '=', 'active')]"/>
+                <filter name="account_blocked" string="Account Blocked"
+                        domain="[('account_status', '=', 'blocked')]"/>
+                <group>
+                    <filter name="group_partner" string="Contact"
+                            context="{'group_by': 'partner_id'}"/>
+                    <filter name="group_status" string="Status"
+                            context="{'group_by': 'device_status'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_vkd_fios_units" model="ir.actions.act_window">
+        <field name="name">FIOS Units</field>
+        <field name="res_model">vkd.fios.unit.report</field>
+        <field name="view_mode">list,pivot</field>
+        <field name="domain">[]</field>
+        <field name="context">{'search_default_group_partner': 1, 'search_default_group_status': 1}</field>
+        <field name="search_view_id" ref="view_vkd_fios_unit_report_search"/>
+        <field name="view_ids" eval="[(5, 0, 0),
+            (0, 0, {'view_mode': 'list', 'view_id': ref('view_vkd_fios_unit_report_list')}),
+            (0, 0, {'view_mode': 'pivot', 'view_id': ref('view_vkd_fios_unit_report_pivot')})]"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No FIOS units</p>
+            <p>Units are loaded with Refresh Devices on the contact or by the nightly
+                scheduled action.</p>
+        </field>
+    </record>
+</odoo>
