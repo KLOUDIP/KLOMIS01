@@ -25,7 +25,7 @@
         'security/ir.model.access.csv',
         'data/ir_cron_data.xml',
         'views/fios_account_report_views.xml',
-        'views/fios_device_views.xml',
+        'views/fios_unit_report_views.xml',
         'views/menus.xml',
     ],
     'installable': True,
