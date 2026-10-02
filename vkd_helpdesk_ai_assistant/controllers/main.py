@@ -1,6 +1,7 @@
 import json
 from markupsafe import Markup, escape
 from odoo import SUPERUSER_ID, http
+from odoo.exceptions import UserError
 from odoo.http import request, Response
 
 
@@ -24,25 +25,41 @@ class IrisIntegrationController(http.Controller):
 
     @http.route('/api/voice/ticket/create', type='http', auth='public', methods=['POST'], csrf=False)
     def create_ticket(self, **kwargs):
-        """Use Case 1: Log a new query with flexible Phone or Email lookup."""
+        """Use Case 1: Log a new query with Customer ID, Phone, or Email lookup."""
         if not self._authenticate():
             return self._json_response({'error': 'Unauthorized'}, 401)
 
         try:
             payload = json.loads(request.httprequest.data)
+            customer_id = payload.get('customer_id') or payload.get('partner_id')
             caller_phone = payload.get('caller_phone')
             caller_email = payload.get('caller_email')
 
-            domain = []
-            if caller_phone:
-                domain.append(('phone', 'ilike', caller_phone))
-            if caller_email:
-                domain.append(('email', '=ilike', caller_email.strip()))
+            partner = False
 
-            if len(domain) == 2:
-                domain = ['|'] + domain
+            # 1. Direct Lookup by Odoo Customer ID
+            if customer_id:
+                try:
+                    p = request.env['res.partner'].sudo().browse(int(customer_id))
+                    if p.exists():
+                        partner = p
+                except (ValueError, TypeError):
+                    pass
 
-            partner = request.env['res.partner'].sudo().search(domain, limit=1) if domain else False
+            # 2. Fallback to Phone or Email lookup
+            if not partner:
+                domain = []
+                if caller_phone:
+                    domain.append(('phone', 'ilike', caller_phone))
+                if caller_email:
+                    domain.append(('email', '=ilike', caller_email.strip()))
+
+                if len(domain) == 2:
+                    domain = ['|'] + domain
+
+                if domain:
+                    partner = request.env['res.partner'].sudo().search(domain, limit=1)
+
             partner_id = partner.id if partner else False
 
             # Explicitly fetch target company 'KLOUDIP (Pvt) Ltd'
@@ -57,7 +74,6 @@ class IrisIntegrationController(http.Controller):
 
             team = request.env['helpdesk.team'].sudo().search(team_domain, limit=1)
 
-            # Fallback: Search for any 'Support' team if company-specific record is missing
             if not team:
                 team = request.env['helpdesk.team'].sudo().search([('name', '=', 'Support')], limit=1)
 
@@ -71,8 +87,6 @@ class IrisIntegrationController(http.Controller):
                 'company_id': target_company.id if target_company else False,
             }
 
-            # Switch execution environment to SUPERUSER_ID and target company context
-            # This fixes email auto-responder attribution from "Public User for KLOUDIP INC"
             ticket_env = request.env['helpdesk.ticket'].sudo().with_user(SUPERUSER_ID)
             if target_company:
                 ticket_env = ticket_env.with_company(target_company)
@@ -106,7 +120,6 @@ class IrisIntegrationController(http.Controller):
 
             stage_name = ticket.stage_id.name or 'New'
 
-            # Security Rule: Hide finance/payment hold stages
             if 'Payment Hold' in stage_name or 'Finance' in stage_name:
                 return self._json_response({
                     'status': 'success',
@@ -150,7 +163,6 @@ class IrisIntegrationController(http.Controller):
 
             iris_partner = self._get_iris_partner()
 
-            # Wrap in Markup so Odoo renders rich HTML in Chatter while escaping raw user text safely
             formatted_body = Markup("<p><strong>Voice Call Note:</strong></p><p>%s</p>") % escape(comment_text)
 
             ticket.sudo().message_post(
@@ -166,28 +178,41 @@ class IrisIntegrationController(http.Controller):
 
     @http.route('/api/voice/contact/search', type='http', auth='public', methods=['POST'], csrf=False)
     def search_contact(self, **kwargs):
-        """Verifies if a caller exists by phone or email."""
+        """Verifies if a caller exists by Customer ID, Phone, or Email."""
         if not self._authenticate():
             return self._json_response({'error': 'Unauthorized'}, 401)
 
         try:
             payload = json.loads(request.httprequest.data)
+            customer_id = payload.get('customer_id') or payload.get('partner_id')
             phone = payload.get('caller_phone')
             email = payload.get('caller_email')
 
-            domain = []
-            if phone:
-                domain.append(('phone', 'ilike', phone))
-            if email:
-                domain.append(('email', '=ilike', email.strip()))
+            partner = False
 
-            if len(domain) == 2:
-                domain = ['|'] + domain
+            if customer_id:
+                try:
+                    p = request.env['res.partner'].sudo().browse(int(customer_id))
+                    if p.exists():
+                        partner = p
+                except (ValueError, TypeError):
+                    pass
 
-            if not domain:
-                return self._json_response({'error': 'Provide caller_phone or caller_email'}, 400)
+            if not partner:
+                domain = []
+                if phone:
+                    domain.append(('phone', 'ilike', phone))
+                if email:
+                    domain.append(('email', '=ilike', email.strip()))
 
-            partner = request.env['res.partner'].sudo().search(domain, limit=1)
+                if len(domain) == 2:
+                    domain = ['|'] + domain
+
+                if domain:
+                    partner = request.env['res.partner'].sudo().search(domain, limit=1)
+
+            if not customer_id and not phone and not email:
+                return self._json_response({'error': 'Provide customer_id, caller_phone, or caller_email'}, 400)
 
             if partner:
                 return self._json_response({
@@ -202,5 +227,69 @@ class IrisIntegrationController(http.Controller):
                 })
 
             return self._json_response({'status': 'success', 'found': False, 'message': 'Contact not found'})
+        except Exception as e:
+            return self._json_response({'error': str(e)}, 500)
+
+    @http.route('/api/voice/grace_period/grant', type='http', auth='public', methods=['POST'], csrf=False)
+    def grant_grace_period(self, **kwargs):
+        """Use Case 4: Grants a 7-day FIOS grace period via voice command."""
+        if not self._authenticate():
+            return self._json_response({'error': 'Unauthorized'}, 401)
+
+        try:
+            payload = json.loads(request.httprequest.data)
+            customer_id = payload.get('customer_id') or payload.get('partner_id')
+            phone = payload.get('caller_phone')
+            email = payload.get('caller_email')
+
+            partner = False
+
+            # 1. Lookup by Customer ID
+            if customer_id:
+                try:
+                    p = request.env['res.partner'].sudo().browse(int(customer_id))
+                    if p.exists():
+                        partner = p
+                except (ValueError, TypeError):
+                    pass
+
+            # 2. Search by Phone/Email
+            if not partner:
+                domain = []
+                if phone:
+                    domain.append(('phone', 'ilike', phone))
+                if email:
+                    domain.append(('email', '=ilike', email.strip()))
+
+                if len(domain) == 2:
+                    domain = ['|'] + domain
+
+                if domain:
+                    partner = request.env['res.partner'].sudo().search(domain, limit=1)
+
+            if not partner:
+                return self._json_response({'error': 'Customer not found'}, 404)
+
+            # 3. Call FIOS Grace Period Provisioning Logic
+            try:
+                days = request.env['fios.provisioning'].sudo().grant_grace_period(partner, source='portal')
+                expiry_date = partner.fios_grace_expiry.strftime('%Y-%m-%d') if partner.fios_grace_expiry else ''
+
+                return self._json_response({
+                    'status': 'success',
+                    'grace_granted': True,
+                    'days_granted': days,
+                    'expiry_date': expiry_date,
+                    'spoken_status': f"A {days}-day grace period has been granted. Your service access has been restored until {expiry_date}."
+                })
+            except UserError as ue:
+                # Returns clean human-readable reasons (e.g., account not blocked, grace already used)
+                return self._json_response({
+                    'status': 'error',
+                    'grace_granted': False,
+                    'spoken_status': str(ue),
+                    'error': str(ue)
+                }, 400)
+
         except Exception as e:
             return self._json_response({'error': str(e)}, 500)
