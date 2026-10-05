@@ -259,12 +259,38 @@ class SaleOrder(models.Model):
             until = end_date
         return until
 
+    def _fios_grace_covered_invoices(self, partner, invoices):
+        """Open invoices that the customer's grace period was granted for, once
+        a newer invoice has been raised since the grace.
+
+        A grace period is given because an invoice is overdue. If the next
+        invoice is raised while (or after) that grace runs, its credit term
+        takes over: the invoices that were already due when the grace was
+        granted stop pinning the counter, so access runs to the new invoice's
+        due date instead of ending with the grace. They still count again as
+        soon as the grace is reset, and the new invoice blocks as usual once
+        it is overdue itself.
+
+        Switch off with `vkd_fios_api.new_invoice_overrides_grace` = 0.
+        """
+        empty = self.env['account.move']
+        if not partner.fios_grace_granted_on or not invoices:
+            return empty
+        if not self._fios_icp_flag('vkd_fios_api.new_invoice_overrides_grace', '1'):
+            return empty
+        grant_date = fields.Date.context_today(self, partner.fios_grace_granted_on)
+        newer = invoices.filtered(lambda m: m.invoice_date and m.invoice_date >= grant_date)
+        if not newer:
+            return empty
+        return invoices.filtered(lambda m: m.invoice_date_due <= grant_date) - newer
+
     def _fios_next_due_info(self, partner):
         """(date, source label, basis) that the days-left counter should run to.
 
         basis is 'invoice', 'subscription' or None (nothing to sync from).
         """
         invoices = self._fios_open_invoices(partner)
+        invoices -= self._fios_grace_covered_invoices(partner, invoices)
         if invoices:
             inv = min(invoices, key=lambda m: (m.invoice_date_due, m.id))
             label = inv.name if inv.name and inv.name != '/' else _("draft invoice %s") % inv.id
@@ -290,7 +316,7 @@ class SaleOrder(models.Model):
 
         Returns a dict: ok, error, changed, days, due_date, source, basis.
         """
-        res = {'ok': True, 'error': None, 'changed': False,
+        res = {'ok': True, 'error': None, 'changed': False, 're_enabled': False,
                'days': None, 'due_date': False, 'source': None, 'basis': None}
         partner = partner.sudo()
         if partner.fios_provision_state != 'active' or not partner.fios_account_item_id:
@@ -328,11 +354,14 @@ class SaleOrder(models.Model):
             'fios_next_due_date': due_date,
             'fios_days_left_source': source,
             'fios_days_left_synced': fields.Datetime.now(),
+            # Keep the stored flag in line with FIOS before deciding below.
+            'fios_account_enabled': bool(data.get('enabled')),
         }
         delta = target - current
         if delta == 0:
             sync_vals['fios_days_counter'] = target
             partner.write(sync_vals)
+            self._fios_reenable_if_due(partner, target, res)
             return res
 
         params = {
@@ -362,7 +391,33 @@ class SaleOrder(models.Model):
         _logger.info("FIOS: days left synced for partner %s (target=%s, delta=%s, date=%s, %s)",
                      partner.id, target, delta, due_date, source)
         res['changed'] = True
+        self._fios_reenable_if_due(partner, target, res)
         return res
+
+    def _fios_reenable_if_due(self, partner, target, res):
+        """Switch the FIOS account back on when the counter now gives access.
+
+        When the block-by-days counter runs out, FIOS also disables the account
+        (`enabled` = 0). Topping the counter up with do_payment does not turn it
+        back on, so an account could show e.g. 26 days left and still be
+        blocked. Only done while the customer has a live subscription: an
+        account switched off because its last subscription was closed
+        (set_close) stays off.
+        """
+        if target < 0 or partner.fios_account_enabled:
+            return
+        if not self._fios_days_left_subscriptions(partner):
+            return
+        ok, error = self._fios_set_enabled(partner, True)
+        if ok:
+            res['re_enabled'] = True
+            res['changed'] = True
+            _logger.info("FIOS: account re-enabled for partner %s (days left %s)",
+                         partner.id, target)
+        else:
+            res.update(ok=False, error=_("days left set to %(days)s but the account could "
+                                         "not be re-enabled: %(error)s")
+                       % {'days': target, 'error': error})
 
     def _sync_fios_billing_date(self, partner, description=None):
         res = self._fios_push_days_left(partner, description=description)

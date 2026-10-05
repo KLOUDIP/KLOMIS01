@@ -85,6 +85,7 @@
                             <field name="fios_next_due_date" invisible="not fios_days_left_synced"/>
                             <field name="fios_days_left_source" invisible="not fios_days_left_synced"/>
                             <field name="fios_days_left_synced" invisible="not fios_days_left_synced"/>
+                            <field name="fios_daily_sync_at" invisible="not fios_daily_sync_at"/>
                         </group>
                         <field name="fios_service_usage_ids" nolabel="1" colspan="2" readonly="1">
                             <list>

@@ -211,7 +211,7 @@ class VkdFiosAccountReport(models.Model):
             raise UserError(_(
                 "Select at most %(limit)s lines to refresh at once (%(count)s selected). "
                 "All accounts are refreshed every night by the scheduled action "
-                "'FIOS Report: Refresh Account Status and Devices'.",
+                "'FIOS: Daily Sync (Days Left, Status, Devices)'.",
                 limit=MANUAL_REFRESH_LIMIT, count=len(self)))
         partners = self.mapped('partner_id')
         failed = []
@@ -265,6 +265,14 @@ class VkdFiosAccountReport(models.Model):
         hours are picked, which is also what stops the continuation from
         re-reading accounts the same run already did.
         """
+        # vkd_fios_api's staggered "FIOS: Daily Sync" already re-reads status
+        # and devices of every account (00:00-02:00). Running this one as well
+        # would hit FIOS with all accounts at once, so it stands down while
+        # that job is active.
+        daily_sync = self.env.ref('vkd_fios_api.ir_cron_fios_daily_sync', raise_if_not_found=False)
+        if daily_sync and daily_sync.active:
+            _logger.info("FIOS report: nightly refresh skipped - covered by '%s'", daily_sync.name)
+            return
         icp = self.env['ir.config_parameter'].sudo()
         min_age_hours = int(icp.get_param('vkd_fios_report.refresh_min_age_hours', 20))
         time_budget = int(icp.get_param('vkd_fios_report.refresh_time_budget', 600))

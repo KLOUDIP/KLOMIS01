@@ -12,7 +12,7 @@ Odoo 19 · Modules: `vkd_fios_api`, `vkd_fios_signup`, `vkd_subscription_handlin
 | **FIOS Service** | The billable thing a product provisions on FIOS: **Units** (`avl_unit`), **Users** (`storage_user`), **Geofences** (`zones_library`), **Google Maps** (`own_google_service`), **Ecodriving** (`ecodriving`), **Data Streaming** (`avl_retranslator`). |
 | **Quantity vs Feature service** | *Quantity* (Units/Users/Geofences): the subscribed quantity becomes the limit. *Feature* (Maps/Ecodriving/Streaming): enabled when purchased, disabled when removed. |
 | **Provision-at-purchase** | Registration only creates the Odoo user. The **FIOS account is created after the first purchase**, under the purchased product's tier, **in the background**. |
-| **Days** | The FIOS block-by-days counter (Days Left) follows the customer's invoices. **Open invoices** (any kind — subscription or hardware, not paid or partly paid): days until the **earliest Due Date**. **Everything paid**: days until the paid **subscription period** runs out (next invoice date by default, see `days_left_paid_up_basis`). Neither: left unchanged. An overdue customer that FIOS has already blocked stays blocked until the overdue invoice is paid. Re-synced whenever a customer invoice is **posted, paid, reset to draft / cancelled, or has a payment removed**, and on demand with **Sync Days Left**. |
+| **Days** | The FIOS block-by-days counter (Days Left) follows the customer's invoices. **Open invoices** (any kind — subscription or hardware, not paid or partly paid): days until the **earliest Due Date**. **Everything paid**: days until the paid **subscription period** runs out (next invoice date by default, see `days_left_paid_up_basis`). Neither: left unchanged. An overdue customer that FIOS has already blocked stays blocked until the overdue invoice is paid — unless a **grace period** was granted and a new invoice has been raised since: that invoice's due date then takes over from the overdue one (`new_invoice_overrides_grace`). Whenever the sync leaves days to run and the customer has a live subscription, an account FIOS had switched off is **re-enabled**. Re-synced whenever a customer invoice is **posted, paid, reset to draft / cancelled, or has a payment removed**, and on demand with **Sync Days Left**. |
 
 **End-to-end flow:**
 ```
@@ -61,6 +61,11 @@ On each product's form (General Information), set:
 | `vkd_fios_api.days_left_invoice_scope` | `all` | Which open invoices set Days Left: `all` customer invoices, or `fios` = only invoices with FIOS products |
 | `vkd_fios_api.days_left_include_draft` | `0` | `1` = also count draft invoices (off: a draft without an invoice date has a sliding due date) |
 | `vkd_fios_api.days_left_paid_up_basis` | `next_invoice_date` | When nothing is owed, Days Left runs to: `next_invoice_date` = the day the next period's invoice is raised (no gap before that invoice is synced), or `period_end` = the last day of the paid period (next invoice date − 1). A subscription end date that comes earlier wins |
+| `vkd_fios_api.new_invoice_overrides_grace` | `1` | An invoice raised on/after the day a grace period was granted overrides it: invoices already overdue at the grace stop holding the account blocked and Days Left runs to the new invoice. `0` = the overdue invoice keeps it blocked once the grace ends |
+| `vkd_fios_api.daily_sync_window` | `00:00-02:00` | Window the nightly **FIOS: Daily Sync** spreads the accounts over (local time of `daily_sync_tz`, default `Asia/Colombo`) |
+| `vkd_fios_api.daily_sync_step_minutes` | `10` | Minutes between the nightly sync's batches |
+| `vkd_fios_api.daily_sync_devices` | `1` | Also re-read the device list in the nightly sync |
+| `vkd_fios_api.daily_sync_min_age_hours` / `daily_sync_time_budget` | `12` / `600` | *(optional)* An account is re-synced only if not handled in the last N hours; seconds of work per batch |
 | `vkd_fios_api.signup_otp_enabled` | `1` | Require email OTP on public signup |
 | `vkd_fios_api.signup_otp_debug` | `0` | **TEST ONLY** — show the OTP on screen (staging without mail). Keep `0` in production |
 | `vkd_fios_api.pwd_secret` | *(auto)* | Encryption key for the pending signup password (auto-generated) |
@@ -71,6 +76,7 @@ For OTP email to send, configure an **Outgoing Mail Server** (Settings → Techn
 - **FIOS: Session Keep-Alive** — every 4 min (keeps each tier's session alive).
 - **FIOS: Retry Failed API Calls** — every 15 min.
 - **FIOS: Process Pending Provisioning** — every 2 min (background account creation after purchase).
+- **FIOS: Daily Sync (Days Left, Status, Devices)** — nightly from 00:00 Colombo. Does **Sync Days Left → Refresh FIOS Status → Refresh Devices** for every active FIOS contact, spread over 00:00–02:00 in batches every 10 min (each batch = accounts left ÷ slots left). Writes *Daily Sync Ran At* on the contact; a chatter note only when days left changed or the account was re-enabled. While it is active, the FIOS Report module's own nightly refresh stands down.
 
 ---
 
@@ -170,7 +176,9 @@ Closing a subscription recomputes limits; if the customer has **no active subscr
 | **T5** | Days from invoice | After T4, create and **post** the subscription invoice (30-day term) | On posting: Days Left = 30; invoice chatter "FIOS days left … set to 30"; contact shows Days Left Based On = that invoice; `do_payment` in API Log with description "Invoice posted: …" |
 | **T5a** | Hardware invoice in between | T5 open (30 days). Post a hardware invoice with a 5-day term | Days Left = 5. Pay the hardware invoice → Days Left back to the subscription invoice's remaining days |
 | **T5c** | Everything paid | Pay all open invoices | Days Left = days until the subscription's next invoice date (e.g. ~365 for an annual plan paid up front); Days Left Based On = "paid subscription period of …" |
-| **T5d** | Overdue stays blocked | Invoice A overdue and account blocked (Days Left −1). Post or pay another invoice B | Days Left stays −1. Pay A → counter moves to B's due date and access returns |
+| **T5d** | Overdue stays blocked | Invoice A overdue and account blocked (Days Left −1), no grace granted. Post or pay another invoice B | Days Left stays −1. Pay A → counter moves to B's due date, account is re-enabled and Status = Active |
+| **T5f** | New invoice overrides grace | Invoice A overdue, account blocked. Grant the 7-day grace. Before it ends, post invoice B (30-day term) | Days Left = 30 from B (not the grace end); after the grace end date the account stays Active. With `new_invoice_overrides_grace = 0` it blocks when the grace ends |
+| **T5g** | Daily sync | Set the cron's Next Execution to now and run it | Accounts processed in batches (see log `FIOS daily sync: … synced`); each contact gets *Daily Sync Ran At*; a blocked account with days left > 0 comes back Active |
 | **T5e** | New subscription not invoiced yet | New account (initial days), confirm a subscription starting today, do not invoice | Days Left unchanged; posting the first invoice then sets it |
 | **T5b** | Days after payment | Customer has two open invoices (due in 10 and 24 days). Register payment on the first | Invoice chatter: "FIOS days left … set to 24"; API Log `do_payment` with description "Invoice paid: …"; Refresh FIOS Status → Days Left 24 |
 | **T6** | Limits from products | After T4 | `avl_unit`/`storage_user`/`zones_library` limits = purchased quantities (usage table) |
