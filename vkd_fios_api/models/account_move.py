@@ -102,6 +102,8 @@ class AccountMove(models.Model):
                      "(runs to %(due)s - %(source)s).") % {
                 'partner': partner.display_name, 'days': result['days'],
                 'due': result['due_date'], 'source': result['source']}
+            if result.get('re_enabled'):
+                body += ' ' + _("The blocked FIOS account was re-enabled.")
         else:
             body = _("FIOS days left for %(partner)s could not be updated: %(error)s. "
                      "Use Provision / Resume on the contact to re-sync.") % {

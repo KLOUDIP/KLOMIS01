@@ -17,7 +17,10 @@
     'version': '19.0.2.3.0',
     # Pending release: 19.0.2.6.0 - FIOS Billing Team / Tech Team /
     # Administrator groups, menu and contact-tab gating, and the printable
-    # device list report. Bump 'version' above to that value when this goes out.
+    # device list report; nightly staggered "FIOS: Daily Sync" scheduled action
+    # (new field res.partner.fios_daily_sync_at); a new invoice overrides the
+    # grace period and the days-left sync re-enables a blocked account.
+    # Bump 'version' above to that value when this goes out.
     'license': 'OPL-1',
     # The FIOS roles live in security/fios_security.xml. The dependency on
     # field_service_extension was dropped with them: the device IMEI / phone

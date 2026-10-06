@@ -31,4 +31,29 @@
             <field name="active">True</field>
         </record>
     </data>
+
+    <!--
+        Nightly FIOS sync: Sync Days Left + Refresh FIOS Status + Refresh Devices
+        for every active FIOS contact - the same as clicking those buttons on
+        the contact. Starts at 00:00 Colombo (18:30 UTC) and spreads the
+        accounts over 00:00-02:00 in batches every 10 minutes (see
+        res.partner._cron_fios_daily_sync and the vkd_fios_api.daily_sync_*
+        parameters).
+
+        noupdate: once installed, the schedule and the active flag belong to the
+        administrator (Settings > Technical > Scheduled Actions).
+    -->
+    <data noupdate="1">
+        <record id="ir_cron_fios_daily_sync" model="ir.cron">
+            <field name="name">FIOS: Daily Sync (Days Left, Status, Devices)</field>
+            <field name="model_id" ref="base.model_res_partner"/>
+            <field name="state">code</field>
+            <field name="code">model._cron_fios_daily_sync()</field>
+            <field name="interval_number">1</field>
+            <field name="interval_type">days</field>
+            <!-- Tonight's 00:00 Colombo if still ahead, else tomorrow's. -->
+            <field name="nextcall" eval="(DateTime.now() if DateTime.now().hour &lt; 18 else DateTime.now() + timedelta(days=1)).strftime('%Y-%m-%d 18:30:00')"/>
+            <field name="active">True</field>
+        </record>
+    </data>
 </odoo>

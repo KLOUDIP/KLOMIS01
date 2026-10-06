@@ -1,5 +1,10 @@
 # -*- coding: utf-8 -*-
 import logging
+import math
+import time
+from datetime import datetime, time as dtime, timedelta
+
+import pytz
 
 from odoo import models, fields, api, _
 from odoo.exceptions import UserError
@@ -116,6 +121,12 @@ class ResPartner(models.Model):
     ], string='Grace Granted From', copy=False, readonly=True)
     fios_grace_days_granted = fields.Integer(string='Grace Days Granted', copy=False, readonly=True)
     fios_grace_expiry = fields.Date(string='Grace Ends On', copy=False, readonly=True)
+
+    # Set by the nightly "FIOS: Daily Sync" scheduled action after it has
+    # handled this contact (whether or not FIOS answered), so one night's run
+    # never picks the same contact twice.
+    fios_daily_sync_at = fields.Datetime(string='Daily Sync Ran At', copy=False,
+                                         readonly=True, index=True)
 
     fios_grace_available = fields.Boolean(
         string='Grace Period Available', compute='_compute_fios_grace_available',
@@ -414,6 +425,8 @@ class ResPartner(models.Model):
             message = _("Days left %(state)s %(days)s (runs to %(due)s - %(source)s).") % {
                 'state': _('set to') if res['changed'] else _('already'),
                 'days': res['days'], 'due': res['due_date'], 'source': res['source']}
+            if res['re_enabled']:
+                message += ' ' + _("The FIOS account was blocked and has been re-enabled.")
             kind = 'success'
             if res['changed']:
                 self.message_post(body=_("FIOS days left synced manually: %s") % message)
@@ -427,6 +440,160 @@ class ResPartner(models.Model):
                 'next': {'type': 'ir.actions.client', 'tag': 'soft_reload'},
             },
         }
+
+    # ------------------------------------------------------------------
+    # Nightly sync (scheduled action "FIOS: Daily Sync")
+    # ------------------------------------------------------------------
+    def _fios_daily_sync_one(self):
+        """What a user does by hand on the FIOS tab, for one contact:
+        Sync Days Left, then Refresh FIOS Status, then Refresh Devices.
+        Returns an error text, or None."""
+        self.ensure_one()
+        partner = self.sudo()
+        errors = []
+        try:
+            with self.env.cr.savepoint():
+                res = self.env['sale.order'].sudo()._fios_push_days_left(
+                    partner, description=_("Daily FIOS sync"))
+                if not res['ok']:
+                    errors.append(_("days left: %s") % res['error'])
+                elif res['changed']:
+                    note = _("Daily FIOS sync: days left set to %(days)s (runs to %(due)s - "
+                             "%(source)s).") % {'days': res['days'], 'due': res['due_date'],
+                                                 'source': res['source']}
+                    if res['re_enabled']:
+                        note += ' ' + _("The blocked FIOS account was re-enabled.")
+                    partner.message_post(body=note)
+        except Exception as e:  # noqa: BLE001 - reported, run continues
+            errors.append(_("days left: %s") % (str(e) or e.__class__.__name__))
+        try:
+            with self.env.cr.savepoint():
+                self.env['fios.provisioning'].refresh_account_status(partner)
+        except Exception as e:  # noqa: BLE001
+            errors.append(_("status: %s") % (str(e) or e.__class__.__name__))
+        if self.env['sale.order']._fios_icp_flag('vkd_fios_api.daily_sync_devices', '1'):
+            try:
+                with self.env.cr.savepoint():
+                    partner.action_fios_refresh_devices()
+            except Exception as e:  # noqa: BLE001
+                errors.append(_("devices: %s") % (str(e) or e.__class__.__name__))
+        partner.fios_daily_sync_at = fields.Datetime.now()
+        return '; '.join(errors) or None
+
+    @api.model
+    def _fios_daily_sync_window(self, now_utc):
+        """(start, end) of tonight's sync window in UTC, from the
+        `vkd_fios_api.daily_sync_window` parameter ("HH:MM-HH:MM", local time
+        of `vkd_fios_api.daily_sync_tz`). Default 00:00-02:00 Asia/Colombo."""
+        icp = self.env['ir.config_parameter'].sudo()
+        tz_name = icp.get_param('vkd_fios_api.daily_sync_tz', 'Asia/Colombo')
+        try:
+            tz = pytz.timezone(tz_name)
+        except pytz.UnknownTimeZoneError:
+            tz = pytz.timezone('Asia/Colombo')
+        raw = icp.get_param('vkd_fios_api.daily_sync_window', '00:00-02:00')
+        try:
+            start_s, end_s = [p.strip() for p in raw.split('-')]
+            start_t = dtime(*map(int, start_s.split(':')))
+            end_t = dtime(*map(int, end_s.split(':')))
+        except Exception:  # noqa: BLE001 - bad parameter falls back to the default
+            start_t, end_t = dtime(0, 0), dtime(2, 0)
+        now_local = pytz.utc.localize(now_utc).astimezone(tz)
+
+        def window(day):
+            start = tz.localize(datetime.combine(day, start_t))
+            end = tz.localize(datetime.combine(day, end_t))
+            if end <= start:  # e.g. 23:00-01:00 crosses midnight
+                end = tz.localize(datetime.combine(day + timedelta(days=1), end_t))
+            return start, end
+
+        # Yesterday's window too, for a window that crosses midnight.
+        start, end = window(now_local.date())
+        y_start, y_end = window(now_local.date() - timedelta(days=1))
+        if y_start <= now_local < y_end:
+            start, end = y_start, y_end
+
+        def to_utc(d):
+            return d.astimezone(pytz.utc).replace(tzinfo=None)
+        return to_utc(start), to_utc(end)
+
+    @api.model
+    def _cron_fios_daily_sync(self):
+        """Nightly: Sync Days Left + Refresh Status + Refresh Devices for every
+        active FIOS account, spread over the sync window instead of all at once.
+
+        The job starts at the beginning of the window (00:00) and works in
+        small batches: each run takes its share of what is left - remaining
+        accounts / remaining time slots - then schedules itself again
+        `daily_sync_step_minutes` later (default 10). With the default
+        00:00-02:00 window that is 12 batches, the last one around 01:50.
+        Run outside the window (e.g. "Run Manually"), it simply works through
+        everything that is due, within the time budget.
+
+        An account is due when the job has not handled it in the last
+        `daily_sync_min_age_hours` hours (default 12), so a night's run never
+        picks the same contact twice and a failing one is not hammered.
+        """
+        icp = self.env['ir.config_parameter'].sudo()
+
+        def int_param(key, default):
+            try:
+                return max(1, int(icp.get_param(key, default)))
+            except (TypeError, ValueError):
+                return default
+
+        step_min = int_param('vkd_fios_api.daily_sync_step_minutes', 10)
+        min_age_hours = int_param('vkd_fios_api.daily_sync_min_age_hours', 12)
+        time_budget = int_param('vkd_fios_api.daily_sync_time_budget', 600)
+
+        now = fields.Datetime.now()
+        cutoff = now - timedelta(hours=min_age_hours)
+        domain = [
+            ('fios_provision_state', '=', 'active'),
+            ('fios_account_item_id', '!=', False),
+            '|', ('fios_daily_sync_at', '=', False), ('fios_daily_sync_at', '<', cutoff),
+        ]
+        partners = self.sudo().search(domain, order='fios_daily_sync_at asc nulls first, id')
+        if not partners:
+            return
+
+        win_start, win_end = self._fios_daily_sync_window(now)
+        in_window = win_start <= now < win_end
+        if in_window:
+            slots_left = max(1, math.ceil((win_end - now).total_seconds() / (step_min * 60)))
+            batch = partners[:math.ceil(len(partners) / slots_left)]
+        else:
+            batch = partners
+
+        started = time.monotonic()
+        done = failed = 0
+        for partner in batch:
+            if time.monotonic() - started > time_budget:
+                break
+            error = partner._fios_daily_sync_one()
+            if error:
+                failed += 1
+                _logger.warning("FIOS daily sync: partner %s - %s", partner.id, error)
+            else:
+                done += 1
+            # Each account is independent: keep what was done even if the
+            # worker is killed later in the run.
+            self.env.cr.commit()  # pylint: disable=invalid-commit
+
+        remaining = len(partners) - done - failed
+        _logger.info("FIOS daily sync: %s synced, %s failed, %s left", done, failed, remaining)
+        if not remaining or not (done or failed):
+            return
+        cron = self.env.ref('vkd_fios_api.ir_cron_fios_daily_sync', raise_if_not_found=False)
+        if not cron:
+            return
+        next_at = now + timedelta(minutes=step_min)
+        if in_window and next_at < win_end:
+            cron._trigger(at=next_at)
+        else:
+            # Past the window (or the time budget ran out on the last slot):
+            # finish the rest straight away rather than leave it for tomorrow.
+            cron._trigger()
 
     def action_fios_refresh_status(self):
         self.ensure_one()

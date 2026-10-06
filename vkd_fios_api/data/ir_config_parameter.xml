@@ -119,5 +119,37 @@
             <field name="key">vkd_fios_api.signup_otp_debug</field>
             <field name="value">0</field>
         </record>
+
+        <!-- A customer invoice raised on or after the day a grace period was
+             granted takes over from the grace (1 = yes): the invoices that were
+             already overdue when the grace was granted stop holding the
+             account blocked, and Days Left runs to the new invoice's due date.
+             0 = old behaviour: the overdue invoice keeps the account blocked
+             once the grace ends, whatever is invoiced after it. -->
+        <record id="fios_new_invoice_overrides_grace_param" model="ir.config_parameter">
+            <field name="key">vkd_fios_api.new_invoice_overrides_grace</field>
+            <field name="value">1</field>
+        </record>
+
+        <!-- Nightly "FIOS: Daily Sync" scheduled action. Accounts are spread
+             over this window (local time of daily_sync_tz), one batch every
+             daily_sync_step_minutes. -->
+        <record id="fios_daily_sync_window_param" model="ir.config_parameter">
+            <field name="key">vkd_fios_api.daily_sync_window</field>
+            <field name="value">00:00-02:00</field>
+        </record>
+        <record id="fios_daily_sync_tz_param" model="ir.config_parameter">
+            <field name="key">vkd_fios_api.daily_sync_tz</field>
+            <field name="value">Asia/Colombo</field>
+        </record>
+        <record id="fios_daily_sync_step_minutes_param" model="ir.config_parameter">
+            <field name="key">vkd_fios_api.daily_sync_step_minutes</field>
+            <field name="value">10</field>
+        </record>
+        <!-- Also re-read the device list in the nightly sync (1 = yes). -->
+        <record id="fios_daily_sync_devices_param" model="ir.config_parameter">
+            <field name="key">vkd_fios_api.daily_sync_devices</field>
+            <field name="value">1</field>
+        </record>
     </data>
 </odoo>
