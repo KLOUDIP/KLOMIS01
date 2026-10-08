@@ -3,6 +3,7 @@ from markupsafe import Markup, escape
 from odoo import SUPERUSER_ID, http
 from odoo.exceptions import UserError
 from odoo.http import request, Response
+from odoo.tools import html2plaintext
 
 
 class IrisIntegrationController(http.Controller):
@@ -25,7 +26,7 @@ class IrisIntegrationController(http.Controller):
 
     @http.route('/api/voice/ticket/create', type='http', auth='public', methods=['POST'], csrf=False)
     def create_ticket(self, **kwargs):
-        """Use Case 1: Log a new query with Customer ID, Phone, or Email lookup."""
+        """Use Case 1: Log a new query with Parent Contact Routing and Exact Phone Match."""
         if not self._authenticate():
             return self._json_response({'error': 'Unauthorized'}, 401)
 
@@ -46,11 +47,11 @@ class IrisIntegrationController(http.Controller):
                 except (ValueError, TypeError):
                     pass
 
-            # 2. Fallback to Phone or Email lookup
+            # 2. Fallback to Exact Phone or Email lookup
             if not partner:
                 domain = []
                 if caller_phone:
-                    domain.append(('phone', 'ilike', caller_phone))
+                    domain.append(('phone', '=', caller_phone))
                 if caller_email:
                     domain.append(('email', '=ilike', caller_email.strip()))
 
@@ -60,14 +61,14 @@ class IrisIntegrationController(http.Controller):
                 if domain:
                     partner = request.env['res.partner'].sudo().search(domain, limit=1)
 
-            partner_id = partner.id if partner else False
+            # Route ticket to Parent Contact if it exists, otherwise use the matched contact
+            ticket_partner_id = partner.parent_id.id if (partner and partner.parent_id) else (
+                partner.id if partner else False)
 
-            # Explicitly fetch target company 'KLOUDIP (Pvt) Ltd'
             target_company = request.env['res.company'].sudo().search([
                 ('name', '=ilike', 'KLOUDIP (Pvt) Ltd')
             ], limit=1)
 
-            # Look for the 'Support' team under the target company
             team_domain = [('name', '=', 'Support')]
             if target_company:
                 team_domain.append(('company_id', '=', target_company.id))
@@ -77,13 +78,11 @@ class IrisIntegrationController(http.Controller):
             if not team:
                 team = request.env['helpdesk.team'].sudo().search([('name', '=', 'Support')], limit=1)
 
-            team_id = team.id if team else False
-
             ticket_vals = {
                 'name': payload.get('issue_title', 'Voice AI Support Query'),
                 'description': payload.get('issue_description'),
-                'partner_id': partner_id,
-                'team_id': team_id,
+                'partner_id': ticket_partner_id,
+                'team_id': team.id if team else False,
                 'company_id': target_company.id if target_company else False,
             }
 
@@ -93,16 +92,21 @@ class IrisIntegrationController(http.Controller):
 
             ticket = ticket_env.create(ticket_vals)
 
-            return self._json_response({
+            response_data = {
                 'status': 'success',
                 'ticket_reference': f"#{ticket.id}"
-            })
+            }
+
+            if partner and partner.fios_provision_state == 'active':
+                response_data['fios_days_left'] = partner.fios_days_counter
+
+            return self._json_response(response_data)
         except Exception as e:
             return self._json_response({'error': str(e)}, 500)
 
     @http.route('/api/voice/ticket/status', type='http', auth='public', methods=['POST'], csrf=False)
     def check_status(self, **kwargs):
-        """Use Case 2: Check ticket status using ticket_number."""
+        """Use Case 2: Check ticket status using ticket_number with detailed stage data."""
         if not self._authenticate():
             return self._json_response({'error': 'Unauthorized'}, 401)
 
@@ -120,9 +124,11 @@ class IrisIntegrationController(http.Controller):
 
             stage_name = ticket.stage_id.name or 'New'
 
+            # Security Rule: Hide finance/payment hold stages
             if 'Payment Hold' in stage_name or 'Finance' in stage_name:
                 return self._json_response({
                     'status': 'success',
+                    'stage': stage_name,
                     'spoken_status': 'Your ticket is currently with our billing department. Please speak with an agent for more details.'
                 })
 
@@ -135,10 +141,30 @@ class IrisIntegrationController(http.Controller):
 
             friendly_status = stage_mapping.get(stage_name, f"Your ticket is currently in the {stage_name} stage.")
 
-            return self._json_response({
+            response_data = {
                 'status': 'success',
+                'stage': stage_name,
                 'spoken_status': friendly_status
-            })
+            }
+
+            # Safely fetch scheduled date (checks common Helpdesk/Field Service fields)
+            sched_date = getattr(ticket, 'schedule_date', False) or getattr(ticket, 'planned_date_begin',
+                                                                            False) or getattr(ticket, 'date_deadline',
+                                                                                              False)
+            if sched_date:
+                response_data['scheduled_for'] = str(sched_date)
+
+            # Safely fetch hold reason
+            hold_reason = getattr(ticket, 'hold_reason', False)
+            if hold_reason:
+                response_data['hold_reason'] = str(hold_reason)
+
+            # Fetch the most recent text comment
+            comments = ticket.message_ids.filtered(lambda m: m.message_type == 'comment' and m.body)
+            if comments:
+                response_data['latest_comment'] = html2plaintext(comments[0].body).strip()
+
+            return self._json_response(response_data)
         except Exception as e:
             return self._json_response({'error': str(e)}, 500)
 
@@ -178,7 +204,7 @@ class IrisIntegrationController(http.Controller):
 
     @http.route('/api/voice/contact/search', type='http', auth='public', methods=['POST'], csrf=False)
     def search_contact(self, **kwargs):
-        """Verifies if a caller exists by Customer ID, Phone, or Email."""
+        """Verifies if a caller exists by Customer ID or Exact Phone/Email."""
         if not self._authenticate():
             return self._json_response({'error': 'Unauthorized'}, 401)
 
@@ -201,7 +227,7 @@ class IrisIntegrationController(http.Controller):
             if not partner:
                 domain = []
                 if phone:
-                    domain.append(('phone', 'ilike', phone))
+                    domain.append(('phone', '=', phone))
                 if email:
                     domain.append(('email', '=ilike', email.strip()))
 
@@ -215,15 +241,25 @@ class IrisIntegrationController(http.Controller):
                 return self._json_response({'error': 'Provide customer_id, caller_phone, or caller_email'}, 400)
 
             if partner:
+                contact_data = {
+                    'id': partner.id,
+                    'parent_id': partner.parent_id.id if partner.parent_id else None,
+                    'name': partner.name,
+                    'email': partner.email,
+                    'phone': partner.phone,
+                }
+
+                if partner.fios_provision_state == 'active':
+                    contact_data['fios_active'] = True
+                    contact_data['fios_days_left'] = partner.fios_days_counter
+                else:
+                    contact_data['fios_active'] = False
+                    contact_data['fios_days_left'] = None
+
                 return self._json_response({
                     'status': 'success',
                     'found': True,
-                    'contact': {
-                        'id': partner.id,
-                        'name': partner.name,
-                        'email': partner.email,
-                        'phone': partner.phone
-                    }
+                    'contact': contact_data
                 })
 
             return self._json_response({'status': 'success', 'found': False, 'message': 'Contact not found'})
@@ -244,7 +280,6 @@ class IrisIntegrationController(http.Controller):
 
             partner = False
 
-            # 1. Lookup by Customer ID
             if customer_id:
                 try:
                     p = request.env['res.partner'].sudo().browse(int(customer_id))
@@ -253,11 +288,10 @@ class IrisIntegrationController(http.Controller):
                 except (ValueError, TypeError):
                     pass
 
-            # 2. Search by Phone/Email
             if not partner:
                 domain = []
                 if phone:
-                    domain.append(('phone', 'ilike', phone))
+                    domain.append(('phone', '=', phone))
                 if email:
                     domain.append(('email', '=ilike', email.strip()))
 
@@ -270,7 +304,6 @@ class IrisIntegrationController(http.Controller):
             if not partner:
                 return self._json_response({'error': 'Customer not found'}, 404)
 
-            # 3. Call FIOS Grace Period Provisioning Logic
             try:
                 days = request.env['fios.provisioning'].sudo().grant_grace_period(partner, source='portal')
                 expiry_date = partner.fios_grace_expiry.strftime('%Y-%m-%d') if partner.fios_grace_expiry else ''
@@ -283,7 +316,6 @@ class IrisIntegrationController(http.Controller):
                     'spoken_status': f"A {days}-day grace period has been granted. Your service access has been restored until {expiry_date}."
                 })
             except UserError as ue:
-                # Returns clean human-readable reasons (e.g., account not blocked, grace already used)
                 return self._json_response({
                     'status': 'error',
                     'grace_granted': False,
