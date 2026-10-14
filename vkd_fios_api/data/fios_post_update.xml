@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Not noupdate: this has to run on every module update, so the stored
+         FIOS Account Status is restated whenever the blocked rule changes. -->
+    <function model="res.partner" name="_fios_recompute_account_status"/>
+</odoo>

@@ -393,7 +393,7 @@ class FiosProvisioning(models.AbstractModel):
     def grant_grace_period(self, partner, source='backend', days=None):
         """Give a blocked account `days` more days of access, once per billing cycle.
 
-        FIOS blocks access when the block-by-days counter reaches -1. The grace
+        FIOS blocks access once the block-by-days counter reaches 0. The grace
         adds days to that counter via account/do_payment and, if the account was
         also disabled, re-enables it. Returns the number of days granted.
         """

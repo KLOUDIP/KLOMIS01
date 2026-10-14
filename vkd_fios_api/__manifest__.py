@@ -42,6 +42,8 @@
         'views/menus.xml',
         'reports/fios_device_report.xml',
         'wizard/fios_account_import_views.xml',
+        # Last: restates the stored FIOS Account Status after an update.
+        'data/fios_post_update.xml',
     ],
     'external_dependencies': {
         'python': ['requests', 'cryptography'],

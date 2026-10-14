@@ -11,8 +11,10 @@ from odoo.exceptions import UserError
 
 _logger = logging.getLogger(__name__)
 
-# FIOS cuts access when the block-by-days counter reaches this value.
-FIOS_BLOCK_DAYS_THRESHOLD = -1
+# FIOS cuts access once the block-by-days counter reaches this value: an account
+# showing 0 days left has no days to spend and is already blocked on FIOS, so
+# Odoo must show it as blocked (and offer the grace period) at 0, not only at -1.
+FIOS_BLOCK_DAYS_THRESHOLD = 0
 
 
 def _fios_fernet(env):
@@ -91,8 +93,8 @@ class ResPartner(models.Model):
     fios_days_left_synced = fields.Datetime(string='Days Left Synced At', copy=False,
                                             readonly=True)
 
-    # Human-readable access state. FIOS blocks the account when the block-by-days
-    # counter drops to -1, which the raw `enabled` flag does not always reflect,
+    # Human-readable access state. FIOS blocks the account once the block-by-days
+    # counter reaches 0, which the raw `enabled` flag does not always reflect,
     # so both are taken into account.
     fios_account_status = fields.Selection([
         ('none', 'No Account'),
@@ -144,6 +146,23 @@ class ResPartner(models.Model):
                 partner.fios_account_status = 'blocked'
             else:
                 partner.fios_account_status = 'active'
+
+    @api.model
+    def _fios_recompute_account_status(self):
+        """Refresh the stored FIOS Account Status of every linked account.
+
+        fios_account_status is a stored computed field, so a change to the
+        blocked rule (FIOS_BLOCK_DAYS_THRESHOLD) does not reach rows already in
+        the database. This runs on every module update (see
+        data/fios_post_update.xml) so accounts sitting on 0 days are restated
+        as Blocked straight away instead of at their next sync.
+        """
+        partners = self.sudo().search([('fios_account_item_id', '!=', False)])
+        if not partners:
+            return
+        self.env.add_to_compute(self._fields['fios_account_status'], partners)
+        partners.flush_recordset(['fios_account_status'])
+        _logger.info("FIOS: account status recomputed for %s partner(s)", len(partners))
 
     def _fios_current_cycle_ref(self):
         """The invoice date identifying the customer's current billing cycle.

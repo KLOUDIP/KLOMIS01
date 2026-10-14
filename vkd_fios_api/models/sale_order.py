@@ -341,10 +341,10 @@ class SaleOrder(models.Model):
         target = (due_date - today).days
         if target < 0:
             # An invoice is overdue. An account that FIOS has already blocked
-            # (counter below zero) stays blocked - paying some other invoice or
-            # raising a new one must not reopen it. Otherwise 0 keeps today's
-            # access and FIOS blocks on its next daily decrement.
-            target = current if current < 0 else 0
+            # (counter at or below zero) stays blocked - paying some other
+            # invoice or raising a new one must not reopen it. Otherwise 0 is
+            # pushed: no days left, which is FIOS's blocked state.
+            target = current if current <= 0 else 0
         # Never cut into a grace period that is still running.
         if partner.fios_grace_expiry and partner.fios_grace_expiry >= today:
             target = max(target, (partner.fios_grace_expiry - today).days)
@@ -404,7 +404,9 @@ class SaleOrder(models.Model):
         account switched off because its last subscription was closed
         (set_close) stays off.
         """
-        if target < 0 or partner.fios_account_enabled:
+        # 0 days left is a blocked account on FIOS, so only a positive counter
+        # justifies switching the account back on.
+        if target <= 0 or partner.fios_account_enabled:
             return
         if not self._fios_days_left_subscriptions(partner):
             return

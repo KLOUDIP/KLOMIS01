@@ -49,7 +49,7 @@ class VkdFiosAccountReport(models.Model):
     unit_count = fields.Integer(string='Total Units', readonly=True)
 
     # Days left. FIOS counts the block-by-days counter down once a day and
-    # blocks the account when it reaches -1. Odoo only holds the value read at
+    # blocks the account once it reaches 0. Odoo only holds the value read at
     # the last sync, so today's figure is derived from it.
     days_counter = fields.Integer(
         string='Days Left (at Sync)', readonly=True, aggregator='min',
@@ -61,7 +61,7 @@ class VkdFiosAccountReport(models.Model):
              'blocked accounts.')
     block_date = fields.Date(
         string='Blocks On', readonly=True,
-        help='Estimated date FIOS blocks the account (the day the counter reaches -1). '
+        help='Estimated date FIOS blocks the account (the day the counter reaches 0). '
              'Empty for blocked accounts.')
     next_due_date = fields.Date(string='Days Left Run To', readonly=True)
     days_left_source = fields.Char(string='Days Left Based On', readonly=True)
@@ -163,7 +163,7 @@ class VkdFiosAccountReport(models.Model):
                        END AS days_left,
                        CASE WHEN b.fios_account_status = 'active' THEN
                            ((b.counter_synced AT TIME ZONE 'UTC') AT TIME ZONE %(tz)s)::date
-                               + b.days_counter + 1
+                               + b.days_counter
                        END AS block_date,
                        b.fios_next_due_date AS next_due_date,
                        b.fios_days_left_source AS days_left_source,
