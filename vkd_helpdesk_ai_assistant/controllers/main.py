@@ -38,7 +38,6 @@ class IrisIntegrationController(http.Controller):
 
             partner = False
 
-            # 1. Direct Lookup by Odoo Customer ID
             if customer_id:
                 try:
                     p = request.env['res.partner'].sudo().browse(int(customer_id))
@@ -47,7 +46,6 @@ class IrisIntegrationController(http.Controller):
                 except (ValueError, TypeError):
                     pass
 
-            # 2. Fallback to Exact Phone or Email lookup
             if not partner:
                 domain = []
                 if caller_phone:
@@ -61,7 +59,6 @@ class IrisIntegrationController(http.Controller):
                 if domain:
                     partner = request.env['res.partner'].sudo().search(domain, limit=1)
 
-            # Route ticket to Parent Contact if it exists, otherwise use the matched contact
             ticket_partner_id = partner.parent_id.id if (partner and partner.parent_id) else (
                 partner.id if partner else False)
 
@@ -97,8 +94,13 @@ class IrisIntegrationController(http.Controller):
                 'ticket_reference': f"#{ticket.id}"
             }
 
-            if partner and partner.fios_provision_state == 'active':
-                response_data['fios_days_left'] = partner.fios_days_counter
+            if partner:
+                if partner.fios_provision_state == 'active':
+                    response_data['fios_account_status'] = partner.fios_account_status
+                    response_data['fios_days_left'] = partner.fios_days_counter
+                else:
+                    response_data['fios_account_status'] = 'none'
+                    response_data['fios_days_left'] = None
 
             return self._json_response(response_data)
         except Exception as e:
@@ -124,7 +126,6 @@ class IrisIntegrationController(http.Controller):
 
             stage_name = ticket.stage_id.name or 'New'
 
-            # Security Rule: Hide finance/payment hold stages
             if 'Payment Hold' in stage_name or 'Finance' in stage_name:
                 return self._json_response({
                     'status': 'success',
@@ -147,19 +148,16 @@ class IrisIntegrationController(http.Controller):
                 'spoken_status': friendly_status
             }
 
-            # Safely fetch scheduled date (checks common Helpdesk/Field Service fields)
             sched_date = getattr(ticket, 'schedule_date', False) or getattr(ticket, 'planned_date_begin',
                                                                             False) or getattr(ticket, 'date_deadline',
                                                                                               False)
             if sched_date:
                 response_data['scheduled_for'] = str(sched_date)
 
-            # Safely fetch hold reason
             hold_reason = getattr(ticket, 'hold_reason', False)
             if hold_reason:
                 response_data['hold_reason'] = str(hold_reason)
 
-            # Fetch the most recent text comment
             comments = ticket.message_ids.filtered(lambda m: m.message_type == 'comment' and m.body)
             if comments:
                 response_data['latest_comment'] = html2plaintext(comments[0].body).strip()
@@ -249,11 +247,12 @@ class IrisIntegrationController(http.Controller):
                     'phone': partner.phone,
                 }
 
+                # Expose the true account status (active, blocked, none)
                 if partner.fios_provision_state == 'active':
-                    contact_data['fios_active'] = True
+                    contact_data['fios_account_status'] = partner.fios_account_status
                     contact_data['fios_days_left'] = partner.fios_days_counter
                 else:
-                    contact_data['fios_active'] = False
+                    contact_data['fios_account_status'] = 'none'
                     contact_data['fios_days_left'] = None
 
                 return self._json_response({
