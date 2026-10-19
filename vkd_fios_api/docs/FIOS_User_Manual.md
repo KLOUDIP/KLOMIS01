@@ -114,7 +114,7 @@ Repeat with a **Premium** set to test tier mutual-exclusion.
 | **Sessions** | FIOS → Sessions | Live SIDs per tier |
 
 ### Backend — Contact form **FIOS tab** (a contact that is a FIOS customer)
-- **Header buttons:** **Provision / Resume** (create/repair + re-sync), **Refresh FIOS Status** (read live status + usage), **Refresh Devices** (list units), **Sync Days Left** (billing team — recompute Days Left from the invoices now and push it to FIOS).
+- **Header buttons:** **Provision / Resume** (create/repair + re-sync), **Refresh FIOS Status** (read live status + usage), **Refresh Devices** (list units), **Sync Days Left** (billing team — recompute Days Left from the invoices now and push it to FIOS), **Check Billing Access** (FIOS administrator — asks every tier's token whether it can read and bill this account; use it when FIOS answers `[7] Access denied`).
 - **Status:** Is FIOS User, Service Tier, Provisioning state, Provisioning Pending, Last Sync.
 - **FIOS Identifiers:** User ID, Resource ID, Account Item ID.
 - **Last Error** (only if any).
@@ -194,6 +194,7 @@ Closing a subscription recomputes limits; if the customer has **no active subscr
 | **T13** | Devices list | Contact → Refresh Devices | Lists units (Name/IMEI/Phone/Status); deactivated units show a grey **Inactive** badge |
 | **T14** | Portal usage | Customer portal → My FIOS Services | Card on `/my/home`; usage table on `/my/fios-services` |
 | **T15** | Import | FIOS → Import Accounts → pick tier → Fetch → match → Import | Partner linked, state active, tier set |
+| **T16** | Billing access | A contact whose grace period or Sync Days Left fails with FIOS `[7] Access denied` → FIOS tab → **Check Billing Access** | The FIOS tab shows a per-tier report: read OK / bill OK or DENIED, and a conclusion — switch the contact's Service Tier when another tier can bill it, or raise the rights with FIOS when none can |
 | **T15b** | Fix a wrong link | Import Accounts → Fetch → **Unlink** on a linked row → pick the right customer → Import | Old contact: FIOS fields cleared, Is FIOS User off, chatter note. New contact linked and active |
 | **T16** | Resume after failure | If a purchase provision failed, click **Provision / Resume** | Resumes (create_account handles "already exists"), completes to active |
 | **T17** | Keep-alive | Wait > 5 min idle, then any FIOS action | Session auto re-logs in (see Sessions / API Log) |

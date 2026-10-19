@@ -289,6 +289,38 @@ class ResPartner(models.Model):
         return self.env.ref(
             'vkd_fios_api.action_report_fios_devices').report_action(self)
 
+    fios_billing_diagnostic = fields.Text(string='FIOS Billing Access Check', copy=False,
+                                          readonly=True)
+
+    def action_fios_check_billing_access(self):
+        """Find out which tier's token may bill this account.
+
+        Answers the "[7] Access denied" the grace period and the days-left sync
+        run into: it is a FIOS rights question, and this says whether another
+        configured tier can bill the account or none can.
+        """
+        self.ensure_one()
+        if not self.env.user.has_group('base.group_system') \
+                and not self.env.user.has_group('vkd_fios_api.group_fios_administrator'):
+            raise UserError(_("Only a FIOS administrator can run the billing access check."))
+        try:
+            report = self.env['fios.provisioning'].debug_billing_access(self)
+        except UserError:
+            raise
+        except Exception as e:
+            raise UserError(_("Billing access check failed: %s") % e)
+        self.sudo().fios_billing_diagnostic = report
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': _('FIOS Billing Access'),
+                'message': _('Written to the FIOS tab and the server log.'),
+                'type': 'info',
+                'next': {'type': 'ir.actions.client', 'tag': 'soft_reload'},
+            },
+        }
+
     fios_device_diagnostic = fields.Text(string='FIOS Device Diagnostic', copy=False,
                                          readonly=True)
 
@@ -386,6 +418,7 @@ class ResPartner(models.Model):
             'fios_grace_days_granted': 0,
             'fios_grace_expiry': False,
             'fios_device_diagnostic': False,
+            'fios_billing_diagnostic': False,
         })
         partner.message_post(
             body=_("FIOS account %s unlinked from this contact by %s "

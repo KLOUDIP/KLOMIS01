@@ -35,6 +35,12 @@
                                 invisible="not fios_account_item_id"
                                 groups="vkd_fios_api.group_fios_administrator"
                                 help="Dump the raw FIOS unit search response for this account."/>
+                        <button name="action_fios_check_billing_access" type="object"
+                                string="Check Billing Access" class="btn-secondary"
+                                invisible="not fios_account_item_id"
+                                groups="vkd_fios_api.group_fios_administrator"
+                                help="Ask every configured tier's token whether it can read and bill this FIOS account - use it when FIOS answers 'Access denied' to a grace period or a days-left sync."
+                                confirm="Check which tier may bill this account? Each tier that can read it is sent a zero-day, zero-balance payment: it changes nothing on the account, but FIOS records it in the account's payment history."/>
                         <button name="action_fios_print_devices" type="object"
                                 string="Export Devices" class="btn-secondary"
                                 invisible="not fios_device_ids"
@@ -138,6 +144,12 @@
                                    widget="boolean_toggle" optional="hide"/>
                         </list>
                     </field>
+                    <group string="Billing Access Check"
+                           groups="vkd_fios_api.group_fios_administrator"
+                           invisible="not fios_billing_diagnostic">
+                        <field name="fios_billing_diagnostic" nolabel="1" readonly="1"
+                               widget="text"/>
+                    </group>
                     <group string="Device Diagnostic"
                            groups="vkd_fios_api.group_fios_tech_team"
                            invisible="not fios_device_diagnostic">
