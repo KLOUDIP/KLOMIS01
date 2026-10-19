@@ -379,7 +379,10 @@ class SaleOrder(models.Model):
             # recomputes the correct delta from the live counter instead.
             log.log_failure('account/do_payment', params, partner=partner,
                             error_msg=str(e), retryable=False)
-            res.update(ok=False, error=str(e))
+            res.update(ok=False, error=_(
+                "%(error)s (account item %(item)s, tier '%(tier)s')") % {
+                    'error': e, 'item': partner.fios_account_item_id,
+                    'tier': partner.fios_tier_id.name or '-'})
             return res
         log.log_success('account/do_payment', params, partner=partner, response_data=result,
                         message=_("FIOS days left set to %(target)s (was %(current)s, delta "

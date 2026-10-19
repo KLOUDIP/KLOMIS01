@@ -447,7 +447,19 @@ class FiosProvisioning(models.AbstractModel):
             # once-per-cycle rule. The customer/agent retries the action instead.
             log.log_failure('account/do_payment', params, partner=partner,
                             error_msg=str(e), retryable=False)
-            raise UserError(_("Could not apply the grace period on FIOS: %s") % e)
+            # Name the tier and the account: an "Access denied" here means the
+            # token of THIS tier may not bill THIS account on FIOS - usually
+            # the account sits under another tier / dealer, or the token lacks
+            # billing rights. The full call is in FIOS -> API Log.
+            raise UserError(_(
+                "Could not apply the grace period on FIOS: %(error)s\n\n"
+                "Account item %(item)s on tier '%(tier)s'. If FIOS answers "
+                "'Access denied', that tier's API token cannot bill this "
+                "account: check that the contact's Service Tier is the tier the "
+                "account really belongs to, and that its token has billing "
+                "rights. The call is recorded in FIOS > API Log."
+            ) % {'error': e, 'item': partner.fios_account_item_id,
+                 'tier': partner.fios_tier_id.name or '-'})
         log.log_success('account/do_payment', params, partner=partner, response_data=result,
                         message=description)
 

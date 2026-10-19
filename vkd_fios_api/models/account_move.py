@@ -17,7 +17,9 @@ class AccountMove(models.Model):
         of the same customer, so the match is done on the commercial partner.
         """
         SaleOrder = self.env['sale.order'].sudo()
-        invoices = self.sudo().filtered(lambda m: m.move_type == 'out_invoice')
+        # Credit notes count here as well: reversing an invoice settles it, and
+        # the recordset handed over can be the credit note alone.
+        invoices = self.sudo().filtered(lambda m: m.move_type in ('out_invoice', 'out_refund'))
         if SaleOrder._fios_invoice_scope_is_fios_only():
             invoices = invoices.filtered(lambda m: any(
                 line.product_id.product_tmpl_id.fios_service
@@ -109,13 +111,42 @@ class AccountMove(models.Model):
                      "Use Provision / Resume on the contact to re-sync.") % {
                 'partner': partner.display_name, 'error': result.get('error')}
         for move in self.sudo().filtered(
-                lambda m: m.move_type == 'out_invoice'
+                lambda m: m.move_type in ('out_invoice', 'out_refund')
                 and m.commercial_partner_id == partner.commercial_partner_id):
             try:
                 with self.env.cr.savepoint():
                     move.message_post(body=body)
             except Exception:
                 _logger.exception("FIOS: could not post days-left note on move %s", move.id)
+
+
+class AccountMoveLine(models.Model):
+    _inherit = 'account.move.line'
+
+    # Reconciling a credit note with its invoice leaves the invoice at
+    # payment_state 'reversed', which core's _invoice_paid_hook does not cover
+    # (it only fires for 'paid' / 'in_payment'). Without this the days-left
+    # counter kept pointing at the reversed invoice and the customer stayed
+    # blocked on an amount they no longer owe.
+
+    def _reconcile_pre_hook(self):
+        data = super()._reconcile_pre_hook()
+        data['fios_unsettled_moves'] = self.move_id.filtered(
+            lambda m: m.move_type in ('out_invoice', 'out_refund')
+            and m.payment_state not in ('paid', 'in_payment', 'reversed'))
+        return data
+
+    def _reconcile_post_hook(self, data):
+        res = super()._reconcile_post_hook(data)
+        candidates = data.get('fios_unsettled_moves')
+        reversed_now = candidates.filtered(
+            lambda m: m.payment_state == 'reversed') if candidates else candidates
+        if reversed_now:
+            names = reversed_now._fios_move_names()
+            reversed_now._fios_sync_days_left(
+                _("Invoice reversed: %s") % names if names else _("Invoice reversed"),
+                note_unchanged=False)
+        return res
 
 
 class AccountPartialReconcile(models.Model):
@@ -125,7 +156,7 @@ class AccountPartialReconcile(models.Model):
         """Removing a payment from an invoice makes it owed again: re-sync the
         FIOS days left of the customers concerned."""
         invoices = (self.debit_move_id.move_id | self.credit_move_id.move_id).filtered(
-            lambda m: m.move_type == 'out_invoice' and m.state == 'posted')
+            lambda m: m.move_type in ('out_invoice', 'out_refund') and m.state == 'posted')
         res = super().unlink()
         invoices = invoices.exists()
         if invoices:
