@@ -107,6 +107,15 @@
             <field name="value">next_invoice_date</field>
         </record>
 
+        <!-- Extra days added to Days Left on top of the days to the due date
+             (or the paid-up date): Days Left = days to due date + this value.
+             1 (default) = the due date is still a day of access and the account
+             blocks the day after; 0 = block on the due date itself. -->
+        <record id="fios_days_left_extra_days_param" model="ir.config_parameter">
+            <field name="key">vkd_fios_api.days_left_extra_days</field>
+            <field name="value">1</field>
+        </record>
+
         <!-- Require email OTP verification on public FIOS signup (1 = enabled). -->
         <record id="fios_signup_otp_enabled_param" model="ir.config_parameter">
             <field name="key">vkd_fios_api.signup_otp_enabled</field>
