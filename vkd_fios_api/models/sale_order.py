@@ -154,6 +154,8 @@ class SaleOrder(models.Model):
     #
     #   1. Open invoices exist (hardware, subscription, anything - not paid or
     #      partly paid): days left = days until the EARLIEST invoice due date.
+    #      (Both 1. and 2. add `days_left_extra_days`, default 1: the due date
+    #      is still a day of access and the block falls on the day after.)
     #      Paying that invoice moves the counter on to the next one due.
     #   2. Everything is paid: days left = days until the paid subscription
     #      period runs out (see _fios_paid_up_until). An early payer, or an
@@ -203,6 +205,18 @@ class SaleOrder(models.Model):
         if self._fios_invoice_scope_is_fios_only():
             domain += self._fios_invoice_domain_fios_only()
         return self.env['account.move'].sudo().search(domain)
+
+    def _fios_days_left_extra_days(self):
+        """Days added on top of the days to the due date / paid-up date
+        (`vkd_fios_api.days_left_extra_days`, default 1; 0 = old behaviour,
+        blocked on the due date itself)."""
+        value = self.env['ir.config_parameter'].sudo().get_param(
+            'vkd_fios_api.days_left_extra_days', '1')
+        try:
+            return max(int(str(value).strip()), 0)
+        except (TypeError, ValueError):
+            _logger.warning("FIOS: invalid vkd_fios_api.days_left_extra_days %r, using 1", value)
+            return 1
 
     @api.model
     def _fios_term_due_date(self, payment_term, date_ref):
@@ -338,7 +352,11 @@ class SaleOrder(models.Model):
         current = data.get('daysCounter') or 0
 
         today = fields.Date.context_today(self)
-        target = (due_date - today).days
+        # Days left = days to the due date (or paid-up date) + the extra days
+        # (default 1), so the due date itself is still a day of access and
+        # the account blocks the day after. With invoices raised on the 1st
+        # and a 30-day term, this keeps the 31st open in 31-day months.
+        target = (due_date - today).days + self._fios_days_left_extra_days()
         if target < 0:
             # An invoice is overdue. An account that FIOS has already blocked
             # (counter at or below zero) stays blocked - paying some other
@@ -379,10 +397,7 @@ class SaleOrder(models.Model):
             # recomputes the correct delta from the live counter instead.
             log.log_failure('account/do_payment', params, partner=partner,
                             error_msg=str(e), retryable=False)
-            res.update(ok=False, error=_(
-                "%(error)s (account item %(item)s, tier '%(tier)s')") % {
-                    'error': e, 'item': partner.fios_account_item_id,
-                    'tier': partner.fios_tier_id.name or '-'})
+            res.update(ok=False, error=str(e))
             return res
         log.log_success('account/do_payment', params, partner=partner, response_data=result,
                         message=_("FIOS days left set to %(target)s (was %(current)s, delta "

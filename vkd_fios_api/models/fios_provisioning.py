@@ -447,19 +447,7 @@ class FiosProvisioning(models.AbstractModel):
             # once-per-cycle rule. The customer/agent retries the action instead.
             log.log_failure('account/do_payment', params, partner=partner,
                             error_msg=str(e), retryable=False)
-            # Name the tier and the account: an "Access denied" here means the
-            # token of THIS tier may not bill THIS account on FIOS - usually
-            # the account sits under another tier / dealer, or the token lacks
-            # billing rights. The full call is in FIOS -> API Log.
-            raise UserError(_(
-                "Could not apply the grace period on FIOS: %(error)s\n\n"
-                "Account item %(item)s on tier '%(tier)s'. If FIOS answers "
-                "'Access denied', that tier's API token cannot bill this "
-                "account: check that the contact's Service Tier is the tier the "
-                "account really belongs to, and that its token has billing "
-                "rights. The call is recorded in FIOS > API Log."
-            ) % {'error': e, 'item': partner.fios_account_item_id,
-                 'tier': partner.fios_tier_id.name or '-'})
+            raise UserError(_("Could not apply the grace period on FIOS: %s") % e)
         log.log_success('account/do_payment', params, partner=partner, response_data=result,
                         message=description)
 
@@ -685,92 +673,6 @@ class FiosProvisioning(models.AbstractModel):
         _logger.info("FIOS: account %s -> %s device(s) total, %s deactivated (partner %s)",
                      account_id, len(devices), deactivated, partner.id)
         return devices
-
-    @api.model
-    def debug_billing_access(self, partner, probe=True):
-        """Report which tier's API token can read, and bill, this FIOS account.
-
-        `account/do_payment` is what both the grace period and the days-left
-        sync use. FIOS answering "[7] Access denied" to it means that tier's
-        token may not run billing operations on this account, even when it can
-        read it. This tries every configured tier so the answer is evidence,
-        not guesswork: a tier that bills OK is the tier the contact should be
-        on; none billing OK means the rights have to be granted on FIOS.
-
-        The probe is a do_payment of 0 days / 0 balance: it changes nothing on
-        the account, but FIOS does record it in the account's payment history.
-        """
-        partner = partner.sudo()
-        if not partner.fios_account_item_id:
-            raise UserError(_("This partner has no FIOS account yet."))
-        item_id = int(partner.fios_account_item_id)
-        client = self.env['fios.api.client']
-        tiers = self.env['fios.service.tier'].sudo().search([])
-        if not tiers:
-            raise UserError(_("No FIOS service tier is configured."))
-
-        report = ["FIOS billing access check",
-                  "contact         : %s" % partner.display_name,
-                  "account item id : %s" % item_id,
-                  "current tier    : %s" % (partner.fios_tier_id.name or '-'),
-                  "probe           : %s" % ('zero-value do_payment' if probe else 'skipped'),
-                  ""]
-        can_bill, can_read = [], []
-        for tier in tiers:
-            report.append("--- tier: %s%s" % (tier.name,
-                                              ' (current)' if tier == partner.fios_tier_id else ''))
-            try:
-                data = client.call('account/get_account_data',
-                                   {'itemId': item_id, 'type': 2}, tier=tier)
-                can_read.append(tier)
-                report.append("read  : OK - plan %s, enabled %s, days %s"
-                              % (data.get('plan'), data.get('enabled'),
-                                 data.get('daysCounter')))
-            except Exception as e:
-                report.append("read  : FAILED - %s" % e)
-                report.append("")
-                continue
-            if not probe:
-                report.append("")
-                continue
-            params = {'itemId': item_id, 'balanceUpdate': 0, 'daysUpdate': 0,
-                      'description': 'Odoo billing access check'}
-            try:
-                client.call('account/do_payment', params, tier=tier)
-                can_bill.append(tier)
-                report.append("bill  : OK - this token may bill the account")
-            except Exception as e:
-                text = str(e)
-                if '[7]' in text:
-                    report.append("bill  : DENIED - this token has no billing rights on "
-                                  "the account (%s)" % text)
-                else:
-                    report.append("bill  : FAILED for another reason - %s" % text)
-            report.append("")
-
-        report.append("--- conclusion")
-        if can_bill:
-            names = ', '.join(t.name for t in can_bill)
-            if partner.fios_tier_id in can_bill:
-                report.append("The current tier can bill this account: the grace period and "
-                              "the days-left sync should work. Re-run the failing action and "
-                              "check FIOS > API Log if it still fails.")
-            else:
-                report.append("The account is billable with the token of: %s. Set the "
-                              "contact's Service Tier to that tier (or unlink and re-import "
-                              "the account under it)." % names)
-        elif can_read:
-            report.append("Every tier can read the account but none may bill it. This is a "
-                          "FIOS-side rights problem, not an Odoo one: the API user behind "
-                          "the token needs billing / dealer rights on account item %s. "
-                          "Until then the grace period and the days-left sync cannot change "
-                          "this account." % item_id)
-        else:
-            report.append("No tier can even read the account - check the account item id on "
-                          "the contact and the tokens in FIOS > Service Tiers.")
-        text = '\n'.join(report)
-        _logger.info("FIOS billing access check for partner %s:\n%s", partner.id, text)
-        return text
 
     @api.model
     def debug_device_payload(self, partner, limit=3):
