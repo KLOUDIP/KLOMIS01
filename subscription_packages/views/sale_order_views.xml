@@ -8,6 +8,10 @@
         <field name="inherit_id" ref="sale.view_order_form"/>
         <field name="arch" type="xml">
 
+            <xpath expr="//field[@name='plan_id']" position="attributes">
+                <attribute name="required">0</attribute>
+            </xpath>
+
             <!-- The "optional_products" page no longer exists in Odoo 19:
                  optional products became the is_optional flag on the order
                  lines, so this page is anchored after "order_lines". -->
@@ -94,7 +98,8 @@
 
                     <group name="note_group" col="6" class="mt-2 mt-md-0">
                         <group class="oe_subtotal_footer" colspan="2" name="sale_total">
-                            <field name="sub_tax_totals" widget="account-tax-totals-field" nolabel="1" colspan="2" readonly="1"/>
+                            <field name="sub_tax_totals" widget="account-tax-totals-field" nolabel="1" colspan="2"
+                                   readonly="1"/>
                         </group>
                         <div class="clearfix"/>
                     </group>
