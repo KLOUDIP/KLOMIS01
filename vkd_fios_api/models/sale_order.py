@@ -161,9 +161,13 @@ class SaleOrder(models.Model):
     #      period runs out (see _fios_paid_up_until). An early payer, or an
     #      annual subscription paid up front, keeps access for the period
     #      already paid for.
-    #   3. Nothing to go on (no open invoice, no subscription period ahead of
-    #      today - e.g. a new subscription whose first invoice is not raised
-    #      yet): the counter is left as it is.
+    #   3. No open invoice and no paid period ahead, but a grace period is
+    #      still running (e.g. the invoice it was granted for was cancelled):
+    #      days left = days until the grace ends.
+    #   4. Nothing to go on (no open invoice, no subscription period ahead of
+    #      today, no grace - e.g. a new subscription whose first invoice is not
+    #      raised yet): the counter is left as it is, and a "Based On" that
+    #      points at an invoice no longer open is cleared.
     #
     # The counter is re-synced whenever an invoice is posted, paid, reset to
     # draft / cancelled, or has a payment removed (see account_move.py).
@@ -320,10 +324,17 @@ class SaleOrder(models.Model):
             until = self._fios_paid_up_until(sub)
             if until and until > today:
                 candidates.append((until, sub.id, _("paid subscription period of %s") % sub.name))
-        if not candidates:
-            return False, None, None
-        until, _sub_id, label = min(candidates)
-        return until, label, 'subscription'
+        if candidates:
+            until, _sub_id, label = min(candidates)
+            return until, label, 'subscription'
+
+        # No open invoice and no paid period ahead, but a grace period is still
+        # running (e.g. the invoice the grace was given for has been cancelled
+        # and nothing else is owed): the grace end is what access runs to.
+        if partner.fios_grace_expiry and partner.fios_grace_expiry >= today:
+            return (partner.fios_grace_expiry,
+                    _("grace period until %s") % partner.fios_grace_expiry, 'grace')
+        return False, None, None
 
     def _fios_push_days_left(self, partner, description=None):
         """Set the FIOS days counter to the days left until the next due date.
@@ -337,6 +348,10 @@ class SaleOrder(models.Model):
             return res
         due_date, source, basis = self._fios_next_due_info(partner)
         if not due_date:
+            # Nothing to sync from: the counter is left as it is, but the
+            # "Run To / Based On" fields must not keep pointing at an invoice
+            # that has since been cancelled, reset to draft or paid.
+            self._fios_clear_stale_days_left_basis(partner)
             return res
 
         client = self.env['fios.api.client']
@@ -356,7 +371,10 @@ class SaleOrder(models.Model):
         # (default 1), so the due date itself is still a day of access and
         # the account blocks the day after. With invoices raised on the 1st
         # and a 30-day term, this keeps the 31st open in 31-day months.
-        target = (due_date - today).days + self._fios_days_left_extra_days()
+        target = (due_date - today).days
+        if basis != 'grace':
+            # The grace end date is already the last day of access.
+            target += self._fios_days_left_extra_days()
         if target < 0:
             # An invoice is overdue. An account that FIOS has already blocked
             # (counter at or below zero) stays blocked - paying some other
@@ -411,6 +429,20 @@ class SaleOrder(models.Model):
         res['changed'] = True
         self._fios_reenable_if_due(partner, target, res)
         return res
+
+    def _fios_clear_stale_days_left_basis(self, partner):
+        """Called when the sync finds nothing to run the counter to. If the
+        recorded basis is an invoice, it is no longer open (otherwise it would
+        have been found), so the stale reference is replaced."""
+        if not partner.fios_next_due_date and not partner.fios_days_left_source:
+            return
+        partner.write({
+            'fios_next_due_date': False,
+            'fios_days_left_source': _("nothing to sync from (no open invoice, paid "
+                                       "subscription period or running grace) - "
+                                       "days left unchanged"),
+            'fios_days_left_synced': fields.Datetime.now(),
+        })
 
     def _fios_reenable_if_due(self, partner, target, res):
         """Switch the FIOS account back on when the counter now gives access.

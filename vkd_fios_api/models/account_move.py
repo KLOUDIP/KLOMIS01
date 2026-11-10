@@ -83,14 +83,32 @@ class AccountMove(models.Model):
         return posted
 
     def button_draft(self):
-        """Reset to draft / cancel (button_cancel goes through here): the
-        invoice no longer counts as owed, so the counter moves on."""
+        """Reset to draft: the invoice no longer counts as owed, so the counter
+        moves on. When called from button_cancel the sync is left to
+        button_cancel, which runs it once the invoice is really cancelled."""
         was_posted = self.filtered(lambda m: m.move_type == 'out_invoice' and m.state == 'posted')
         res = super().button_draft()
-        if was_posted:
+        if was_posted and not self.env.context.get('fios_skip_days_left_sync'):
             names = was_posted._fios_move_names()
             was_posted._fios_sync_days_left(
                 _("Invoice reset to draft: %s") % names if names else _("Invoice reset to draft"),
+                note_unchanged=False)
+        return res
+
+    def button_cancel(self):
+        """Cancel (posted or draft): re-sync after the state is 'cancel', so the
+        cancelled invoice can never be picked up as the next one due (core
+        resets a posted invoice to draft first, and drafts can count when
+        `days_left_include_draft` is on). The counter moves on to the next open
+        invoice, else the paid subscription period, else a running grace."""
+        to_sync = self.filtered(lambda m: m.move_type == 'out_invoice'
+                                and m.state in ('posted', 'draft'))
+        res = super(AccountMove, self.with_context(fios_skip_days_left_sync=True)).button_cancel()
+        to_sync = to_sync.filtered(lambda m: m.state == 'cancel')
+        if to_sync:
+            names = to_sync._fios_move_names()
+            to_sync._fios_sync_days_left(
+                _("Invoice cancelled: %s") % names if names else _("Invoice cancelled"),
                 note_unchanged=False)
         return res
 
