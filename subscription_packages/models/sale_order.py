@@ -23,7 +23,7 @@ class SaleOrder(models.Model):
     )
     sub_tax_totals = fields.Binary(compute='_compute_sub_tax_totals', exportable=False)
 
-    #=== COMPUTE METHODS ===#
+    # === COMPUTE METHODS ===#
 
     @api.depends_context('lang')
     @api.depends(
@@ -53,18 +53,18 @@ class SaleOrder(models.Model):
                 company=order.company_id,
             )
 
-    #=== ONCHANGE METHODS ===#
+    # === ONCHANGE METHODS ===#
 
     @api.onchange('custom_plan_id')
     def _onchange_custom_plan_id(self):
         """Update the recurring product prices from the recurring pricelist
         rules of the selected subscription plan.
-
-        Odoo 18 removed sale.subscription.pricing; recurring prices are now
-        product.pricelist.item records carrying the plan.
         """
         if not self.custom_plan_id:
+            self.plan_id = False
             return
+
+        self.plan_id = self.custom_plan_id.id
 
         PricelistItem = self.env['product.pricelist.item']
         for recurring in self.sale_order_recurring_ids:
