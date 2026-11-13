@@ -61,10 +61,7 @@ class SaleOrder(models.Model):
         rules of the selected subscription plan.
         """
         if not self.custom_plan_id:
-            self.plan_id = False
             return
-
-        self.plan_id = self.custom_plan_id.id
 
         PricelistItem = self.env['product.pricelist.item']
         for recurring in self.sale_order_recurring_ids:
