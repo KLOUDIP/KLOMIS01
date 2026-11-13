@@ -11,7 +11,6 @@
             <xpath expr="//field[@name='plan_id']" position="attributes">
                 <attribute name="required">0</attribute>
             </xpath>
-
             <!-- The "optional_products" page no longer exists in Odoo 19:
                  optional products became the is_optional flag on the order
                  lines, so this page is anchored after "order_lines". -->
